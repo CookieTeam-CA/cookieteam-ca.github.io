@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CookieCapes - Alle Capes</title>
+    <title data-translate-key="cape-title">CookieCapes - All Capes</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="js/skinview3d.js"></script>
     <script src="js/capes.js" defer></script>
@@ -26,7 +26,7 @@
         <div class="header-center">
             <nav>
                 <a href="player.html">Player</a>
-                <a href="rules.html">Regeln</a>
+                <a href="rules.html" data-translate-key="rules">Rules</a>
                 <a href="tutorial.html">Tutorial</a>
             </nav>
         </div>
@@ -47,7 +47,7 @@
 
     <div id="mobile-nav" class="mobile-nav">
         <a href="player.html">Player</a>
-        <a href="rules.html">Regeln</a>
+        <a href="rules.html" data-translate-key="rules">Rules</a>
         <a href="tutorial.html">Tutorial</a>
     </div>
 
@@ -58,21 +58,21 @@
                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     <path d="M18.031 16.6168L22.3137 20.8995L20.8995 22.3137L16.6168 18.031C15.0769 19.263 13.124 20 11 20C6.032 20 2 15.968 2 11C2 6.032 6.032 2 11 2C15.968 2 20 6.032 20 11C20 13.124 19.263 15.0769 18.031 16.6168ZM16.0247 15.8748C17.2475 14.6146 18 12.8956 18 11C18 7.1325 14.8675 4 11 4C7.1325 4 4 7.1325 4 11C4 14.8675 7.1325 18 11 18C12.8956 18 14.6146 17.2475 15.8748 16.0247L16.0247 15.8748Z"></path>
                 </svg>
-                <input type="text" id="capeSearchInput" placeholder="Capes durchsuchen...">
+                <input type="text" id="capeSearchInput" placeholder="Search for capes..." data-translate-key="capes_search_placeholder" data-translate-attr="placeholder">
             </div>
             <div class="sort-wrapper">
-                <label for="capeSortBy" class="visually-hidden">Sortieren nach:</label>
+                <label for="capeSortBy" class="visually-hidden" data-translate-key="sort_by">Sort by:</label>
                 <select id="capeSortBy" aria-label="Sortieren nach">
-                    <option value="active_user_count">Beliebtheit</option>
-                    <option value="last_edited">Datum</option>
+                    <option value="active_user_count" data-translate-key="popularity">Popularity</option>
+                    <option value="last_edited" data-translate-key="date">Date</option>
                     <option value="cape_name">Name</option>
-                    <option value="minecraft_name">Ersteller</option>
+                    <option value="minecraft_name" data-translate-key="creator">Creator</option>
                     <option value="cape_id">ID</option>
                 </select>
                 <label for="capeSortOrder" class="visually-hidden">Reihenfolge:</label>
                 <select id="capeSortOrder" aria-label="Sortierreihenfolge">
-                    <option value="desc">Absteigend</option>
-                    <option value="asc">Aufsteigend</option>
+                    <option value="desc" data-translate-key="desc">Descending</option>
+                    <option value="asc" data-translate-key="asc">Ascending</option>
                 </select>
             </div>
         </div>
@@ -81,7 +81,7 @@
     <div class="all-capes">
         <div id="loadingIndicator" style="text-align: center; padding: 30px;">
             <div class="loader" style="margin: 0 auto 15px auto;"></div>
-            <span style="color: var(--text-color-dim);">Lade Capes...</span>
+            <span style="color: var(--text-color-dim);">Loading Capes...</span>
         </div>
         <div id="capeContainer" class="cape-container" style="display: none;">
         </div>
@@ -99,21 +99,21 @@
                 </div>
                 <div class="modal-info">
                     <p><strong>Cape ID:</strong> <span id="modalCapeId">N/A</span></p>
-                    <p><strong>Ersteller:</strong> <span id="modalUploaderName">N/A</span></p>
-                    <p><strong>Wird verwendet von:</strong> <span id="modalActiveUsers">0</span> Spielern</p>
+                    <p><strong data-translate-key="creator:">Creator:</strong> <span id="modalUploaderName">N/A</span></p>
+                    <p><strong data-translate-key="used_by">Used by:</strong> <span id="modalActiveUsers">0</span> Players</p>
                 </div>
                 <div class="modal-additional-actions" style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
-                    <a href="#" id="modalViewDetailsButton" class="cta-button secondary-cta" style="font-size: 0.9em; padding: 8px 15px;" target="_blank">Details ansehen</a>
+                    <a href="#" id="modalViewDetailsButton" class="cta-button secondary-cta" style="font-size: 0.9em; padding: 8px 15px;" target="_blank" data-translate-key="view_details">Show Details</a>
                 </div>
                 <div class="modal-controls">
                     <div class="control-group">
-                        <label for="modalSkinToggle">Skin anzeigen:</label>
+                        <label for="modalSkinToggle"data-translate-key="show_skin">Show Skin:</label>
                         <input type="checkbox" id="modalSkinToggle" checked>
                     </div>
                     <div class="control-group">
-                        <label for="modalPanoramaSelect">Hintergrund:</label>
+                        <label for="modalPanoramaSelect" data-translate-key="background">Background:</label>
                         <select id="modalPanoramaSelect">
-                            <option value="none">Standard</option>
+                            <option value="none">Default</option>
                             <option value="panorama1">Panorama 1</option>
                         </select>
                     </div>
@@ -122,13 +122,20 @@
     </div>
     <footer class="footer">
         <div class="footer-content">
+            <div class="footer-language">
+                <label for="languageSelect" >Sprache:</label>
+                <select id="languageSelect" aria-label="Sprache auswählen">
+                    <option value="de" selected>Deutsch</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
             <div class="footer-links">
                 <nav class="footer-nav">
-                    <a href="/impressum.html">Impressum</a>
-                    <a href="/datenschutz.html">Datenschutz</a>
-                    <a href="/kontakt.html">Kontakt</a>
-                    <a href="rules.html">Regeln</a>
-                    <a href="tutorial.html">Tutorial</a>
+                    <a href="/impressum.html" data-translate-key="imprint">Imprint</a>
+                    <a href="/datenschutz.html" data-translate-key="privacy-policy">Privacy Policy</a>
+                    <a href="/kontakt.html" data-translate-key="contact">Contact</a>
+                    <a href="rules.html" data-translate-key="rules">Rules</a>
+                    <a href="tutorial.html" data-translate-key="tutorial">Tutorial</a>
                 </nav>
             </div>
             <div class="footer-social">
@@ -159,10 +166,11 @@
                 </a>
             </div>
             <div class="footer-copyright">
-                <p>© 2025 CookieTeam. Alle Rechte vorbehalten.</p>
+                <p>© 2025 CookieTeam. All rights reserved.</p>
                 <p>NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
             </div>
         </div>
     </footer>
+    <script src="js/lang.js" defer></script>
 </body>
 </html>

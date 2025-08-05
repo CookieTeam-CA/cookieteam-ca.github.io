@@ -1292,6 +1292,21 @@ button:hover::before {
   margin-top: 10px;
 }
 
+.footer-language {
+  margin-bottom: 10px;
+}
+
+.footer-language select {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color-medium);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.9em;
+  outline: none;
+  cursor: pointer;
+}
+
 .pagination-controls {
   display: flex;
   justify-content: center;

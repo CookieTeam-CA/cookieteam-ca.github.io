@@ -53,7 +53,7 @@ function loadAndCacheImage(url) {
 }
 
 function getPlayerSkinUrl(identifier) {
-    return identifier ? `https://starlightskins.lunareclipse.studio/render/skin/${identifier}/default` : defaultSkinPath;
+    return identifier ? `https://mineskin.eu/skin/${identifier}` : defaultSkinPath;
 }
 
 function displayCurrentPlayerPage(players) {

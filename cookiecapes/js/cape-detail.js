@@ -31,7 +31,7 @@ function getPlayerSkinUrl(minecraftName) {
     if (!minecraftName || typeof minecraftName !== 'string' || !/^[a-zA-Z0-9_]{3,16}$/.test(minecraftName)) {
         return defaultSkinPath;
     }
-    return `https://starlightskins.lunareclipse.studio/render/skin/${minecraftName}/default`;
+    return `https://mineskin.eu/skin/${minecraftName}`;
 }
 
 function showLoading(message = "Lade...") {

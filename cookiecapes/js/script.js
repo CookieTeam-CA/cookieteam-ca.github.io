@@ -165,12 +165,31 @@ document.addEventListener("DOMContentLoaded", () => {
             progressBar.style.width = `${progress}%`;
         }
     
-         function updateStepTitle() {
-             if (!stepTitle) return;
-             const titles = ["Schritt 1: Dein Minecraft-Name", "Schritt 2: Regeln zustimmen", "Schritt 3: Name des Capes", "Schritt 4: Cape Hochladen", "Schritt 5: Vorschau & Bestätigung"];
-             const titleText = titles[currentStep - 1] || `Schritt ${currentStep}`;
-             stepTitle.style.opacity = 0;
-             setTimeout(() => { stepTitle.textContent = titleText; stepTitle.style.opacity = 1; }, 300);
+        function updateStepTitle() {
+            if (!stepTitle) return;
+
+            const titleKeys = [
+                "step_title_1",
+                "step_title_2",
+                "step_title_3",
+                "step_title_4",
+                "step_title_5"
+            ];
+
+            const newKey = titleKeys[currentStep - 1] || "step_title_1"; // Fallback auf Schritt 1
+
+            stepTitle.style.opacity = 0;
+            setTimeout(() => {
+                stepTitle.setAttribute('data-translate-key', newKey);
+
+                if (window.translateElement) {
+                    window.translateElement(stepTitle);
+                } else {
+                    stepTitle.textContent = newKey; 
+                }
+                
+                stepTitle.style.opacity = 1;
+            }, 300);
         }
     
         function showStep(stepNumber) {
@@ -204,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             minecraftNameFeedback.textContent = 'Überprüfe Namen...'; minecraftNameFeedback.className = 'input-feedback checking';
             if (nameCheckLoader) nameCheckLoader.style.display = 'block';
-            const apiUrl = `https://starlightskins.lunareclipse.studio/render/skin/${name}/default`;
+            const apiUrl = `https://mineskin.eu/skin/${name}`;
             try {
                 const response = await fetch(apiUrl);
                 if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
@@ -640,7 +659,7 @@ function openCapeModal(capeId, capeUrl, capeName, uploaderName = "N/A") {
 
     let skinToLoad = defaultSkinPath;
     if (uploaderName && uploaderName !== "N/A") {
-        skinToLoad = `https://starlightskins.lunareclipse.studio/render/skin/${uploaderName}/default`;
+        skinToLoad = `https://mineskin.eu/skin/${uploaderName}`;
     }
 
     modalSkinViewer.loadSkin(skinToLoad)

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" data-next-head=""/>
     <meta name="robots" content="index, follow" data-next-head=""/>
-    <title data-next-head="">CookieCapes - Deine eigenen Minecraft Capes erstellen & entdecken</title>
+    <title data-next-head="" data-translate-key="title">CookieCapes - Create & discover your own Minecraft Capes</title>
     <meta name="description" content="Erstelle, teile und entdecke Minecraft Capes kostenlos mit CookieCapes. Lade die Mod herunter und zeige deinen Style im Spiel!">
     <link rel="canonical" href="https://cookieattack.de/cookiecapes/index.html">
     <meta property="og:type" content="website">
@@ -29,7 +29,6 @@
     <script src="js/skinview3d.js"></script>
     <script src="js/script.js" defer></script>
     <script src="js/player_count.js" defer></script>
-
     <script type="application/ld+json">
         {
         "@context": "https://schema.org",
@@ -73,7 +72,7 @@
             <nav>
                 <a href="player.html">Player</a>
                 <a href="capes.html">Capes</a>
-                <a href="rules.html">Regeln</a>
+                <a href="rules.html" data-translate-key="rules">Rules</a>
                 <a href="tutorial.html">Tutorial</a>
             </nav>
         </div>
@@ -95,7 +94,7 @@
     <div id="mobile-nav" class="mobile-nav">
         <a href="player.html">Player</a>
         <a href="capes.html">Capes</a>
-        <a href="rules.html">Regeln</a>
+        <a href="rules.html" data-translate-key="rules">Rules</a>
         <a href="tutorial.html">Tutorial</a>
     </div>
 
@@ -103,40 +102,38 @@
         <div class="hero improved-hero needs-js">
             <div class="hero-content-wrapper">
                 <h1>CookieCapes</h1>
-                <p class="hero-explanation">
-                    Eigene Capes für deinen Minecraft-Account.<br> Erstelle, teile und entdecke einzigartige Designs!
-                </p>
+                <p class="hero-explanation" data-translate-key="hero_text">Own Capes for your Minecraft account.<br> Create, share and discover unique designs!</p>
 
                 <div class="hero-features">
                     <div class="feature-item">
                         <span class="feature-icon">✔️</span>
-                        <span class="feature-text">Kostenlos</span>
+                        <span class="feature-text" data-translate-key="feature_free">Free</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">⚡</span>
-                        <span class="feature-text">Schnell & Einfach</span>
+                        <span class="feature-text" data-translate-key="feature_fast">Fast & Easy</span>
                     </div>
                      <div class="feature-item">
                         <span class="feature-icon">🎨</span>
-                        <span class="feature-text">Individuell</span>
+                        <span class="feature-text" data-translate-key="feature_custom">Customizable</span>
                     </div>
                 </div>
 
                 <div class="hero-cta">
                     <a href="#capeUpload" class="cta-button primary-cta">
-                        <span class="cta-icon">➕</span> Cape erstellen
+                        <span class="cta-icon">➕</span data-translate-key="button_create"> Create Cape
                     </a>
                     <a href="capes.html" class="cta-button secondary-cta">
-                        <span class="cta-icon">🔍</span> Capes durchsuchen
+                        <span class="cta-icon">🔍</span data-translate-key="button_browse"> Browse Capes
                     </a>
                 </div>
             </div>
         </div>
 
         <div class="cape-gallery needs-js animate-on-scroll fade-in-up">
-            <h2>Zufällige Capes aus der Community</h2>
+            <h2 data-translate-key="random_capes_title">Random Capes from the Community</h2>
             <div id="capeContainer" class="cape-container">
-                 <p style="color:var(--text-color-dim); text-align: center; width: 100%;">Lade zufällige Capes...</p>
+                 <p style="color:var(--text-color-dim); text-align: center; width: 100%;">Loading random capes...</p>
             </div>
         </div>
 
@@ -144,7 +141,7 @@
             <form id="capeUploadForm" novalidate>
                 <div class="step-wizard-container">
                     <div class="step-wizard-header">
-                        <h1 id="stepTitle">Schritt 1: Dein Minecraft-Name</h1>
+                        <h1 id="stepTitle">Step 1: Your Minecraft Name</h1>
                         <div class="progress-container">
                             <div class="progress-bar" id="progressBar"></div>
                         </div>
@@ -152,16 +149,16 @@
 
                     <div id="multiStepForm">
                         <div class="form-step active" id="step-1">
-                            <p class="step-instruction">Bitte gib deinen genauen Minecraft In-Game Namen ein.</p>
+                            <p class="step-instruction" data-translate-key="step_1_instruction">Please enter your exact Minecraft name.</p>
                             <label for="minecraftName">Minecraft Name:</label>
-                            <input type="text" id="minecraftName" name="minecraft_name" placeholder="z.B. Steve" required>
+                            <input type="text" id="minecraftName" name="minecraft_name" placeholder="e.g. Steve" required>
                             <div class="loader" id="nameCheckLoader" style="display: none;"></div>
                             <div class="input-feedback" id="minecraftNameFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-2">
                             <p class="step-instruction">
-                                Bitte lies unsere <a href="rules.html" target="_blank">Regeln</a> sorgfältig durch.
+                                Bitte lies unsere <a href="rules.html" target="_blank" data-translate-key="rules">Rules</a> sorgfältig durch.
                                 Du musst ihnen zustimmen, um fortzufahren.
                             </p>
                             <div class="rules-agree-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
@@ -204,32 +201,32 @@
 
                     <div class="step-navigation" id="stepNavigation">
                         <button type="button" id="prevBtn" class="step-button" style="display: none;">Zurück</button>
-                        <button type="button" id="nextBtn" class="step-button">Weiter</button>
+                        <button type="button" id="nextBtn" class="step-button" data-translate-key="next">Next</button>
                         <button type="submit" id="submitBtn" class="step-button" style="display: none;">Cape Hochladen</button>
                     </div>
                 </div>
             </form>
             <div class="wizard-tip animate-on-scroll fade-in-up">
-                <p>
-                    💡 <strong>Tipp:</strong> Du bist dir unsicher, wie man ein Cape erstellt?
-                    <a href="tutorial.html">Schau dir unser Tutorial an!</a>
+                <p data-translate-key="tip">
+                    💡 <strong>Tip:</strong> You are unsure how to create a cape?
+                    <a href="tutorial.html">Check out our tutorial!</a>
                 </p>
             </div>
 
             <div class="downloadSection needs-js animate-on-scroll fade-in-up" id="downloadSection">
-                <h2>Download CookieCapes Mod</h2>
-                <p>Lade die Mod jetzt kostenlos über Modrinth herunter, um deine und andere Capes im Spiel zu sehen.</p>
-                <a href="https://modrinth.com/mod/cookiecapes" target="_blank"><button type="button">DOWNLOAD</button></a>
+                <h2 data-translate-key="download_mod_title">Download CookieCapes Mod</h2>
+                <p data-translate-key="download_mod_description">Download the Mod now for free via Modrinth to see your and others capes in-game.</p>
+                <a href="https://modrinth.com/mod/cookiecapes" target="_blank"><button type="button" data-translate-key="download_button">DOWNLOAD</button></a>
             </div>
             <div class="recommendation-box purple-theme needs-js animate-on-scroll fade-in-up" id="waveyCapesRecommendation">
-                <h2>🌟 Empfehlung: Realistische Cape-Physik! 🌟</h2>
-                <p>
-                    Möchtest du, dass dein Cape im Wind weht und sich realistisch bewegt?
-                    Die Mod <strong style="color: var(--primary-color-hover);">Wavey Capes</strong> fügt genau das hinzu – Physik für deine Capes!
-                    Sie ist kompatibel mit CookieCapes aber von einem anderen Entwickler.
+                <h2 data-translate-key="wavey_capes_recommendation_title">Recommendation: Realistic Cape Physics! 🌟</h2>
+                <p data-translate-key="wavey_capes_recommendation_description">
+                    Do you want your cape to flutter in the wind and move realistically?
+                    The mod <strong style="color: var(--primary-color-hover);">Wavey Capes</strong> adds just that – physics for your capes!
+                    It is compatible with CookieCapes but from a different developer.
                 </p>
                 <a href="https://modrinth.com/mod/wavey-capes" target="_blank" rel="noopener noreferrer">
-                    <button class="recommendation-button">Wavey Capes auf Modrinth</button>
+                    <button class="recommendation-button" data-translate-key="wavey_capes_button">Wavey Capes on Modrinth</button>
                 </a>
             </div>
         </div>
@@ -237,13 +234,20 @@
 
     <footer class="footer">
         <div class="footer-content">
+            <div class="footer-language">
+                <label for="languageSelect" >Sprache:</label>
+                <select id="languageSelect" aria-label="Sprache auswählen">
+                    <option value="de" selected>Deutsch</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
             <div class="footer-links">
                 <nav class="footer-nav">
-                    <a href="/impressum.html">Impressum</a>
-                    <a href="/datenschutz.html">Datenschutz</a>
-                    <a href="/kontakt.html">Kontakt</a>
-                    <a href="rules.html">Regeln</a>
-                    <a href="tutorial.html">Tutorial</a>
+                    <a href="/impressum.html" data-translate-key="imprint">Imprint</a>
+                    <a href="/datenschutz.html" data-translate-key="privacy-policy">Privacy Policy</a>
+                    <a href="/kontakt.html" data-translate-key="contact">Contact</a>
+                    <a href="rules.html" data-translate-key="rules">Rules</a>
+                    <a href="tutorial.html" data-translate-key="tutorial">Tutorial</a>
                 </nav>
             </div>
 
@@ -255,7 +259,7 @@
                 <a href="https://dc.cookieattack.de" target="_blank" aria-label="Tritt unserem Discord Server bei"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M14.983 3l.123 .006c2.014 .214 3.527 .672 4.966 1.673a1 1 0 0 1 .371 .488c1.876 5.315 2.373 9.987 1.451 12.28c-1.003 2.005 -2.606 3.553 -4.394 3.553c-.732 0 -1.693 -.968 -2.328 -2.045a21.512 21.512 0 0 0 2.103 -.493a1 1 0 1 0 -.55 -1.924c-3.32 .95 -6.13 .95 -9.45 0a1 1 0 0 0 -.55 1.924c.717 .204 1.416 .37 2.103 .494c-.635 1.075 -1.596 2.044 -2.328 2.044c-1.788 0 -3.391 -1.548 -4.428 -3.629c-.888 -2.217 -.39 -6.89 1.485 -12.204a1 1 0 0 1 .371 -.488c1.439 -1.001 2.952 -1.459 4.966 -1.673a1 1 0 0 1 .935 .435l.063 .107l.651 1.285l.137 -.016a12.97 12.97 0 0 1 2.643 0l.134 .016l.65 -1.284a1 1 0 0 1 .754 -.54l.122 -.009zm-5.983 7a2 2 0 0 0 -1.977 1.697l-.018 .154l-.005 .149l.005 .15a2 2 0 1 0 1.995 -2.15zm6 0a2 2 0 0 0 -1.977 1.697l-.018 .154l-.005 .149l.005 .15a2 2 0 1 0 1.995 -2.15z"/></svg></a>
             </div>
             <div class="footer-copyright">
-                <p>© 2025 CookieTeam. Alle Rechte vorbehalten.</p>
+                <p>© 2025 CookieTeam. All rights reserved.</p>
                 <p>NOT AN OFFICIAL MINECRAFT SERVICE. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
             </div>
         </div>
@@ -269,20 +273,20 @@
                 </div>
                 <div class="modal-info">
                     <p><strong>Cape ID:</strong> <span id="modalCapeId">N/A</span></p>
-                    <p><strong>Ersteller:</strong> <span id="modalUploaderName">N/A</span></p> 
+                    <p><strong data-translate-key="creator:">Creator:</strong> <span id="modalUploaderName">N/A</span></p> 
                 </div>
                 <div class="modal-additional-actions" style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
-                    <a href="#" id="modalViewDetailsButton" class="cta-button secondary-cta" style="font-size: 0.9em; padding: 8px 15px;" target="_blank">Details ansehen</a>
+                    <a href="#" id="modalViewDetailsButton" class="cta-button secondary-cta" style="font-size: 0.9em; padding: 8px 15px;" target="_blank" data-translate-key="view_details">Show Details</a>
                 </div>
                 <div class="modal-controls">
                     <div class="control-group">
-                        <label for="modalSkinToggle">Skin anzeigen:</label>
+                        <label for="modalSkinToggle" data-translate-key="show_skin:">Show Skin:</label>
                         <input type="checkbox" id="modalSkinToggle" checked>
                     </div>
                     <div class="control-group">
-                        <label for="modalPanoramaSelect">Hintergrund:</label>
+                        <label for="modalPanoramaSelect" data-translate-key="background">Background:</label>
                         <select id="modalPanoramaSelect">
-                            <option value="none">Standard</option>
+                            <option value="none">Default</option>
                             <option value="panorama1">Panorama 1</option>
                         </select>
                     </div>
@@ -290,5 +294,6 @@
             </div>
         </div>
     </footer>
+    <script src="js/lang.js"></script>
 </body>
 </html>

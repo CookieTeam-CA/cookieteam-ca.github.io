@@ -32,15 +32,15 @@ function getPlayerSkinUrl(minecraftName) {
         console.warn(`Invalid Minecraft name for skin lookup: ${minecraftName}`);
         return defaultSkinPath;
     }
-    return `https://starlightskins.lunareclipse.studio/render/skin/${minecraftName}/default`;
+    return `https://mineskin.eu/skin/${minecraftName}`;
 }
 
 function debounce(func, delay) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), delay);
-  };
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
 }
 
 function displayCurrentPage() {
@@ -58,10 +58,10 @@ function displayCurrentPage() {
 
     if (capesToShow.length === 0) {
         const searchVal = capeSearchInput ? capeSearchInput.value : "";
-        if (searchVal !== "" || (allCapes.length > 0 && filteredAndSortedCapes.length === 0) ) {
-             container.innerHTML = `<p style="color: var(--text-color-dim); text-align: center; width: 100%;">Keine Capes entsprechen deinen Filterkriterien.</p>`;
+        if (searchVal !== "" || (allCapes.length > 0 && filteredAndSortedCapes.length === 0)) {
+            container.innerHTML = `<p style="color: var(--text-color-dim); text-align: center; width: 100%;" data-translate-key="no_capes_found">No Capes match your filter criteria.</p>`;
         } else {
-             container.innerHTML = `<p style="color: var(--text-color-dim); text-align: center; width: 100%;">Keine Capes zum Anzeigen gefunden.</p>`;
+            container.innerHTML = `<p style="color: var(--text-color-dim); text-align: center; width: 100%;">Keine Capes zum Anzeigen gefunden.</p>`;
         }
     } else {
         capesToShow.forEach((cape) => {
@@ -82,7 +82,9 @@ function displayCurrentPage() {
 
             const uploaderName = cape.minecraft_name;
             const uploaderP = document.createElement("p");
-            uploaderP.textContent = `von ${uploaderName}`;
+            uploaderP.textContent = window.getTranslation('uploaded_by', {
+                uploaderName: uploaderName
+            });
             uploaderP.className = 'cape-preview-uploader';
             previewDiv.appendChild(uploaderP);
 
@@ -91,7 +93,6 @@ function displayCurrentPage() {
             activeUsersP.className = 'cape-active-users';
             activeUsersP.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="vertical-align: middle; margin-right: 4px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path></svg>${activeUsers}`;
             previewDiv.appendChild(activeUsersP);
-
 
             container.appendChild(previewDiv);
 
@@ -118,7 +119,9 @@ function displayCurrentPage() {
                     background: defaultGalleryPreviewBackgroundColor
                 });
 
-                viewer.loadCape(capeImageUrl, { backEquipment: 'cape' })
+                viewer.loadCape(capeImageUrl, {
+                        backEquipment: 'cape'
+                    })
                     .catch(err => console.error(`Failed to load cape ${capeImageUrl} for preview:`, err));
 
                 viewer.fov = 70;
@@ -181,7 +184,10 @@ function renderPaginationControls() {
 
     const pageInfo = document.createElement("span");
     pageInfo.className = "pagination-info";
-    pageInfo.textContent = `Seite ${currentPage} von ${totalPages}`;
+    pageInfo.textContent = window.getTranslation('pagination_info', {
+        currentPage: currentPage,
+        totalPages: totalPages
+    });
     controlsContainer.appendChild(pageInfo);
 
     const nextButton = document.createElement("button");
@@ -197,7 +203,10 @@ function changePage(newPage) {
         displayCurrentPage();
         const container = document.getElementById("capeContainer");
         if (container) {
-             window.scrollTo({ top: container.offsetTop - 150, behavior: 'smooth' });
+            window.scrollTo({
+                top: container.offsetTop - 150,
+                behavior: 'smooth'
+            });
         }
     }
 }
@@ -266,7 +275,7 @@ async function fetchAllCapesAndPaginate() {
 
     if (!container || !loadingIndicator || !controlsContainer) {
         console.error("Essential elements for pagination not found.");
-         if(loadingIndicator) loadingIndicator.innerHTML = `<p style="color: var(--error-color);">Seitenfehler: Wichtige Elemente fehlen.</p>`;
+        if (loadingIndicator) loadingIndicator.innerHTML = `<p style="color: var(--error-color);">Seitenfehler: Wichtige Elemente fehlen.</p>`;
         return;
     }
 
@@ -302,8 +311,8 @@ async function fetchAllCapesAndPaginate() {
             cape.minecraft_name && cape.minecraft_name.trim() !== "" &&
             cape.cape_id !== undefined && cape.cape_id !== null
         );
-        
-        filteredAndSortedCapes = [...allCapes]; 
+
+        filteredAndSortedCapes = [...allCapes];
 
         loadingIndicator.style.display = 'none';
 
@@ -323,7 +332,6 @@ async function fetchAllCapesAndPaginate() {
         controlsContainer.innerHTML = '';
     }
 }
-
 
 function initializeModalViewer() {
     if (!modalSkinViewer && modalCanvas) {
@@ -362,8 +370,8 @@ function openCapeModal(capeId, capeUrl, capeName, uploaderName, activeUsers) {
     if (!modalSkinViewer) {
         initializeModalViewer();
         if (!modalSkinViewer) {
-             alert("Fehler: 3D-Vorschau konnte nicht initialisiert werden.");
-             return;
+            alert("Fehler: 3D-Vorschau konnte nicht initialisiert werden.");
+            return;
         }
     }
 
@@ -397,7 +405,9 @@ function openCapeModal(capeId, capeUrl, capeName, uploaderName, activeUsers) {
             modalUploaderName.textContent += " (Skin nicht gefunden)";
         });
 
-    modalSkinViewer.loadCape(capeUrl, { backEquipment: 'cape' })
+    modalSkinViewer.loadCape(capeUrl, {
+            backEquipment: 'cape'
+        })
         .then(() => {})
         .catch(err => {
             console.error(`Modal: Failed to load cape ${capeUrl}:`, err);
@@ -460,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentUploader = modalUploaderName.textContent.split(' ')[0];
                 const skinUrl = getPlayerSkinUrl(currentUploader);
                 modalSkinViewer.loadSkin(skinUrl)
-                   .catch(err => {
+                    .catch(err => {
                         console.error("Modal: Failed to reload skin:", err);
                         modalSkinViewer.loadSkin(defaultSkinPath);
                     });
