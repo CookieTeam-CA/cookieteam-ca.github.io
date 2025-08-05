@@ -7,18 +7,19 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/skinview3d/bundles/skinview3d.bundle.js"></script>
     <script src="js/cape-detail.js" defer></script>
+    <script src="js/player_count.js" defer></script>
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="manifest" href="/favicon/site.webmanifest">
     <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5">
     <style>
-        .cape-detail-container { /* Dieser ist der Hauptcontainer, vielleicht willst du den Effekt hier nicht */
+        .cape-detail-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            margin-top: 80px; /* Increased to make space for floating header */
+            margin-top: 80px;
             background-color: var(--card-bg-color);
             border-radius: 15px;
             max-width: 700px;
@@ -26,14 +27,7 @@
             margin-right: auto;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--primary-color-alpha-20);
-            /* transition für border, falls du es doch hier willst */
-            /* transition: border-color 0.3s ease, border-width 0.3s ease, box-shadow 0.3s ease; */
         }
-        /* .cape-detail-container:hover {
-            border-color: var(--primary-color);
-            border-width: 2px;
-            box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.3);
-        } */
 
         .cape-detail-container h1#pageTitle {
             font-family: var(--font-headline);
@@ -43,44 +37,38 @@
             text-align: center;
         }
 
-        /* Neuer Stil für interaktive Container */
         .interactive-border-container {
-            border: 1px solid var(--text-color-alpha-10); /* Standard-Border */
+            border: 1px solid var(--text-color-alpha-10);
             transition: border-color 0.25s ease-in-out, border-width 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-            border-radius: 10px; /* Muss konsistent sein */
+            border-radius: 10px;
         }
         .interactive-border-container:hover {
             border-color: var(--primary-color);
-            border-width: 2px; /* Dickere Border beim Hover */
-            /* Optional: Ein leichter Glow-Effekt */
+            border-width: 2px;
             box-shadow: 0 0 10px 0px rgba(var(--primary-color-rgb, 255, 165, 0), 0.4);
         }
 
 
         .viewer-wrapper {
             background-color: var(--bg-color);
-            /* border-radius: 10px; -> wird von .interactive-border-container geerbt/überschrieben */
             padding: 10px;
             margin-bottom: 20px;
-            /* border: 1px solid var(--text-color-alpha-10); -> wird von .interactive-border-container geerbt/überschrieben */
             display: inline-block;
         }
         #mainViewerCanvas {
             display: block;
             margin: 0 auto;
-            border-radius: 8px; /* Innere Border-Radius für den Canvas selbst */
+            border-radius: 8px;
             background-color: var(--card-bg-darker);
         }
         .cape-info-fetched {
             background-color: var(--text-color-alpha-05);
-            /* border-radius: 8px; -> wird von .interactive-border-container geerbt/überschrieben */
             padding: 15px 20px;
             margin-bottom: 20px;
             text-align: left;
             font-size: 1em;
             width: 100%;
             max-width: 400px;
-            /* border: 1px solid var(--text-color-alpha-10); -> Standard-Border, falls .interactive-border-container nicht direkt hier angewendet wird */
         }
         .cape-info-fetched p {
             margin: 8px 0;
@@ -103,36 +91,32 @@
             margin-left: auto;
             margin-right: auto;
         }
-        .control-group { /* Gilt für die meisten einzelnen Control-Rows */
+        .control-group {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 10px 12px;
             background-color: var(--text-color-alpha-05);
-            /* border-radius: 8px; -> wird von .interactive-border-container geerbt/überschrieben */
             justify-content: space-between;
         }
          .control-group.asset-source-group {
             flex-direction: row;
             flex-wrap: nowrap;
             justify-content: space-between;
-            background-color: transparent; /* Kein eigener Hintergrund, da Kinder (.asset-source-block) Hintergründe haben */
+            background-color: transparent;
             padding: 0;
             gap: 15px;
-            /* Diese Gruppe selbst hat keinen Border, die Kinder schon */
         }
-        .asset-source-block { /* Dies sind die Container, die den Hover-Effekt bekommen könnten */
+        .asset-source-block {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
             padding: 12px;
             background-color: var(--text-color-alpha-05);
-            /* border-radius: 8px; -> wird von .interactive-border-container geerbt/überschrieben */
             flex-basis: 0;
             flex-grow: 1;
             min-width: 0;
-            /* border: 1px solid var(--text-color-alpha-10); -> Standard-Border, falls .interactive-border-container hier angewendet wird */
         }
         .asset-source-block label.block-title {
             font-weight: bold;
@@ -265,23 +249,21 @@
         }
         .hidden { display: none !important; }
 
-        /* Definieren der RGB-Werte für die Primärfarbe für den Glow-Effekt */
-        :root { /* This :root block for CSS variables is usually in style.css not here */
-            --primary-color-rgb: 255, 165, 0; /* Orange */
+        :root {
+            --primary-color-rgb: 255, 165, 0;
         }
 
-        /* Responsive adjustments for cape-detail.html */
         @media (max-width: 768px) {
             .cape-detail-container {
                 padding: 15px;
-                margin-top: 120px; /* Increased more to ensure floating header doesn't overlap */
+                margin-top: 120px;
                 max-width: 95%;
             }
             .cape-detail-container h1#pageTitle {
                 font-size: 1.8em;
             }
             #mainViewerCanvas {
-                 width: 250px !important; /* Adjust if too big for mobile */
+                 width: 250px !important;
                  height: 350px !important;
             }
             .viewer-wrapper {
@@ -298,26 +280,26 @@
             }
             .control-group {
                 padding: 8px 10px;
-                flex-direction: column; /* Stack label and control */
+                flex-direction: column;
                 align-items: flex-start;
             }
              .viewer-controls label {
-                margin-bottom: 5px; /* Space between label and control */
-                white-space: normal; /* Allow label to wrap */
+                margin-bottom: 5px;
+                white-space: normal;
             }
             .viewer-controls input[type="checkbox"] {
-                margin-left: 0; /* Reset margin */
+                margin-left: 0;
             }
              .viewer-controls select {
-                width: 100%; /* Make select full width */
+                width: 100%;
                 max-width: none;
             }
              .control-group.asset-source-group {
-                flex-direction: column; /* Stack skin and cape source blocks */
-                gap: 20px; /* Increased gap for better separation when stacked */
+                flex-direction: column;
+                gap: 20px;
             }
             .asset-source-block {
-                width: 100%; /* Make blocks full width */
+                width: 100%;
                 flex-basis: auto;
             }
             .back-link {
@@ -329,7 +311,7 @@
             .cape-detail-container h1#pageTitle {
                 font-size: 1.6em;
             }
-            #mainViewerCanvas { /* Even smaller for very small screens */
+            #mainViewerCanvas {
                  width: 200px !important;
                  height: 300px !important;
             }
@@ -346,17 +328,42 @@
 </head>
 <body>
     <header>
-        <a href="/index.html"><img src="/img/logoteam.png" alt="CookieTeam Logo" class="logo"></a>
-        <div class="nav-container">
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="/img/logo.png" alt="CookieTeam Icon" class="logo-icon">
+                <img src="/img/minilogo.png" alt="CookieTeam Logo" class="logo-full">
+            </a>
+        </div>
+
+        <div class="header-center">
             <nav>
-                <a href="player.html">Spieler</a>
+                <a href="player.html">Player</a>
                 <a href="capes.html">Capes</a>
                 <a href="rules.html">Regeln</a>
                 <a href="tutorial.html">Tutorial</a>
-                <a href="index.html">Home</a>
             </nav>
         </div>
+
+        <div class="header-right">
+            <div id="player-count-container" class="player-count-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                <span id="player-count-number">...</span>
+                <div id="player-count-tooltip" class="player-count-tooltip"></div>
+            </div>
+            <button id="hamburger-menu" class="hamburger-menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
     </header>
+
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="player.html">Player</a>
+        <a href="capes.html">Capes</a>
+        <a href="rules.html">Regeln</a>
+        <a href="tutorial.html">Tutorial</a>
+    </div>
 
     <main>
         <div class="cape-detail-container">
@@ -442,6 +449,8 @@
                     <a href="/impressum.html">Impressum</a>
                     <a href="/datenschutz.html">Datenschutz</a>
                     <a href="/kontakt.html">Kontakt</a>
+                    <a href="rules.html">Regeln</a>
+                    <a href="tutorial.html">Tutorial</a>
                 </nav>
             </div>
             <div class="footer-social">

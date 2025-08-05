@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
     <link rel="manifest" href="/favicon/site.webmanifest">
     <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <script src="js/player_count.js" defer></script>
 
     <style>
         .tutorial-content {
@@ -20,7 +21,7 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--primary-color-alpha-20);
             max-width: 950px;
-            margin: 120px auto 40px auto; /* Adjusted margin-top for floating header */
+            margin: 120px auto 40px auto;
             line-height: 1.7;
         }
 
@@ -139,12 +140,11 @@
             font-weight: bold;
         }
 
-        /* Responsive adjustments for tutorial.html */
         @media (max-width: 768px) {
             .tutorial-content {
                 max-width: 95%;
                 padding: 20px;
-                 margin-top: 130px; /* Further adjust if header is tall */
+                 margin-top: 130px;
             }
             .tutorial-content h1 {
                 font-size: 2em;
@@ -159,7 +159,7 @@
                 padding-left: 20px;
             }
             #capeTemplateImage {
-                max-width: 200px; /* Make template image smaller on mobile */
+                max-width: 200px;
             }
             .tutorial-content button {
                 padding: 8px 15px;
@@ -182,16 +182,40 @@
 </head>
 <body>
     <header>
-        <a href="/index.html"><img src="/img/logoteam.png" alt="CookieTeam Logo" class="logo"></a>
-        <div class="nav-container">
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="/img/logo.png" alt="CookieTeam Icon" class="logo-icon">
+                <img src="/img/minilogo.png" alt="CookieTeam Logo" class="logo-full">
+            </a>
+        </div>
+
+        <div class="header-center">
             <nav>
-                <a href="player.html">Spieler</a>
+                <a href="player.html">Player</a>
                 <a href="capes.html">Capes</a>
                 <a href="rules.html">Regeln</a>
-                <a href="index.html">Home</a>
             </nav>
         </div>
+
+        <div class="header-right">
+            <div id="player-count-container" class="player-count-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                <span id="player-count-number">...</span>
+                <div id="player-count-tooltip" class="player-count-tooltip"></div>
+            </div>
+            <button id="hamburger-menu" class="hamburger-menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
     </header>
+
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="player.html">Player</a>
+        <a href="capes.html">Capes</a>
+        <a href="rules.html">Regeln</a>
+    </div>
 
     <div class="tutorial-content">
         <h1>Minecraft Cape Erstellen - Tutorial</h1>
@@ -251,12 +275,12 @@
     <footer class="footer">
          <div class="footer-content">
              <div class="footer-links">
-                 <nav class="footer-nav">
-                     <a href="/impressum.html">Impressum</a>
-                     <a href="/datenschutz.html">Datenschutz</a>
-                     <a href="/kontakt.html">Kontakt</a>
-                     <a href="/rules.html">Regeln</a>
-                 </nav>
+                <nav class="footer-nav">
+                    <a href="/impressum.html">Impressum</a>
+                    <a href="/datenschutz.html">Datenschutz</a>
+                    <a href="/kontakt.html">Kontakt</a>
+                    <a href="rules.html">Regeln</a>
+                </nav>
              </div>
              <div class="footer-social">
                  <a href="https://www.youtube.com/@cookieteamca" target="_blank" aria-label="Besuche uns auf YouTube"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.904 3.407 0 4.956 0 12c0 7.044.904 8.593 4.385 8.816 3.6.245 11.626.246 15.23 0C23.096 20.593 24 19.044 24 12c0-7.044-.904-8.593-4.385-8.816zM9.75 15.3V8.7l6.5 3.3-6.5 3.3z"/></svg></a>

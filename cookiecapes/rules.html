@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CookieCapes - Regeln</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/player_count.js" defer></script>
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -20,7 +21,7 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--primary-color-alpha-20);
             max-width: 900px;
-            margin: 120px auto 40px auto; /* Adjusted margin-top for floating header */
+            margin: 120px auto 40px auto;
         }
 
         .rules-content h1 {
@@ -53,12 +54,11 @@
             color: var(--text-color-dim);
         }
 
-        /* Responsive adjustments for rules.html */
         @media (max-width: 768px) {
             .rules-content {
                 max-width: 95%;
                 padding: 20px;
-                margin-top: 130px; /* Further adjust if header is tall */
+                margin-top: 130px;
             }
             .rules-content h1 {
                 font-size: 2em;
@@ -67,7 +67,7 @@
                 font-size: 1.5em;
             }
             .rules-content ul {
-                padding-left: 20px; /* Reduce indent for lists */
+                padding-left: 20px;
             }
         }
         @media (max-width: 480px) {
@@ -82,16 +82,40 @@
 </head>
 <body>
     <header>
-        <a href="/index.html"><img src="/img/logoteam.png" alt="CookieTeam Logo" class="logo"></a>
-        <div class="nav-container">
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="/img/logo.png" alt="CookieTeam Icon" class="logo-icon">
+                <img src="/img/minilogo.png" alt="CookieTeam Logo" class="logo-full">
+            </a>
+        </div>
+
+        <div class="header-center">
             <nav>
-                <a href="player.html">Spieler</a>
+                <a href="player.html">Player</a>
                 <a href="capes.html">Capes</a>
                 <a href="tutorial.html">Tutorial</a>
-                <a href="index.html">Home</a>
             </nav>
         </div>
+
+        <div class="header-right">
+            <div id="player-count-container" class="player-count-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                <span id="player-count-number">...</span>
+                <div id="player-count-tooltip" class="player-count-tooltip"></div>
+            </div>
+            <button id="hamburger-menu" class="hamburger-menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
     </header>
+
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="player.html">Player</a>
+        <a href="capes.html">Capes</a>
+        <a href="tutorial.html">Tutorial</a>
+    </div>
 
     <div class="rules-content">
         <h1>Regeln für CookieCapes</h1>
@@ -142,6 +166,7 @@
                     <a href="/impressum.html">Impressum</a>
                     <a href="/datenschutz.html">Datenschutz</a>
                     <a href="/kontakt.html">Kontakt</a>
+                    <a href="tutorial.html">Tutorial</a>
                 </nav>
             </div>
             <div class="footer-social">

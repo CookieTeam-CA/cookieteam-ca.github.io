@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/skinview3d/bundles/skinview3d.bundle.js"></script>
     <script src="js/player.js" defer></script>
+    <script src="js/player_count.js" defer></script>
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -15,32 +16,93 @@
 </head>
 <body>
     <header>
-        <a href="/index.html"><img src="/img/logoteam.png" alt="CookieTeam Logo" class="logo"></a>
-        <div class="nav-container">
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="/img/logo.png" alt="CookieTeam Icon" class="logo-icon">
+                <img src="/img/minilogo.png" alt="CookieTeam Logo" class="logo-full">
+            </a>
+        </div>
+
+        <div class="header-center">
             <nav>
                 <a href="capes.html">Capes</a>
                 <a href="rules.html">Regeln</a>
                 <a href="tutorial.html">Tutorial</a>
-                <a href="index.html">Home</a>
             </nav>
+        </div>
+
+        <div class="header-right">
+            <div id="player-count-container" class="player-count-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                <span id="player-count-number">...</span>
+                <div id="player-count-tooltip" class="player-count-tooltip"></div>
+            </div>
+            <button id="hamburger-menu" class="hamburger-menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
         </div>
     </header>
 
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="capes.html">Capes</a>
+        <a href="rules.html">Regeln</a>
+        <a href="tutorial.html">Tutorial</a>
+    </div>
+
     <div class="intro">
         <h1>Spielerliste</h1>
-        <p style="color: var(--text-color-dim); font-size: 0.9em;">Alle registrierten Spieler mit ihrem aktuellen Cape. Es könnten falsche Skins angezeigt werden.</p>
     </div>
 
     <div class="all-players">
+        <div class="filter-container">
+            <div class="main-filters">
+                <div class="search-group">
+                     <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg><input type="text" id="searchInput" placeholder="Spieler suchen...">
+                </div>
+                <button id="toggleAdvancedFiltersBtn" class="secondary-button">Erweiterte Suche</button>
+            </div>
+
+            <div class="advanced-filters">
+                <div class="filter-item">
+                    <label for="sortBySelect">Sortieren:</label>
+                    <select id="sortBySelect">
+                        <option value="minecraft_name" selected>Spielername</option>
+                        <option value="current_cape_id">Cape ID</option>
+                        <option value="minecraft_uuid">UUID</option>
+                    </select>
+                </div>
+                 <div class="filter-item">
+                    <label for="orderSelect">Reihenfolge:</label>
+                    <select id="orderSelect">
+                        <option value="asc" selected>Aufsteigend</option>
+                        <option value="desc">Absteigend</option>
+                    </select>
+                </div>
+                 <div class="filter-item">
+                    <label for="bannedFilterSelect">Status:</label>
+                    <select id="bannedFilterSelect">
+                        <option value="all" selected>Alle</option>
+                        <option value="false">Nicht gebannt</option>
+                        <option value="true">Nur gebannte</option>
+                    </select>
+                </div>
+                <div class="toggle-filter">
+                    <input type="checkbox" id="showUnnamedCheckbox">
+                    <label for="showUnnamedCheckbox">Spieler ohne Namen</label>
+                </div>
+            </div>
+        </div>
+
+
          <div id="loadingIndicator" style="text-align: center; padding: 30px; font-size: 1.1em;">
              <div class="loader" style="margin: 0 auto 15px auto;"></div>
              <span id="loadingText" style="color: var(--text-color-dim);">Lade Spielerdaten...</span>
-             <span id="loadingProgress" style="color: var(--text-color-dim); display: block; font-size: 0.9em;"></span>
         </div>
 
         <div id="playerContainer" class="player-container" style="display: none;"></div>
         <div id="paginationControls" class="pagination-controls" style="display: none;"></div>
-
     </div>
 
     <footer class="footer">
@@ -50,6 +112,8 @@
                     <a href="/impressum.html">Impressum</a>
                     <a href="/datenschutz.html">Datenschutz</a>
                     <a href="/kontakt.html">Kontakt</a>
+                    <a href="rules.html">Regeln</a>
+                    <a href="tutorial.html">Tutorial</a>
                 </nav>
             </div>
             <div class="footer-social">

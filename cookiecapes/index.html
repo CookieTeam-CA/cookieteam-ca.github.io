@@ -21,7 +21,6 @@
     <meta name="site_name" content="CookieCapes">
     <meta property="og:site_name" content="CookieCapes">
     <link rel="stylesheet" href="css/style.css">
-    
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -29,6 +28,7 @@
     <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5">
     <script src="https://unpkg.com/skinview3d/bundles/skinview3d.bundle.js"></script>
     <script src="js/script.js" defer></script>
+    <script src="js/player_count.js" defer></script>
 
     <script type="application/ld+json">
         {
@@ -50,6 +50,7 @@
                 text-align: center;
                 border: 1px solid var(--primary-color);
                 margin: 20px;
+                margin-top: 100px;
                 border-radius: 8px;
             }
         </style>
@@ -57,22 +58,46 @@
 </head>
 <body>
     <noscript>
-        <p class="noscript-warning"><strong>JavaScript benötigt!</strong> Bitte aktiviere JavaScript in deinem Browser, um CookieCapes vollständig nutzen zu können.</p>
+        <p class="noscript-warning"><strong>JavaScript needed!</strong> Please activate JavaScript in your browser to fully utilize CookieCapes.</p>
     </noscript>
 
     <header>
-        <a href="/index.html">
-            <img src="/img/logoteam.png" alt="CookieCapes Logo - Zur Startseite" class="logo">
-        </a>
-        <div class="nav-container">
+        <div class="header-left">
+            <a href="index.html" class="logo-link">
+                <img src="/img/logo.png" alt="CookieTeam Icon" class="logo-icon">
+                <img src="/img/minilogo.png" alt="CookieTeam Logo" class="logo-full">
+            </a>
+        </div>
+
+        <div class="header-center">
             <nav>
-                <a href="player.html">Spieler</a>
+                <a href="player.html">Player</a>
                 <a href="capes.html">Capes</a>
                 <a href="rules.html">Regeln</a>
                 <a href="tutorial.html">Tutorial</a>
             </nav>
         </div>
+
+        <div class="header-right">
+            <div id="player-count-container" class="player-count-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                <span id="player-count-number">...</span>
+                <div id="player-count-tooltip" class="player-count-tooltip"></div>
+            </div>
+            <button id="hamburger-menu" class="hamburger-menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
     </header>
+
+    <div id="mobile-nav" class="mobile-nav">
+        <a href="player.html">Player</a>
+        <a href="capes.html">Capes</a>
+        <a href="rules.html">Regeln</a>
+        <a href="tutorial.html">Tutorial</a>
+    </div>
 
     <main>
         <div class="hero improved-hero needs-js">
@@ -217,8 +242,8 @@
                     <a href="/impressum.html">Impressum</a>
                     <a href="/datenschutz.html">Datenschutz</a>
                     <a href="/kontakt.html">Kontakt</a>
-                    <a href="/rules.html">Regeln</a>
-                    <a href="/tutorial.html">Tutorial</a>
+                    <a href="rules.html">Regeln</a>
+                    <a href="tutorial.html">Tutorial</a>
                 </nav>
             </div>
 
