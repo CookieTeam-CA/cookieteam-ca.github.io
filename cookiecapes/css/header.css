@@ -19,7 +19,6 @@ header {
     transition: top 0.3s ease;
     user-select: none;
 }
-
 .header-left, .header-right {
     flex: 1 0 0;
 }
@@ -27,11 +26,9 @@ header {
 .header-right { display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
 .header-center { display: flex; justify-content: center; }
 .header-center nav { display: flex; gap: 30px; }
-
 .logo-icon { display: block; height: 32px; width: auto; transition: transform 0.3s ease; }
 .logo-full { display: none; }
 .logo-icon:hover { transform: scale(1.07); }
-
 .header-center nav a {
     font-family: var(--font-body);
     font-size: 19px;
@@ -40,7 +37,6 @@ header {
     transition: color 0.3s ease;
 }
 .header-center nav a:hover { color: var(--text-color); }
-
 .player-count-container {
     position: relative;
     display: flex;
@@ -54,7 +50,6 @@ header {
     color: var(--text-color-dim);
 }
 .player-count-container svg { width: 18px; height: 18px; fill: var(--text-color-dimmer); }
-
 .hamburger-menu {
     display: none;
     width: 30px;
@@ -73,7 +68,6 @@ header {
     background-color: var(--text-color);
     border-radius: 2px;
 }
-
 .mobile-nav {
     position: fixed;
     top: 0;
@@ -102,7 +96,6 @@ header {
     font-weight: 600;
     text-decoration: none;
 }
-
 .player-count-tooltip {
 	position: absolute;
 	top: calc(100% + 10px);
@@ -124,30 +117,25 @@ header {
 	transition: opacity 0.3s ease, visibility 0.3s ease, top 0.3s ease;
 	z-index: 10;
 }
-
 .tooltip-line {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	font-size: 14px;
 }
-
 .tooltip-line svg {
 	width: 18px;
 	height: 18px;
 	fill: var(--text-color-dimmer);
 	flex-shrink: 0;
 }
-
 .tooltip-line.active-players {
 	color: var(--success-color);
 	font-weight: 500;
 }
-
 .tooltip-line.active-players svg {
 	fill: var(--success-color);
 }
-
 .player-count-tooltip::after {
 	content: '';
 	position: absolute;
@@ -158,13 +146,11 @@ header {
 	border-style: solid;
 	border-color: transparent transparent var(--card-bg-darker) transparent;
 }
-
 .player-count-container:hover .player-count-tooltip {
 	opacity: 1;
 	visibility: visible;
 	top: calc(100% + 12px);
 }
-
 @media (max-width: 768px) {
     header {
         max-width: 100%;
@@ -176,7 +162,6 @@ header {
     .logo-icon { display: none; }
     .logo-full { display: block; height: 28px; }
 }
-
 .logo {
   margin-right: auto;
   justify-content: flex-start;
@@ -186,13 +171,11 @@ header {
   max-width: 100%;
   user-select: none;
 }
-
 .nav-container {
   margin-left: auto;
   margin-right: 0;
   transition: margin-right 0.3s ease-in-out;
 }
-
 .nav-container nav {
   display: flex;
   gap: 10px;

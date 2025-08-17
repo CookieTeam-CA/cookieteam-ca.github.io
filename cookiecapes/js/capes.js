@@ -239,8 +239,8 @@ function applyCapeFiltersAndSorting() {
                 valB = b.minecraft_name ? b.minecraft_name.toLowerCase() : "";
                 break;
             case 'last_edited':
-                valA = new Date(a.last_edited || 0);
-                valB = new Date(b.last_edited || 0);
+                valA = a.cape_id;
+                valB = b.cape_id;
                 break;
             case 'active_user_count':
                 valA = a.active_user_count !== undefined ? a.active_user_count : 0;
