@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" data-next-head=""/>
     <meta name="robots" content="index, follow" data-next-head=""/>
-    <title data-next-head="" data-translate-key="title">CookieCapes - Create & discover your own Minecraft Capes</title>
-    <meta name="description" content="Erstelle, teile und entdecke Minecraft Capes kostenlos mit CookieCapes. Lade die Mod herunter und zeige deinen Style im Spiel!">
-    <link rel="canonical" href="https://cookieattack.de/cookiecapes/index.html">
+    <title data-next-head="" data-translate-key="title">CookiEmojis - Create & discover your own Minecraft Emojis</title>
+    <meta name="description" content="Create, share and discover Minecraft Emojis free with CookiEmojis. Download the Mod to use Emojis in-game!">
+    <link rel="canonical" href="https://cookieattack.de/cookiemojis/index.html">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://cookieattack.de/cookiecapes" data-next-head=""/>
-    <meta property="og:title" content="CookieCapes - Deine eigenen Minecraft Capes">
-    <meta property="og:description" content="Erstelle, teile und entdecke Minecraft Capes kostenlos mit CookieCapes.">
+    <meta property="og:url" content="https://cookieattack.de/cookiemojis" data-next-head=""/>
+    <meta property="og:title" content="CookiEmojis - Your own Minecraft Emojis">
+    <meta property="og:description" content="Create, share and discover Minecraft Emojis free with CookiEmojis.">
     <meta property="og:locale" content="de_DE">
-    <meta property="twitter:url" content="https://cookieattack.de/cookiecapes/index.html">
-    <meta property="twitter:title" content="Minecraft Capes kostenlos erstellen – CookieCapes">
-    <meta property="twitter:description" content="Erstelle, teile und entdecke Minecraft Capes kostenlos mit CookieCapes.">
-    <meta name="application-name" content="CookieCapes">
-    <meta name="apple-mobile-web-app-title" content="CookieCapes">
-    <meta name="site_name" content="CookieCapes">
-    <meta property="og:site_name" content="CookieCapes">
+    <meta property="twitter:url" content="https://cookieattack.de/cookiemojis/index.html">
+    <meta property="twitter:title" content="Minecraft Emojis kostenlos erstellen – CookiEmojis">
+    <meta property="twitter:description" content="Create, share and discover Minecraft Emojis free with CookiEmojis.">
+    <meta name="application-name" content="CookiEmojis">
+    <meta name="apple-mobile-web-app-title" content="CookiEmojis">
+    <meta name="site_name" content="CookiEmojis">
+    <meta property="og:site_name" content="CookiEmojis">
     <link rel="stylesheet" href="../cookiecapes/css/header.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../cookiecapes/css/footer.css">
@@ -143,39 +143,39 @@
 
                         <div class="form-step" id="step-2">
                             <p class="step-instruction">
-                                Bitte lies unsere <a href="rules.html" target="_blank" data-translate-key="rules">Rules</a> sorgfältig durch.
-                                Du musst ihnen zustimmen, um fortzufahren.
+                                Please read our <a href="rules.html" target="_blank" data-translate-key="rules">Rules</a> carefully.
+                                You must agree to them to continue.
                             </p>
                             <div class="rules-agree-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
                                  <input type="checkbox" id="rulesAgreeCheckbox" name="rules_agreed" value="true" required style="width: 20px; height: 20px; accent-color: var(--primary-color); cursor: pointer;">
-                                 <label for="rulesAgreeCheckbox" style="color: var(--text-color); cursor: pointer; margin: 0;">Ich habe die Regeln gelesen und stimme ihnen zu.</label>
+                                 <label for="rulesAgreeCheckbox" style="color: var(--text-color); cursor: pointer; margin: 0;">I have read the rules and agree to them.</label>
                             </div>
                             <div class="input-feedback" id="rulesAgreeFeedback" style="margin-top: 15px;"></div>
                         </div>
 
                         <div class="form-step" id="step-3">
-                             <p class="step-instruction">Wie soll dein Cape heißen? Dieser Name wird öffentlich angezeigt.</p>
-                            <label for="capeName">Cape Name:</label>
-                            <input type="text" id="capeName" name="cape_name" placeholder="z.B. Mein cooles Cape" required maxlength="20">
+                             <p class="step-instruction">What do you want to name your Emoji? This name will be publicly displayed.</p>
+                            <label for="capeName">Emoji Name:</label>
+                            <input type="text" id="capeName" name="cape_name" placeholder="e.g. My Cool Emoji" required maxlength="20">
                              <div class="input-feedback" id="capeNameFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-4">
-                             <p class="step-instruction">Wähle dein Cape-Bild aus. Nutze unser <a href="tutorial.html" target="_blank">Tutorial</a>!</p>
-                            <label for="capeUploadInput" class="file-label">Cape auswählen</label>
+                             <p class="step-instruction">Choose your Emoji Image. Use our <a href="tutorial.html" target="_blank">Tutorial</a>!</p>
+                            <label for="capeUploadInput" class="file-label">Select Emoji</label>
                             <input type="file" id="capeUploadInput" accept="image/png" required style="display: none;">
                             <span id="capeFileName" class="file-name-display"></span>
                             <div class="input-feedback" id="capeFileFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-5">
-                             <p class="step-instruction">Überprüfe deine Angaben und die Vorschau.</p>
+                             <p class="step-instruction">Check your details and the preview.</p>
                              <div class="preview-container">
                                  <canvas id="skin_preview_canvas" width="250" height="350"></canvas>
                                  <div class="preview-details">
-                                     <p><strong>Minecraft-Name:</strong> <span id="previewMinecraftName"></span></p>
-                                     <p><strong>Cape-Name:</strong> <span id="previewCapeName"></span></p>
-                                      <button type="button" id="editBtn" class="step-button" style="margin-top: 15px; font-size: 0.9em; padding: 6px 12px; background-color: var(--secondary-color); color: var(--secondary-text-color);">Angaben bearbeiten</button>
+                                     <p><strong>Minecraft Name:</strong> <span id="previewMinecraftName"></span></p>
+                                     <p><strong>Emoji Name:</strong> <span id="previewCapeName"></span></p>
+                                      <button type="button" id="editBtn" class="step-button" style="margin-top: 15px; font-size: 0.9em; padding: 6px 12px; background-color: var(--secondary-color); color: var(--secondary-text-color);">Edit Details</button>
                                  </div>
                              </div>
                         </div>
@@ -185,9 +185,9 @@
                     <div id="limitMessage" style="display: none;"></div>
 
                     <div class="step-navigation" id="stepNavigation">
-                        <button type="button" id="prevBtn" class="step-button" style="display: none;">Zurück</button>
+                        <button type="button" id="prevBtn" class="step-button" style="display: none;">Back</button>
                         <button type="button" id="nextBtn" class="step-button" data-translate-key="next">Next</button>
-                        <button type="submit" id="submitBtn" class="step-button" style="display: none;">Cape Hochladen</button>
+                        <button type="submit" id="submitBtn" class="step-button" style="display: none;">Upload Emoji</button>
                     </div>
                 </div>
             </form>
@@ -201,7 +201,7 @@
             <div class="downloadSection needs-js animate-on-scroll fade-in-up" id="downloadSection">
                 <h2 data-translate-key="download_mod_title">Download CookiEmojis Mod</h2>
                 <p data-translate-key="download_mod_description">Download the Mod now for free via Modrinth to use Emojis in-game.</p>
-                <a href="https://modrinth.com/mod/cookiecapes" target="_blank"><button type="button" data-translate-key="download_button">DOWNLOAD</button></a>
+                <a href="https://modrinth.com/mod/cookiemojis" target="_blank"><button type="button" data-translate-key="download_button">DOWNLOAD</button></a>
             </div>
         </div>
     </main>
