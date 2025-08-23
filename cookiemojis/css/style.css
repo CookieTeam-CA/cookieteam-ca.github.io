@@ -508,100 +508,6 @@ button:hover::before {
   box-shadow: 0 3px 10px var(--primary-color-alpha-20);
 }
 
-.cape-gallery {
-  padding: 2rem;
-  background-color: var(--card-bg-color);
-  color: var(--text-color);
-  text-align: center;
-  width: 58%;
-  margin: 20px auto; 
-  border-radius: 15px;
-  box-sizing: border-box;
-  border: 1px solid transparent; 
-  transition: border-color 0.3s ease, border-width 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease;
-}
-
-.cape-gallery:hover {
-  border-width: 1.5px;
-  border-color: var(--primary-color);
-  padding: calc(2rem - 1px); 
-  box-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.25);
-}
-
-.cape-gallery h2 {
-    font-family: var(--font-headline);
-    color: var(--primary-color);
-    margin-bottom: 30px;
-    font-size: 2rem;
-}
-
-.cape-container {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 1rem;
-  width: 100%; 
-  margin: 0 auto;
-}
-
-.cape-preview {
-  background: var(--card-bg-darker);
-  padding: 1.2rem;
-  border-radius: 1rem;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  width: 220px; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.cape-preview:hover {
-  transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 8px 15px rgba(var(--primary-color-rgb), 0.15);
-}
-
-.cape-preview canvas {
-  display: block;
-  margin: 0 auto 0.8rem auto;
-  border-radius: 8px;
-  background-color: var(--bg-color); 
-}
-
-.cape-preview p {
-  margin: 0.3rem 0;
-  color: var(--text-color);
-  font-weight: 500;
-  word-wrap: break-word;
-  width: 100%;
-}
-
-.cape-preview-name {
-  font-size: 1em;
-  font-weight: 600 !important;
-  color: var(--text-color) !important;
-}
-.cape-preview-uploader {
-   font-size: 0.8em !important;
-   color: var(--text-color-dimmer) !important;
-   margin-top: -2px !important;
-}
-.cape-active-users {
-    font-size: 0.75em !important;
-    color: var(--text-color-dim) !important;
-    margin-top: 4px !important;
-    display: inline-flex;
-    align-items: center;
-}
-.cape-active-users svg {
-    margin-right: 4px;
-    opacity: 0.7;
-}
-
-
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -679,7 +585,6 @@ button:hover::before {
 #multiStepForm {
   width: 100%;
   position: relative;
-  min-height: 280px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -713,27 +618,6 @@ button:hover::before {
   transform: translateX(-30px);
   visibility: hidden;
   position: absolute;
-}
-
-.step-instruction {
-  font-size: 1.1em;
-  color: var(--text-color-dim);
-  margin-bottom: 20px;
-  max-width: 80%;
-}
-.step-instruction a { 
-    color: var(--primary-color);
-    font-weight: bold;
-}
-.step-instruction a:hover {
-    color: var(--primary-color-hover);
-}
-
-.step-instruction.optional {
-  font-size: 0.9em;
-  color: var(--text-color-dimmer);
-  margin-top: 25px;
-  margin-bottom: 5px;
 }
 
 .step-wizard-container label {
@@ -1690,16 +1574,49 @@ button:hover::before {
     cursor: pointer;
 }
 
-@media (max-width: 768px) {
-    .main-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .advanced-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .advanced-filters.visible {
-      max-height: 500px;
-    }
+.all-capes {
+    padding: 20px 0;
+}
+
+.cape-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.cape-card {
+    background-color: var(--card-bg-color);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.cape-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.cape-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border-color: var(--primary-color-alpha-30);
+}
+
+.cape-card-info h3 {
+    margin: 10px 0 5px;
+    font-size: 1.1em;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.cape-card-info p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-color-dim);
 }

@@ -1,10 +1,3 @@
-let modalSkinViewer = null;
-let capeModal, modalCanvas, closeModalButton, modalCapeName, modalCapeId, modalSkinToggle, modalPanoramaSelect, modalOverlay;
-const defaultSkinPath = "/img/skin.png";
-const defaultIndexGalleryBackgroundColor = 0x1a1a1a;
-const defaultModalCanvasBackgroundColor = 0x1a1a1a;
-const defaultModalViewerBackgroundColor = 0x2e2e2e;
-
 function initializeGeneralScrollAnimations() {
     const animatedElements = document.querySelectorAll('.animate-on-scroll');
     if (!animatedElements.length) return;
@@ -41,21 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (document.querySelector('.improved-hero')) { 
         typeHeroTitle();
-        if (document.getElementById('capeContainer')) {
-           fetchRandomCapes();
-        }
     }
     
-    const capeUploadForm = document.getElementById('capeUploadForm');
-    const capeUploadSection = document.getElementById('capeUpload');
-
-    if (capeUploadForm && capeUploadSection) {
+    const emojiUploadSection = document.getElementById('emojiUploadSection');
+    if (emojiUploadSection) {
+        const emojiUploadForm = document.getElementById('emojiUploadForm');
         const formContainer = document.getElementById('multiStepForm');
         const navigationContainer = document.getElementById('stepNavigation');
         const successMessageContainer = document.getElementById('successMessage');
         const limitMessageContainer = document.getElementById('limitMessage');
-        const wizardContainer = document.querySelector('.step-wizard-container');
-        const steps = formContainer.querySelectorAll('.form-step');
+        const wizardContainer = emojiUploadSection.querySelector('.step-wizard-container');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const submitBtn = document.getElementById('submitBtn');
@@ -64,412 +52,335 @@ document.addEventListener("DOMContentLoaded", () => {
         const editBtn = document.getElementById('editBtn');
         const minecraftNameInput = document.getElementById('minecraftName');
         const rulesAgreeCheckbox = document.getElementById('rulesAgreeCheckbox');
-        const capeNameInput = document.getElementById('capeName');
-        const capeUploadInput = document.getElementById('capeUploadInput');
-        const capeFileNameDisplay = document.getElementById('capeFileName');
+        const emojiNameInput = document.getElementById('emojiName');
+        const emojiUploadInput = document.getElementById('emojiUploadInput');
+        const emojiFileNameDisplay = document.getElementById('emojiFileName');
         const previewMinecraftName = document.getElementById('previewMinecraftName');
-        const previewCapeName = document.getElementById('previewCapeName');
+        const previewEmojiName = document.getElementById('previewEmojiName');
         const minecraftNameFeedback = document.getElementById('minecraftNameFeedback');
         const rulesAgreeFeedback = document.getElementById('rulesAgreeFeedback');
-        const capeNameFeedback = document.getElementById('capeNameFeedback');
-        const capeFileFeedback = document.getElementById('capeFileFeedback');
+        const emojiNameFeedback = document.getElementById('emojiNameFeedback');
+        const emojiFileFeedback = document.getElementById('emojiFileFeedback');
         const nameCheckLoader = document.getElementById('nameCheckLoader');
-        const previewCanvas = document.getElementById("skin_preview_canvas");
-        let previewSkinViewer = null;
+        const previewCanvas = document.getElementById("emoji_preview_canvas");
 
         let currentStep = 1;
+        let lastUpdatedStepForTitle = 0;
         const totalSteps = 5;
         const formData = {
-            minecraftName: '', capeName: '', capeFile: null,
-            fetchedSkinUrl: null, nameValidated: false, rulesAgreed: false
+            minecraftName: '',
+            emojiName: '',
+            emojiFile: null,
+            nameValidated: false,
+            rulesAgreed: false
         };
 
-        const uploadCookie = getCookie("capeUploadedToday");
+        const uploadCookie = getCookie("emojiUploadedToday");
         if (uploadCookie) {
-            if (capeUploadForm) capeUploadForm.style.display = 'none';
-            if (limitMessageContainer) limitMessageContainer.style.display = 'block';
-            if (wizardContainer) wizardContainer.style.minHeight = '200px';
-            if (navigationContainer) navigationContainer.style.display = 'none';
-            if (stepTitle) stepTitle.textContent = "Limit erreicht";
-            if (progressBar) progressBar.style.width = '100%';
-            
-            return; 
+            if(emojiUploadForm) emojiUploadForm.style.display = 'none';
+            if(limitMessageContainer) limitMessageContainer.style.display = 'block';
+            if(wizardContainer) wizardContainer.classList.add('limit-reached');
+            if(navigationContainer) navigationContainer.style.display = 'none';
+            if(stepTitle) stepTitle.style.display = 'none';
+            if(progressBar) progressBar.parentElement.style.display = 'none';
+            return;
         } else {
            if (limitMessageContainer) limitMessageContainer.style.display = 'none';
-           updateButtons(); 
         }
         
-        initializePreviewViewer();
+        updateButtons();
 
-
-        function initializePreviewViewer() {
-            if (!previewSkinViewer && previewCanvas) {
-                 try {
-                    previewSkinViewer = new skinview3d.SkinViewer({
-                        canvas: previewCanvas, width: previewCanvas.width, height: previewCanvas.height,
-                        skin: defaultSkinPath, background: null
-                    });
-    
-                    previewCanvas.style.backgroundColor = 'var(--text-color-alpha-05)';
-                    previewSkinViewer.fov = 60; previewSkinViewer.zoom = 0.85; previewSkinViewer.globalLight.intensity = 3;
-                    previewSkinViewer.cameraLight.intensity = 3; previewSkinViewer.autoRotate = true; previewSkinViewer.autoRotateSpeed = 0.5;
-                    previewSkinViewer.animation = new skinview3d.WalkingAnimation(); previewSkinViewer.animation.speed = 0.4;
-                } catch (e) {
-                    console.error("Failed to init preview SkinViewer:", e);
-                    if (previewCanvas.parentElement) previewCanvas.parentElement.innerHTML = `<p style='color: var(--error-color);'>Vorschaufehler.</p>`;
-                    previewSkinViewer = null;
-                }
-            }
-        }
-    
         function updateButtons() {
             if (!prevBtn || !nextBtn || !submitBtn || !rulesAgreeCheckbox) return;
+
             prevBtn.style.display = currentStep > 1 ? 'inline-block' : 'none';
             nextBtn.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
             submitBtn.style.display = currentStep === totalSteps ? 'inline-block' : 'none';
-    
+
             let nextDisabled = false;
-            if (currentStep === 1 && !formData.nameValidated) nextDisabled = true;
-            else if (currentStep === 2 && !rulesAgreeCheckbox.checked) nextDisabled = true;
-    
+            if (currentStep === 1 && !formData.nameValidated) {
+                nextDisabled = true;
+            } else if (currentStep === 2 && !rulesAgreeCheckbox.checked) {
+                nextDisabled = true;
+            } else if (currentStep === 3 && emojiNameInput.value.trim().length === 0) {
+                nextDisabled = true;
+            } else if (currentStep === 4 && !formData.emojiFile) {
+                nextDisabled = true;
+            }
+
             nextBtn.disabled = nextDisabled;
-    
+
             updateProgressBar();
             updateStepTitle();
         }
-    
+
         function updateProgressBar() {
             if (!progressBar) return;
-            const progress = totalSteps > 1 ? ((currentStep -1) / (totalSteps - 1)) * 100 : 0;
+            const progress = totalSteps > 1 ? ((currentStep - 1) / (totalSteps - 1)) * 100 : 0;
             progressBar.style.width = `${progress}%`;
         }
-    
+
         function updateStepTitle() {
-            if (!stepTitle) return;
+            if (!stepTitle || lastUpdatedStepForTitle === currentStep) return;
+            lastUpdatedStepForTitle = currentStep;
 
-            const titleKeys = [
-                "step_title_1",
-                "step_title_2",
-                "step_title_3",
-                "step_title_4",
-                "step_title_5"
+            const titles = [
+                "Step 1: Your Minecraft Name",
+                "Step 2: Agree to Rules",
+                "Step 3: Name Your Emoji",
+                "Step 4: Upload Your Image",
+                "Step 5: Preview & Submit"
             ];
-
-            const newKey = titleKeys[currentStep - 1] || "step_title_1";
+            const newTitle = titles[currentStep - 1] || "Step 1: Your Minecraft Name";
 
             stepTitle.style.opacity = 0;
             setTimeout(() => {
-                stepTitle.setAttribute('data-translate-key', newKey);
-
-                if (window.translateElement) {
-                    window.translateElement(stepTitle);
-                } else {
-                    stepTitle.textContent = newKey; 
-                }
-                
+                stepTitle.textContent = newTitle;
                 stepTitle.style.opacity = 1;
             }, 300);
         }
-    
+
         function showStep(stepNumber) {
             if (stepNumber < 1 || stepNumber > totalSteps) return;
+
             const currentActive = formContainer.querySelector('.form-step.active');
             if (currentActive) {
                 currentActive.classList.add('exiting');
-                setTimeout(() => { currentActive.classList.remove('active', 'exiting'); }, 500);
+                currentActive.classList.remove('active');
             }
+
             setTimeout(() => {
-                const nextStepEl = document.getElementById(`step-${stepNumber}`);
-                if (nextStepEl) {
-                    nextStepEl.classList.add('active');
+                if (currentActive) currentActive.classList.remove('exiting');
+                const nextStep = document.getElementById(`step-${stepNumber}`);
+                if (nextStep) {
+                    nextStep.classList.add('active');
                     currentStep = stepNumber;
                     updateButtons();
                     if (currentStep === totalSteps) {
-                        initializePreviewViewer();
                         updatePreview();
                     }
                 }
-            }, currentActive ? 50 : 0);
+            }, currentActive ? 300 : 0);
         }
-    
+
         async function checkMinecraftName(name) {
-            formData.nameValidated = false; formData.fetchedSkinUrl = null; updateButtons();
+            formData.nameValidated = false;
+            updateButtons();
             if (!name || !/^[a-zA-Z0-9_]{3,16}$/.test(name)) {
-                 if(name) minecraftNameFeedback.textContent = 'Ungültiges Format (3-16 Zeichen, A-Z, a-z, 0-9, _).';
-                 else minecraftNameFeedback.textContent = '';
-                 minecraftNameFeedback.className = 'input-feedback';
-                 if (nameCheckLoader) nameCheckLoader.style.display = 'none'; return;
+                minecraftNameFeedback.textContent = 'Invalid name format.';
+                minecraftNameFeedback.className = 'input-feedback';
+                if (nameCheckLoader) nameCheckLoader.style.display = 'none';
+                return;
             }
-            minecraftNameFeedback.textContent = 'Überprüfe Namen...'; minecraftNameFeedback.className = 'input-feedback checking';
-            if (nameCheckLoader) nameCheckLoader.style.display = 'block';
+            minecraftNameFeedback.textContent = 'Checking name...';
+            minecraftNameFeedback.className = 'input-feedback checking';
+            if (nameCheckLoader) nameCheckLoader.style.display = 'inline-block';
+
             const apiUrl = `https://mineskin.eu/skin/${name}`;
             try {
                 const response = await fetch(apiUrl);
-                if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
-                    minecraftNameFeedback.textContent = 'Minecraft-Name gültig!'; minecraftNameFeedback.className = 'input-feedback success';
-                    formData.minecraftName = name; formData.fetchedSkinUrl = apiUrl; formData.nameValidated = true;
+                if (response.ok) {
+                    minecraftNameFeedback.textContent = 'Name is valid!';
+                    minecraftNameFeedback.className = 'input-feedback success';
+                    formData.minecraftName = name;
+                    formData.nameValidated = true;
                 } else {
-                     let errorJson = null; try { errorJson = await response.clone().json(); } catch (e) {}
-                     if (errorJson?.error === "Unknown player username/uuid.") minecraftNameFeedback.textContent = 'Minecraft-Name nicht gefunden.';
-                     else minecraftNameFeedback.textContent = 'Fehler bei der Namensüberprüfung.';
-                     minecraftNameFeedback.className = 'input-feedback'; formData.fetchedSkinUrl = null; formData.minecraftName = name;
+                    minecraftNameFeedback.textContent = 'Name not found.';
+                    minecraftNameFeedback.className = 'input-feedback';
                 }
             } catch (error) {
-                console.error("Name Check Network error:", error); minecraftNameFeedback.textContent = 'Fehler bei der Namensüberprüfung (Netzwerk).';
-                minecraftNameFeedback.className = 'input-feedback'; formData.fetchedSkinUrl = null; formData.minecraftName = name;
-            } finally { if (nameCheckLoader) nameCheckLoader.style.display = 'none'; updateButtons(); }
+                minecraftNameFeedback.textContent = 'Network error during name check.';
+                minecraftNameFeedback.className = 'input-feedback';
+            } finally {
+                if (nameCheckLoader) nameCheckLoader.style.display = 'none';
+                updateButtons();
+            }
         }
         const debouncedCheckMinecraftName = debounce(checkMinecraftName, 500);
-    
+
         function validateStep(step) {
             let isValid = true;
-    
-            if (step === 1 && minecraftNameFeedback) minecraftNameFeedback.textContent = '';
-            if (step === 2 && rulesAgreeFeedback) rulesAgreeFeedback.textContent = '';
-            if (step === 3 && capeNameFeedback) capeNameFeedback.textContent = '';
-            if (step === 4 && capeFileFeedback) capeFileFeedback.textContent = '';
-    
+            clearFeedback();
+
             if (step === 1) {
-                 const name = minecraftNameInput?.value.trim() ?? ''; isValid = false;
-                 if (!name) {minecraftNameFeedback.textContent = 'Bitte gib deinen Minecraft-Namen ein.';}
-                 else if (!/^[a-zA-Z0-9_]{3,16}$/.test(name)) {minecraftNameFeedback.textContent = 'Ungültiges Format (3-16 Zeichen, A-Z, a-z, 0-9, _).';}
-                 else if (!formData.nameValidated) {minecraftNameFeedback.textContent = minecraftNameFeedback.textContent.includes('gefunden') ? 'Minecraft-Name nicht gefunden.' : 'Name konnte nicht validiert werden.';}
-                 else {isValid = true;}
+                if (!formData.nameValidated) {
+                    minecraftNameFeedback.textContent = 'Please enter and validate a Minecraft name.';
+                    isValid = false;
+                }
             } else if (step === 2) {
-                 isValid = false;
-                 if (!rulesAgreeCheckbox?.checked) {rulesAgreeFeedback.textContent = 'Du musst den Regeln zustimmen, um fortzufahren.';}
-                 else { formData.rulesAgreed = true; isValid = true; }
+                if (!rulesAgreeCheckbox.checked) {
+                    rulesAgreeFeedback.textContent = 'You must agree to the rules.';
+                    isValid = false;
+                }
             } else if (step === 3) {
-                 isValid = false; const capeNameValue = capeNameInput?.value.trim() ?? '';
-                 if (!capeNameValue) {capeNameFeedback.textContent = 'Bitte gib einen Namen für das Cape ein.';}
-                 else if (capeNameValue.length > 20) {capeNameFeedback.textContent = 'Der Cape-Name darf maximal 20 Zeichen lang sein.';}
-                 else { formData.capeName = capeNameValue; isValid = true; }
+                if (emojiNameInput.value.trim().length === 0) {
+                    emojiNameFeedback.textContent = 'Emoji name cannot be empty.';
+                    isValid = false;
+                }
             } else if (step === 4) {
-                isValid = false;
-                if (!formData.capeFile) {capeFileFeedback.textContent = 'Bitte wähle eine Cape-Datei (PNG) aus.';}
-                else {isValid = true;}
-            } else if (step === 5) {isValid = true;}
+                if (!formData.emojiFile) {
+                    emojiFileFeedback.textContent = 'Please upload an emoji file.';
+                    isValid = false;
+                }
+            }
             return isValid;
         }
-    
+
         function clearFeedback() {
-            if (minecraftNameFeedback && !minecraftNameFeedback.textContent.includes('gültig') && !minecraftNameFeedback.textContent.includes('Überprüfe')) {
-                 minecraftNameFeedback.textContent = '';
-            }
+            if (minecraftNameFeedback && !minecraftNameFeedback.textContent.includes('valid')) minecraftNameFeedback.textContent = '';
             if (rulesAgreeFeedback) rulesAgreeFeedback.textContent = '';
-            if (capeNameFeedback) capeNameFeedback.textContent = '';
-            if (capeFileFeedback) capeFileFeedback.textContent = '';
-            if (nameCheckLoader) nameCheckLoader.style.display = 'none';
+            if (emojiNameFeedback) emojiNameFeedback.textContent = '';
+            if (emojiFileFeedback) emojiFileFeedback.textContent = '';
         }
-    
+
         function updatePreview() {
-             if (!previewSkinViewer || !previewMinecraftName || !previewCapeName) return;
-            previewMinecraftName.textContent = formData.minecraftName || 'Nicht angegeben';
-            previewCapeName.textContent = formData.capeName || 'Nicht angegeben';
-            let skinSource = formData.fetchedSkinUrl || defaultSkinPath;
-            previewSkinViewer.loadSkin(skinSource).catch(err => {
-                 console.error("Preview skin load error:", skinSource, err);
-                 if (skinSource !== defaultSkinPath) previewSkinViewer.loadSkin(defaultSkinPath);
-             });
-            if (formData.capeFile) {
-                const capeUrl = URL.createObjectURL(formData.capeFile);
-                 previewSkinViewer.loadCape(capeUrl, { backEquipment: 'cape' })
-                   .then(() => URL.revokeObjectURL(capeUrl))
-                   .catch(err => { console.error("Preview cape load error:", err); URL.revokeObjectURL(capeUrl); });
-            } else { previewSkinViewer.loadCape(null); }
+            if (!previewMinecraftName || !previewEmojiName || !previewCanvas) return;
+            previewMinecraftName.textContent = formData.minecraftName || 'Not specified';
+            previewEmojiName.textContent = formData.emojiName || 'Not specified';
+
+            if (formData.emojiFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewCanvas.src = e.target.result;
+                }
+                reader.readAsDataURL(formData.emojiFile);
+            } else {
+                previewCanvas.src = '';
+            }
         }
-    
+
         if (minecraftNameInput) {
             minecraftNameInput.addEventListener('input', () => {
-                 const name = minecraftNameInput.value.trim(); formData.nameValidated = false; updateButtons();
-                 if ((name && !/^[a-zA-Z0-9_]{1,16}$/.test(name)) || (name.length > 0 && name.length < 3)) {
-                     minecraftNameFeedback.textContent = name.length < 3 ? 'Mind. 3 Zeichen.' : 'Ungültige Zeichen.';
-                     minecraftNameFeedback.className = 'input-feedback'; if (nameCheckLoader) nameCheckLoader.style.display = 'none'; return;
-                 } else if (minecraftNameFeedback.textContent.includes('Zeichen') || minecraftNameFeedback.textContent.includes('Mind.')) {
-                     minecraftNameFeedback.textContent = '';
-                 }
-                 if (name.length >= 3) debouncedCheckMinecraftName(name);
-                 else { minecraftNameFeedback.className = 'input-feedback'; if (nameCheckLoader) nameCheckLoader.style.display = 'none'; }
+                const name = minecraftNameInput.value.trim();
+                formData.nameValidated = false;
+                updateButtons();
+                if (name.length >= 3) {
+                    debouncedCheckMinecraftName(name);
+                }
             });
         }
-    
-         if (rulesAgreeCheckbox) {
-             rulesAgreeCheckbox.addEventListener('change', () => {
+
+        if (rulesAgreeCheckbox) {
+            rulesAgreeCheckbox.addEventListener('change', () => {
                 formData.rulesAgreed = rulesAgreeCheckbox.checked;
-                if (rulesAgreeCheckbox.checked && rulesAgreeFeedback) rulesAgreeFeedback.textContent = '';
+                if(rulesAgreeCheckbox.checked) rulesAgreeFeedback.textContent = '';
                 updateButtons();
-             });
-         }
-    
+            });
+        }
+
+        if (emojiNameInput) {
+            emojiNameInput.addEventListener('input', () => {
+                formData.emojiName = emojiNameInput.value.trim();
+                if(formData.emojiName) emojiNameFeedback.textContent = '';
+                updateButtons();
+            });
+        }
+
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
-    
-                if (currentStep === 1 && minecraftNameFeedback) minecraftNameFeedback.textContent = '';
-                if (currentStep === 2 && rulesAgreeFeedback) rulesAgreeFeedback.textContent = '';
-                if (currentStep === 3 && capeNameFeedback) capeNameFeedback.textContent = '';
-                if (currentStep === 4 && capeFileFeedback) capeFileFeedback.textContent = '';
-    
-                if (validateStep(currentStep)) showStep(currentStep + 1);
+                if (validateStep(currentStep)) {
+                    showStep(currentStep + 1);
+                }
             });
         }
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
-                clearFeedback();
-                if (currentStep > 1) showStep(currentStep - 1);
+                if (currentStep > 1) {
+                    showStep(currentStep - 1);
+                }
             });
         }
         if (editBtn) {
             editBtn.addEventListener('click', () => {
-                clearFeedback();
                 showStep(1);
             });
         }
-    
-        if (capeUploadInput) {
-             capeUploadInput.addEventListener("change", function(event) {
+
+        if (emojiUploadInput) {
+            emojiUploadInput.addEventListener("change", function(event) {
                 const file = event.target.files[0];
-                if (file && file.type === "image/png") {
-                    formData.capeFile = file; 
-                    if (capeFileNameDisplay) capeFileNameDisplay.textContent = `Cape: ${file.name}`; 
-                    if (capeFileFeedback) capeFileFeedback.textContent = '';
-                    if (currentStep === totalSteps) updatePreview();
+                if (file) {
+                    if (file.type !== "image/png") {
+                        emojiFileFeedback.textContent = "Only PNG files are allowed.";
+                        formData.emojiFile = null;
+                    } else if (file.size > 1 * 1024 * 1024) {
+                        emojiFileFeedback.textContent = "File is too large. Max 1MB.";
+                        formData.emojiFile = null;
+                    } else {
+                        formData.emojiFile = file;
+                        emojiFileNameDisplay.textContent = `File: ${file.name}`;
+                        emojiFileFeedback.textContent = '';
+                    }
                 } else {
-                    formData.capeFile = null; 
-                    if (capeFileNameDisplay) capeFileNameDisplay.textContent = '';
-                    if (file && capeFileFeedback) capeFileFeedback.textContent = "Ungültiger Dateityp (nur PNG).";
-                    else if (capeFileFeedback) capeFileFeedback.textContent = '';
-                    if (currentStep === totalSteps && previewSkinViewer) previewSkinViewer.loadCape(null);
+                    formData.emojiFile = null;
                 }
-            });
-    
-            const fileLabel = document.querySelector('label[for="capeUploadInput"]');
-            if (fileLabel) fileLabel.addEventListener('click', (e) => { 
-                e.preventDefault();
-                capeUploadInput.click(); 
+                updateButtons();
             });
         }
-    
-        if (capeUploadForm) {
-             capeUploadForm.addEventListener('submit', async (event) => {
-                 event.preventDefault();
-                 clearFeedback();
-                 let allValid = true;
-                 for (let i = 1; i < totalSteps; i++) {
-                     if (!validateStep(i)) {
-                         allValid = false; showStep(i); alert("Bitte fülle alle vorherigen Schritte korrekt aus."); break;
-                     }
-                 }
-                 if (!allValid || currentStep !== totalSteps) return;
-    
-                submitBtn.disabled = true; submitBtn.textContent = 'Lade hoch...';
-    
-                const apiFormData = new FormData();
-                apiFormData.append('minecraft_name', formData.minecraftName);
-                apiFormData.append('cape_name', formData.capeName);
-                if (!formData.capeFile) {
-                     alert("Fehler: Cape-Datei fehlt."); submitBtn.disabled = false; submitBtn.textContent = 'Cape Hochladen'; return;
+
+        if (emojiUploadForm) {
+            emojiUploadForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                for (let i = 1; i < totalSteps; i++) {
+                    if (!validateStep(i)) {
+                        alert("Bitte füllen Sie alle vorherigen Schritte korrekt aus.");
+                        showStep(i);
+                        return;
+                    }
                 }
-                apiFormData.append('cape', formData.capeFile, formData.capeFile.name);
-    
-                const workerUrl = 'https://cloudcookieapi.leonmt12345.workers.dev/web_add_cape';
-    
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Uploading...";
+
+                const data = new FormData();
+                data.append('minecraft_name', formData.minecraftName);
+                data.append('emoji_name', formData.emojiName);
+                data.append('emoji_file', formData.emojiFile);
+
+                const apiUrl = `https://cloudcookieapi.leonmt12345.workers.dev/web_add_emoji`;
+
                 try {
-                     const response = await fetch(workerUrl, { method: 'POST', body: apiFormData });
-                     let result = {};
-                     try { result = await response.json(); } catch (e) { if (!response.ok) result = { detail: `Serverfehler: ${response.status}`}; }
-    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        body: data
+                    });
+
+                    let result = {};
+                    try {
+                        result = await response.json();
+                    } catch (e) {
+                        if (!response.ok) {
+                           result = { detail: `Server error: ${response.status}` };
+                        }
+                    }
+
                     if (response.ok) {
-                         setCookie("capeUploadedToday", "true", 1);
-                         if (formContainer) formContainer.style.display = 'none'; 
-                         if (navigationContainer) navigationContainer.style.display = 'none';
-                         if (successMessageContainer) {
-                            successMessageContainer.innerHTML = `<h2>Cape erfolgreich hochgeladen!</h2><p>Das Cape ist nun für jeden verfügbar.</p>`;
-                            successMessageContainer.style.display = 'block';
-                         }
-                         if (stepTitle) stepTitle.textContent = "Fertig!";
-                         if (progressBar) progressBar.style.width = '100%';
-                         fetchRandomCapes();
+                        setCookie("emojiUploadedToday", "true", 1);
+                        formContainer.style.display = 'none';
+                        navigationContainer.style.display = 'none';
+                        successMessageContainer.innerHTML = `<h2>Upload Successful!</h2><p>Your emoji has been uploaded successfully.</p>`;
+                        successMessageContainer.style.display = 'block';
+                        stepTitle.textContent = "Finished";
+                        progressBar.style.width = '100%';
                     } else {
-                         const errorDetail = result.detail || `Fehler ${response.status}`;
-                         if (response.status === 469) alert(`Upload abgelehnt: Das Bild verstößt gegen die Inhaltsrichtlinien.`);
-                         else alert(`Fehler beim Hochladen: ${errorDetail}`);
-                         submitBtn.disabled = false; submitBtn.textContent = 'Cape Hochladen';
+                        const errorDetail = result.detail || `Error ${response.status}`;
+                        if (response.status === 469) {
+                            alert(`Upload rejected: ${errorDetail}`);
+                        } else {
+                            alert(`Upload failed: ${errorDetail}`);
+                        }
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Submit";
                     }
                 } catch (error) {
-                    console.error("Upload Network Error:", error); alert(`Netzwerkfehler: ${error.message}`);
-                    submitBtn.disabled = false; submitBtn.textContent = 'Cape Hochladen';
+                    console.error("Upload Network Error:", error);
+                    alert(`A network error occurred: ${error.message}`);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Submit";
                 }
             });
         }
-
-    } else {
-        
-    }
-
-
-    capeModal = document.getElementById('capeModal');
-    if (capeModal) {
-        modalCanvas = document.getElementById('modalCanvas');
-        closeModalButton = document.getElementById('closeModalButton');
-        modalCapeName = document.getElementById('modalCapeName');
-        modalCapeId = document.getElementById('modalCapeId');
-        modalSkinToggle = document.getElementById('modalSkinToggle');
-        modalPanoramaSelect = document.getElementById('modalPanoramaSelect');
-        modalOverlay = capeModal.querySelector('.modal-overlay');
-
-        if (closeModalButton) closeModalButton.addEventListener('click', closeCapeModal);
-        if (modalOverlay) modalOverlay.addEventListener('click', closeCapeModal);
-        
-        if (modalSkinToggle) {
-            modalSkinToggle.addEventListener('change', () => {
-                if (!modalSkinViewer) return;
-                let skinToLoad = null;
-                if (modalSkinToggle.checked) {
-                    const uploaderNameEl = document.getElementById('modalUploaderName');
-                    const uploaderName = uploaderNameEl ? uploaderNameEl.textContent : "N/A";
-                    skinToLoad = (uploaderName && uploaderName !== "N/A" && uploaderName !== "Unbekannt") 
-                        ? `https://starlightskins.lunareclipse.studio/render/skin/${uploaderName.split(' ')[0]}/default` 
-                        : defaultSkinPath;
-                }
-                modalSkinViewer.loadSkin(skinToLoad)
-                               .catch(err => {
-                                   console.error("Modal: Skin toggle error:", err);
-                                   if (skinToLoad !== defaultSkinPath && skinToLoad !== null) modalSkinViewer.loadSkin(defaultSkinPath);
-                               });
-            });
-        }
-        if (modalPanoramaSelect) {
-            modalPanoramaSelect.addEventListener('change', () => {
-                if (!modalSkinViewer) return;
-                const selection = modalPanoramaSelect.value;
-                const panoramaPath = selection === 'panorama1' ? '/img/panorama1.png' : null;
-    
-                if (panoramaPath) {
-                    modalSkinViewer.loadPanorama(panoramaPath)
-                        .then(() => {
-                            
-                            modalSkinViewer.background = null;
-                        })
-                        .catch(err => {
-                            console.error("Modal: Panorama load error:", err); alert("Panorama konnte nicht geladen werden.");
-                            modalSkinViewer.loadPanorama(null);
-                            modalCanvas.style.backgroundColor = 'var(--card-bg-darker)';
-                            modalSkinViewer.background = null;
-                            modalPanoramaSelect.value = 'none';
-                        });
-                } else {
-                    modalSkinViewer.loadPanorama(null);
-                    modalCanvas.style.backgroundColor = 'var(--card-bg-darker)';
-                    modalSkinViewer.background = null;
-                }
-            });
-        }
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && capeModal && !capeModal.classList.contains('hidden')) {
-                closeCapeModal();
-            }
-        });
-        initializeModalViewer(); 
     }
 });
 
@@ -503,27 +414,6 @@ function debounce(func, delay) {
       func.apply(this, args);
     }, delay);
   };
-}
-
-function initializeModalViewer() {
-    if (!modalSkinViewer && modalCanvas) {
-        try {
-            modalSkinViewer = new skinview3d.SkinViewer({
-                canvas: modalCanvas, width: modalCanvas.width, height: modalCanvas.height,
-                skin: defaultSkinPath, background: defaultModalViewerBackgroundColor
-            });
-            modalSkinViewer.fov = 65; modalSkinViewer.zoom = 0.8; modalSkinViewer.globalLight.intensity = 2.5;
-            modalSkinViewer.cameraLight.intensity = 1.0; modalSkinViewer.autoRotate = false; modalSkinViewer.autoRotateSpeed = 0;
-            modalSkinViewer.animation = new skinview3d.WalkingAnimation();
-            modalSkinViewer.animation.speed = 0.8;
-            modalSkinViewer.animation.paused = true;
-            
-        } catch (e) {
-            console.error("Failed to initialize modal SkinViewer:", e);
-            if (modalCanvas.parentElement) modalCanvas.parentElement.innerHTML = `<p style='color: var(--error-color);'>3D-Vorschau konnte nicht geladen werden.</p>`;
-            modalSkinViewer = null;
-        }
-    }
 }
 
 function typeHeroTitle() {

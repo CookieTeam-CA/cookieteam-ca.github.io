@@ -27,7 +27,7 @@ async function updateActivePlayerCount() {
     try {
         const response = await fetch(activeCountUrl);
         if (!response.ok) {
-            console.error("Aktive Spielerzahl konnte nicht aktualisiert werden.");
+            console.error(getTranslation("pc_error_update"));
             return;
         }
 
@@ -37,7 +37,7 @@ async function updateActivePlayerCount() {
         activePlayerElement.textContent = activeCount;
 
     } catch (error) {
-        console.error("Fehler bei der Aktualisierung der aktiven Spieler:", error);
+        console.error(getTranslation("pc_error_update_generic"), error);
     }
 }
 
@@ -72,10 +72,10 @@ async function initialPlayerCountFetch() {
             const data = await totalResult.value.json();
             totalCount = data.total_count !== undefined ? data.total_count : '0';
         } catch (e) {
-             console.error("Fehler beim Verarbeiten der Daten.");
+             console.error(getTranslation("pc_error_process_data"));
         }
     } else {
-        console.error("Fehler beim Abrufen der gesamten Spielerzahl.");
+        console.error(getTranslation("pc_error_fetch_total"));
     }
 
     let activeCount = 'N/A';
@@ -84,10 +84,10 @@ async function initialPlayerCountFetch() {
             const data = await activeResult.value.json();
             activeCount = data.online_player_count !== undefined ? data.online_player_count : '0';
         } catch(e) {
-            console.error("Fehler beim Verarbeiten der stats JSON-Daten.");
+            console.error(getTranslation("pc_error_process_stats"));
         }
     } else {
-        console.error("Fehler beim Abrufen der aktiven Spielerzahl.");
+        console.error(getTranslation("pc_error_fetch_active"));
     }
     
     playerCountNumber.textContent = totalCount;
@@ -95,11 +95,11 @@ async function initialPlayerCountFetch() {
     playerCountTooltip.innerHTML = `
         <div class="tooltip-line">
             ${userIconSVG}
-            <span>Registrierte Spieler: ${totalCount}</span>
+            <span>${getTranslation("pc_tooltip_registered")} ${totalCount}</span>
         </div>
         <div class="tooltip-line active-players">
             ${userIconSVG}
-            <span>Aktive Spieler: <span id="active-player-count">${activeCount}</span></span>
+            <span>${getTranslation("pc_tooltip_active")} <span id="active-player-count">${activeCount}</span></span>
         </div>
     `;
 }

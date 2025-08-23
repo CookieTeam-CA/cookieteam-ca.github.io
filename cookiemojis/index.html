@@ -94,7 +94,7 @@
     <main>
         <div class="hero improved-hero needs-js">
             <div class="hero-content-wrapper">
-                <h1>CookiEmojis</h1>
+                <h1 data-translate-key="h1_title">CookiEmojis</h1>
                 <p class="hero-explanation" data-translate-key="hero_text">Use Emojis anywhere and everywhere in Minecraft.<br> Create and discover Community made Emojis!</p>
 
                 <div class="hero-features">
@@ -113,91 +113,96 @@
                 </div>
 
                 <div class="hero-cta">
-                    <a href="#capeUpload" class="cta-button primary-cta">
-                        <span class="cta-icon">➕</span data-translate-key="button_create"> Create Emoji
+                    <a href="#emojiUploadSection" class="cta-button primary-cta">
+                        <span class="cta-icon">➕</span><span data-translate-key="button_create">Create Emoji</span>
                     </a>
-                    <a href="capes.html" class="cta-button secondary-cta">
-                        <span class="cta-icon">🔍</span data-translate-key="button_browse"> Browse Emojis
+                    <a href="emojis.html" class="cta-button secondary-cta">
+                        <span class="cta-icon">🔍</span><span data-translate-key="button_browse">Browse Emojis</span>
                     </a>
                 </div>
             </div>
         </div>
-        <div class="content needs-js animate-on-scroll fade-in-up" id="capeUpload">
-            <form id="capeUploadForm" novalidate>
-                <div class="step-wizard-container">
-                    <div class="step-wizard-header">
-                        <h1 id="stepTitle">Step 1: Your Minecraft Name</h1>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="progressBar"></div>
-                        </div>
-                    </div>
-
-                    <div id="multiStepForm">
-                        <div class="form-step active" id="step-1">
-                            <p class="step-instruction" data-translate-key="step_1_instruction">Please enter your exact Minecraft name.</p>
-                            <label for="minecraftName">Minecraft Name:</label>
-                            <input type="text" id="minecraftName" name="minecraft_name" placeholder="e.g. Steve" required>
-                            <div class="loader" id="nameCheckLoader" style="display: none;"></div>
-                            <div class="input-feedback" id="minecraftNameFeedback"></div>
-                        </div>
-
-                        <div class="form-step" id="step-2">
-                            <p class="step-instruction">
-                                Please read our <a href="rules.html" target="_blank" data-translate-key="rules">Rules</a> carefully.
-                                You must agree to them to continue.
-                            </p>
-                            <div class="rules-agree-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                                 <input type="checkbox" id="rulesAgreeCheckbox" name="rules_agreed" value="true" required style="width: 20px; height: 20px; accent-color: var(--primary-color); cursor: pointer;">
-                                 <label for="rulesAgreeCheckbox" style="color: var(--text-color); cursor: pointer; margin: 0;">I have read the rules and agree to them.</label>
-                            </div>
-                            <div class="input-feedback" id="rulesAgreeFeedback" style="margin-top: 15px;"></div>
-                        </div>
-
-                        <div class="form-step" id="step-3">
-                             <p class="step-instruction">What do you want to name your Emoji? This name will be publicly displayed.</p>
-                            <label for="capeName">Emoji Name:</label>
-                            <input type="text" id="capeName" name="cape_name" placeholder="e.g. My Cool Emoji" required maxlength="20">
-                             <div class="input-feedback" id="capeNameFeedback"></div>
-                        </div>
-
-                        <div class="form-step" id="step-4">
-                             <p class="step-instruction">Choose your Emoji Image. Use our <a href="tutorial.html" target="_blank">Tutorial</a>!</p>
-                            <label for="capeUploadInput" class="file-label">Select Emoji</label>
-                            <input type="file" id="capeUploadInput" accept="image/png" required style="display: none;">
-                            <span id="capeFileName" class="file-name-display"></span>
-                            <div class="input-feedback" id="capeFileFeedback"></div>
-                        </div>
-
-                        <div class="form-step" id="step-5">
-                             <p class="step-instruction">Check your details and the preview.</p>
-                             <div class="preview-container">
-                                 <canvas id="skin_preview_canvas" width="250" height="350"></canvas>
-                                 <div class="preview-details">
-                                     <p><strong>Minecraft Name:</strong> <span id="previewMinecraftName"></span></p>
-                                     <p><strong>Emoji Name:</strong> <span id="previewCapeName"></span></p>
-                                      <button type="button" id="editBtn" class="step-button" style="margin-top: 15px; font-size: 0.9em; padding: 6px 12px; background-color: var(--secondary-color); color: var(--secondary-text-color);">Edit Details</button>
-                                 </div>
-                             </div>
-                        </div>
-                    </div>
-
-                    <div id="successMessage" style="display: none;"></div>
-                    <div id="limitMessage" style="display: none;"></div>
-
-                    <div class="step-navigation" id="stepNavigation">
-                        <button type="button" id="prevBtn" class="step-button" style="display: none;">Back</button>
-                        <button type="button" id="nextBtn" class="step-button" data-translate-key="next">Next</button>
-                        <button type="submit" id="submitBtn" class="step-button" style="display: none;">Upload Emoji</button>
+        
+        <div id="emojiUploadSection" class="content needs-js animate-on-scroll fade-in-up">
+            <div class="step-wizard-container">
+                <div id="limitMessage" style="display: none;">
+                    <h2 data-translate="limit_title">Limit Reached</h2>
+                    <p data-translate="limit_text">You can only upload one emoji per day. Please try again tomorrow.</p>
+                </div>
+                <div id="successMessage" style="display: none;"></div>
+                <div class="step-wizard-header">
+                    <h1 id="stepTitle" data-translate="step_title_1">Step 1: Your Minecraft Name</h1>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
                     </div>
                 </div>
-            </form>
-            <div class="wizard-tip animate-on-scroll fade-in-up">
-                <p data-translate-key="tip">
-                    💡 <strong>Tip:</strong> You are unsure how to create a Emoji?
-                    <a href="tutorial.html">Check out our tutorial!</a>
-                </p>
+                <form id="emojiUploadForm" novalidate>
+                    <div id="multiStepForm">
+                        <!-- Step 1: Minecraft Name -->
+                        <div class="form-step active" id="step-1">
+                            <p class="step-instruction" data-translate="step_1_instruction">Please enter your Minecraft name.</p>
+                            <label for="minecraftName" class="visually-hidden" data-translate="minecraft_name_label">Minecraft Name</label>
+                            <input type="text" id="minecraftName" name="minecraftName" placeholder="e.g Steve" required minlength="3" maxlength="16" pattern="^[a-zA-Z0-9_]{3,16}$">
+                            <div id="nameCheckLoader" class="loader" style="display: none;"></div>
+                            <div id="minecraftNameFeedback" class="input-feedback"></div>
+                        </div>
+                        <!-- Step 2: Rules -->
+                        <div class="form-step" id="step-2">
+                            <p class="step-instruction" data-translate="step_2_instruction">Please read our <a href='rules.html' target='_blank'>rules</a> and agree to them.</p>
+                            <div class="rules-container">
+                                <ul>
+                                    <li data-translate="rule_1">No NSFW, offensive, or hateful content.</li>
+                                    <li data-translate="rule_2">No Personal data (e.g., names, phone numbers).</li>
+                                    <li data-translate="rule_3">No Deepfakes, offensive texts, or memes with problematic context.</li>
+                                    <li data-translate="rule_4">and more...</li>
+                                </ul>
+                            </div>
+                            <label class="rules-agree-label">
+                                <input type="checkbox" id="rulesAgreeCheckbox">
+                                <span data-translate="rules_agree_checkbox">I have read the rules and agree to them.</span>
+                            </label>
+                            <div id="rulesAgreeFeedback" class="input-feedback"></div>
+                        </div>
+                        <!-- Step 3: Emoji Name -->
+                        <div class="form-step" id="step-3">
+                            <p class="step-instruction" data-translate="step_3_instruction">What do you want to name your emoji?</p>
+                            <label for="emojiName" class="visually-hidden" data-translate="emoji_name_label">Emoji Name</label>
+                            <input type="text" id="emojiName" name="emojiName" placeholder="Cool Emoji" required maxlength="30">
+                            <div id="emojiNameFeedback" class="input-feedback"></div>
+                        </div>
+                        <!-- Step 4: Upload -->
+                        <div class="form-step" id="step-4">
+                            <p class="step-instruction" data-translate="step_4_instruction">Upload your emoji image (PNG, max 1MB).</p>
+                            <label for="emojiUploadInput" class="file-label" data-translate="upload_label">Select Emoji Image</label>
+                            <input type="file" id="emojiUploadInput" name="emojiUploadInput" accept="image/png" style="display:none;">
+                            <p id="emojiFileName" class="file-name-display"></p>
+                            <div id="emojiFileFeedback" class="input-feedback"></div>
+                            <div class="wizard-tip">
+                                <p data-translate="wizard_tip_text">Need help? Check our <a href='tutorial.html' target='_blank'>tutorial</a>.</p>
+                            </div>
+                        </div>
+                        <!-- Step 5: Preview -->
+                        <div class="form-step" id="step-5">
+                            <p class="step-instruction" data-translate="step_5_instruction">Please check all details before submitting.</p>
+                            <div class="preview-container">
+                                <div class="preview-details">
+                                    <p><strong data-translate="preview_minecraft_name">Minecraft Name:</strong> <span id="previewMinecraftName"></span></p>
+                                    <p><strong data-translate="preview_emoji_name">Emoji Name:</strong> <span id="previewEmojiName"></span></p>
+                                </div>
+                                <div class="emoji-preview-container">
+                                    <img id="emoji_preview_canvas" alt="Emoji Preview"/>
+                                </div>
+                            </div>
+                            <button type="button" id="editBtn" class="step-button secondary" data-translate="edit_button">Edit</button>
+                        </div>
+                    </div>
+                    <div id="stepNavigation" class="step-navigation">
+                        <button type="button" id="prevBtn" class="step-button" data-translate="prev_button" style="display: none;">Back</button>
+                        <button type="button" id="nextBtn" class="step-button" data-translate="next_button">Next</button>
+                        <button type="submit" id="submitBtn" class="step-button" data-translate="submit_button" style="display: none;">Submit</button>
+                    </div>
+                </form>
             </div>
-
             <div class="downloadSection needs-js animate-on-scroll fade-in-up" id="downloadSection">
                 <h2 data-translate-key="download_mod_title">Download CookiEmojis Mod</h2>
                 <p data-translate-key="download_mod_description">Download the Mod now for free via Modrinth to use Emojis in-game.</p>

@@ -135,7 +135,7 @@
         <div class="cape-gallery needs-js animate-on-scroll fade-in-up">
             <h2 data-translate-key="random_capes_title">Random Capes from the Community</h2>
             <div id="capeContainer" class="cape-container">
-                 <p style="color:var(--text-color-dim); text-align: center; width: 100%;">Loading random capes...</p>
+                 <p style="color:var(--text-color-dim); text-align: center; width: 100%;" data-translate-key="loading_random_capes">Loading random capes...</p>
             </div>
         </div>
 
@@ -152,47 +152,47 @@
                     <div id="multiStepForm">
                         <div class="form-step active" id="step-1">
                             <p class="step-instruction" data-translate-key="step_1_instruction">Please enter your exact Minecraft name.</p>
-                            <label for="minecraftName">Minecraft Name:</label>
-                            <input type="text" id="minecraftName" name="minecraft_name" placeholder="e.g. Steve" required>
+                            <label for="minecraftName" data-translate-key="minecraft_name_label">Minecraft Name:</label>
+                            <input type="text" id="minecraftName" name="minecraft_name" data-translate-key="minecraft_name_placeholder" data-translate-attr="placeholder" placeholder="e.g. Steve" required>
                             <div class="loader" id="nameCheckLoader" style="display: none;"></div>
                             <div class="input-feedback" id="minecraftNameFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-2">
-                            <p class="step-instruction">
+                            <p class="step-instruction" data-translate-key="agree_to_rules_instruction">
                                 Bitte lies unsere <a href="rules.html" target="_blank" data-translate-key="rules">Rules</a> sorgfältig durch.
                                 Du musst ihnen zustimmen, um fortzufahren.
                             </p>
                             <div class="rules-agree-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
                                  <input type="checkbox" id="rulesAgreeCheckbox" name="rules_agreed" value="true" required style="width: 20px; height: 20px; accent-color: var(--primary-color); cursor: pointer;">
-                                 <label for="rulesAgreeCheckbox" style="color: var(--text-color); cursor: pointer; margin: 0;">Ich habe die Regeln gelesen und stimme ihnen zu.</label>
+                                 <label for="rulesAgreeCheckbox" style="color: var(--text-color); cursor: pointer; margin: 0;" data-translate-key="agree_to_rules_checkbox">Ich habe die Regeln gelesen und stimme ihnen zu.</label>
                             </div>
                             <div class="input-feedback" id="rulesAgreeFeedback" style="margin-top: 15px;"></div>
                         </div>
 
                         <div class="form-step" id="step-3">
-                             <p class="step-instruction">Wie soll dein Cape heißen? Dieser Name wird öffentlich angezeigt.</p>
-                            <label for="capeName">Cape Name:</label>
-                            <input type="text" id="capeName" name="cape_name" placeholder="z.B. Mein cooles Cape" required maxlength="20">
+                             <p class="step-instruction" data-translate-key="name_your_cape_instruction">Wie soll dein Cape heißen? Dieser Name wird öffentlich angezeigt.</p>
+                            <label for="capeName" data-translate-key="cape_name_label">Cape Name:</label>
+                            <input type="text" id="capeName" name="cape_name" data-translate-key="cape_name_placeholder" data-translate-attr="placeholder" placeholder="z.B. Mein cooles Cape" required maxlength="20">
                              <div class="input-feedback" id="capeNameFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-4">
-                             <p class="step-instruction">Wähle dein Cape-Bild aus. Nutze unser <a href="tutorial.html" target="_blank">Tutorial</a>!</p>
-                            <label for="capeUploadInput" class="file-label">Cape auswählen</label>
+                             <p class="step-instruction" data-translate-key="select_cape_file_instruction">Wähle dein Cape-Bild aus. Nutze unser <a href="tutorial.html" target="_blank">Tutorial</a>!</p>
+                            <label for="capeUploadInput" class="file-label" data-translate-key="select_cape_file_button">Cape auswählen</label>
                             <input type="file" id="capeUploadInput" accept="image/png" required style="display: none;">
                             <span id="capeFileName" class="file-name-display"></span>
                             <div class="input-feedback" id="capeFileFeedback"></div>
                         </div>
 
                         <div class="form-step" id="step-5">
-                             <p class="step-instruction">Überprüfe deine Angaben und die Vorschau.</p>
+                             <p class="step-instruction" data-translate-key="review_instruction">Überprüfe deine Angaben und die Vorschau.</p>
                              <div class="preview-container">
                                  <canvas id="skin_preview_canvas" width="250" height="350"></canvas>
                                  <div class="preview-details">
-                                     <p><strong>Minecraft-Name:</strong> <span id="previewMinecraftName"></span></p>
-                                     <p><strong>Cape-Name:</strong> <span id="previewCapeName"></span></p>
-                                      <button type="button" id="editBtn" class="step-button" style="margin-top: 15px; font-size: 0.9em; padding: 6px 12px; background-color: var(--secondary-color); color: var(--secondary-text-color);">Angaben bearbeiten</button>
+                                     <p><strong data-translate-key="preview_minecraft_name">Minecraft-Name:</strong> <span id="previewMinecraftName"></span></p>
+                                     <p><strong data-translate-key="preview_cape_name">Cape-Name:</strong> <span id="previewCapeName"></span></p>
+                                      <button type="button" id="editBtn" class="step-button" style="margin-top: 15px; font-size: 0.9em; padding: 6px 12px; background-color: var(--secondary-color); color: var(--secondary-text-color);" data-translate-key="edit_details_button">Angaben bearbeiten</button>
                                  </div>
                              </div>
                         </div>
@@ -202,9 +202,9 @@
                     <div id="limitMessage" style="display: none;"></div>
 
                     <div class="step-navigation" id="stepNavigation">
-                        <button type="button" id="prevBtn" class="step-button" style="display: none;">Zurück</button>
+                        <button type="button" id="prevBtn" class="step-button" style="display: none;" data-translate-key="back_button">Zurück</button>
                         <button type="button" id="nextBtn" class="step-button" data-translate-key="next">Next</button>
-                        <button type="submit" id="submitBtn" class="step-button" style="display: none;">Cape Hochladen</button>
+                        <button type="submit" id="submitBtn" class="step-button" style="display: none;" data-translate-key="submit_button">Cape Hochladen</button>
                     </div>
                 </div>
             </form>

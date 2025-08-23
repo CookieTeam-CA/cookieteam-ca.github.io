@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CookieCapes - Cape Vorschau</title>
+    <title data-translate-key="cd_title">CookieCapes - Cape Vorschau</title>
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/footer.css">
     <script src="js/skinview3d.js"></script>
+    <script src="js/lang.js"></script>
     <script src="js/cape-detail.js" defer></script>
     <script src="js/player_count.js" defer></script>
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
@@ -369,15 +370,15 @@
 
     <main>
         <div class="cape-detail-container">
-            <h1 id="pageTitle">Lade...</h1>
+            <h1 id="pageTitle" data-translate-key="cd_loading">Lade...</h1>
 
-            <div id="loadingMessageGlobal">Lade Vorschau...</div>
+            <div id="loadingMessageGlobal" data-translate-key="cd_loading_preview">Lade Vorschau...</div>
             <div id="errorMessageGlobal" class="hidden"><p></p></div>
 
             <div id="viewerSection" class="hidden" style="width:100%; text-align:center;">
                 <div id="fetchedCapeInfoDisplay" class="cape-info-fetched hidden interactive-border-container" style="margin-left:auto; margin-right:auto;">
-                    <p><strong>Cape ID:</strong> <span id="capeIdDetail">N/A</span></p>
-                    <p><strong>Ersteller:</strong> <span id="uploaderNameDetail">N/A</span></p>
+                    <p><strong data-translate-key="cd_cape_id">Cape ID:</strong> <span id="capeIdDetail">N/A</span></p>
+                    <p><strong data-translate-key="cd_creator">Ersteller:</strong> <span id="uploaderNameDetail">N/A</span></p>
                 </div>
 
                 <div class="viewer-wrapper interactive-border-container">
@@ -387,19 +388,19 @@
                 <div class="viewer-controls">
                     <div id="assetSourceControls" class="control-group asset-source-group hidden">
                         <div class="asset-source-block interactive-border-container">
-                            <label class="block-title">Skin Quelle</label>
+                            <label class="block-title" data-translate-key="cd_skin_source">Skin Quelle</label>
                             <input type="file" id="skinUpload" accept="image/png">
-                            <span id="skinFileName" class="file-name-display-small">Kein Skin ausgewählt</span>
-                            <div class="or-divider">oder</div>
-                            <input type="text" id="skinNameInput" placeholder="Minecraft-Name">
+                            <span id="skinFileName" class="file-name-display-small" data-translate-key="cd_no_skin_selected">Kein Skin ausgewählt</span>
+                            <div class="or-divider" data-translate-key="cd_or">oder</div>
+                            <input type="text" id="skinNameInput" data-translate-key="cd_mc_name_placeholder" data-translate-attr="placeholder" placeholder="Minecraft-Name">
                             <span id="skinLoadStatus" class="input-feedback-small"></span>
                         </div>
                         <div class="asset-source-block interactive-border-container">
-                            <label class="block-title">Cape Quelle</label>
+                            <label class="block-title" data-translate-key="cd_cape_source">Cape Quelle</label>
                             <input type="file" id="capeUpload" accept="image/png">
-                            <span id="capeFileName" class="file-name-display-small">Kein Cape ausgewählt</span>
-                            <div class="or-divider">oder</div>
-                            <input type="text" id="capeNameInput" placeholder="Minecraft-Name für Cape">
+                            <span id="capeFileName" class="file-name-display-small" data-translate-key="cd_no_cape_selected">Kein Cape ausgewählt</span>
+                            <div class="or-divider" data-translate-key="cd_or">oder</div>
+                            <input type="text" id="capeNameInput" data-translate-key="cd_mc_name_for_cape_placeholder" data-translate-attr="placeholder" placeholder="Minecraft-Name für Cape">
                             <span id="capeLoadStatus" class="input-feedback-small"></span>
                         </div>
                     </div>
@@ -407,39 +408,39 @@
                     <hr id="sourceControlsDivider" class="control-divider hidden">
 
                     <div class="control-group interactive-border-container">
-                        <label for="rotationToggle">Rotation:</label>
+                        <label for="rotationToggle" data-translate-key="cd_rotation">Rotation:</label>
                         <input type="checkbox" id="rotationToggle" checked>
                     </div>
 
                     <div class="control-group interactive-border-container">
-                        <label for="animationSelect">Animation:</label>
+                        <label for="animationSelect" data-translate-key="cd_animation">Animation:</label>
                         <select id="animationSelect">
-                            <option value="idle">Idle</option>
-                            <option value="walking">Gehen</option>
-                            <option value="running">Rennen</option>
-                            <option value="flying">Fliegen</option>
+                            <option value="idle" data-translate-key="cd_anim_idle">Idle</option>
+                            <option value="walking" data-translate-key="cd_anim_walking">Gehen</option>
+                            <option value="running" data-translate-key="cd_anim_running">Rennen</option>
+                            <option value="flying" data-translate-key="cd_anim_flying">Fliegen</option>
                         </select>
                     </div>
 
                     <div class="control-group interactive-border-container">
-                        <label for="elytraToggle">Elytra Modus:</label>
+                        <label for="elytraToggle" data-translate-key="cd_elytra_mode">Elytra Modus:</label>
                         <input type="checkbox" id="elytraToggle">
                     </div>
                     
                     <div class="control-group interactive-border-container">
-                        <label for="skinVisibleToggle">Skin Sichtbar:</label>
+                        <label for="skinVisibleToggle" data-translate-key="cd_skin_visible">Skin Sichtbar:</label>
                         <input type="checkbox" id="skinVisibleToggle" checked>
                     </div>
 
                     <div class="control-group interactive-border-container">
-                        <label for="panoramaSelect">Hintergrund:</label>
+                        <label for="panoramaSelect" data-translate-key="cd_background">Hintergrund:</label>
                         <select id="panoramaSelect">
-                            <option value="none">Standard</option>
-                            <option value="panorama1">Panorama 1</option>
+                            <option value="none" data-translate-key="cd_bg_default">Standard</option>
+                            <option value="panorama1" data-translate-key="cd_bg_pano1">Panorama 1</option>
                         </select>
                     </div>
                 </div>
-                <a href="capes.html" id="backLink" class="back-link">« Zurück zur Galerie</a>
+                <a href="capes.html" id="backLink" class="back-link" data-translate-key="cd_back_to_gallery">« Zurück zur Galerie</a>
             </div>
         </div>
     </main>
