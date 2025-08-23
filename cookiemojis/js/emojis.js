@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         emojiContainer.style.display = 'none';
         const offset = (page - 1) * limit;
         
-        const apiUrl = `http://api.cookieattack.de:8000/list_emojis_sorted`;
+        const apiUrl = `https://api.cookieattack.de:8989/list_emojis_sorted`;
         
         const body = {
             limit: limit,
