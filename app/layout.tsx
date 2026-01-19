@@ -20,7 +20,12 @@ const nexaHeavy = localFont({
 
 export const metadata: Metadata = {
   title: "CookieAttack",
-  description: "CookieAttack Landing Page",
+  description: "Das ultimative CookieAttack Erlebnis",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
