@@ -152,10 +152,19 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
               <span className="relative z-10">CookieAttack</span>
               <div className="absolute inset-0 -z-10 translate-y-full bg-orange-500 transition-transform duration-300 group-hover:translate-y-0"></div>
             </button>
-            
-            <button className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer">
+            <Link 
+              href="/cookieteam"
+              className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
+            >
                <span className="relative z-10">CookieTeam</span>
-            </button>
+            </Link>
+
+            <Link 
+              href="/wip"
+              className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
+            >
+               <span className="relative z-10">CookieCapes</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -204,7 +213,9 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
           </span>
         </a>
       </div>
-
+      <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm mb-10">
+        <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
+      </footer>
     </div>
   );
 }
