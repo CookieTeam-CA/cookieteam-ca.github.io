@@ -160,7 +160,7 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
             </Link>
 
             <Link 
-              href="/wip"
+              href="/cookiecapes"
               className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
             >
                <span className="relative z-10">CookieCapes</span>

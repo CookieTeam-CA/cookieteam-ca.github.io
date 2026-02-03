@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     default: "CookieAttack",
     template: "%s | CookieAttack"
   },
-  description: "Website zum Minecraft CookieAttack Server.",
+  description: "Minecraft SMP Server mit spannenden Events, Roleplay und starker Community. Sei dabei wenn CookieAttack 6 startet!",
   keywords: ["Minecraft", "Server", "CookieAttack", "Events", "Roleplay", "Gaming", "Community", "Deutsch"],
   authors: [{ name: "CookieTeam" }],
   creator: "CookieTeam",

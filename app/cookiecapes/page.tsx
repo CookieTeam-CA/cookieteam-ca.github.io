@@ -1,0 +1,34 @@
+import { Suspense } from "react";
+import CapeHero from "./components/CapeHero";
+import SetupWizard from "./components/SetupWizard";
+import RandomCapes from "./components/RandomCapes";
+import { getRandomCapes } from "./lib/api";
+
+import DownloadSection from "./components/DownloadSection";
+
+export const revalidate = 60;
+
+export default async function CookieCapesPage() {
+  const capes = await getRandomCapes(3);
+
+  return (
+    <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
+      <CapeHero/>
+
+      <Suspense fallback={<div className="h-[500px] w-full flex items-center justify-center text-zinc-500">Lade Capes...</div>}>
+         <RandomCapes capes={capes} />
+      </Suspense>
+
+      <div id="setup-wizard" className="relative py-20">
+         <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 rotate-180 pointer-events-none"/>
+          <SetupWizard/>
+      </div>
+
+      <DownloadSection/>
+
+       <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm mb-10">
+         <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
+       </footer>
+    </main>
+  );
+}
