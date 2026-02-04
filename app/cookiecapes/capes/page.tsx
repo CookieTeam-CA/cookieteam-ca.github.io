@@ -2,6 +2,11 @@ import { getCapesSorted, SortBy, Order } from "../lib/api";
 import CapeCard from "../components/CapeCard";
 import Pagination from "../components/Pagination";
 import GalleryControls from "../components/GalleryControls";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Capes - CookieCapes",
+};
 
 export const revalidate = 0;
 

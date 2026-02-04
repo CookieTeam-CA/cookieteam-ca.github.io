@@ -38,7 +38,7 @@ export default function CookieNavbar() {
             <Link href="/wip" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Player</Link>
             <Link href="/cookiecapes/capes" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Capes</Link>
             <Link href="/cookiecapes/rules" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Regeln</Link>
-            <Link href="wip" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Tutorial</Link>
+            <Link href="/cookiecapes/tutorial" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Tutorial</Link>
         </div>
 
         <div className="flex items-center gap-[15px]">

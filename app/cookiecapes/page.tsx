@@ -5,6 +5,11 @@ import RandomCapes from "./components/RandomCapes";
 import { getRandomCapes } from "./lib/api";
 
 import DownloadSection from "./components/DownloadSection";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Übersicht - CookieCapes",
+};
 
 export const revalidate = 60;
 

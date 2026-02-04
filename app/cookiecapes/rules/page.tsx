@@ -1,3 +1,9 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Regeln - CookieCapes",
+};
+
 export default function CookieCapesRules() {
   return (
     <main className="min-h-screen bg-[#050505] text-white py-20 px-6">
