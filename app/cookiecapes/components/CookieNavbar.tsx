@@ -28,14 +28,14 @@ export default function CookieNavbar() {
       <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-[10px] h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
 
         <div className="flex items-center">
+          <a href="../"><img src="/minilogo.png" alt="CookieTeam Logo" className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]"/></a>
             <Link href="/cookiecapes" className="flex items-center gap-3 pl-[10px] group">
-              <img src="/minilogo.png" alt="CookieTeam Logo" className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]" />
               <span className="font-nexa text-[#ff7b00] text-2xl tracking-tight hidden md:block">CookieCapes</span>
             </Link>
         </div>
 
         <div className="hidden md:flex items-center gap-[30px]">
-            <Link href="/wip" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Player</Link>
+            <Link href="/cookiecapes/players" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Player</Link>
             <Link href="/cookiecapes/capes" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Capes</Link>
             <Link href="/cookiecapes/rules" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Regeln</Link>
             <Link href="/cookiecapes/tutorial" className="text-zinc-400 hover:text-white transition-colors duration-300 font-medium text-[19px]">Tutorial</Link>

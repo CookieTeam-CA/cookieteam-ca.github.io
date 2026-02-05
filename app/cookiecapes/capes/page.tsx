@@ -3,6 +3,7 @@ import CapeCard from "../components/CapeCard";
 import Pagination from "../components/Pagination";
 import GalleryControls from "../components/GalleryControls";
 import { Metadata } from "next";
+import Footer from "../../components/Footer";
 
 export const metadata: Metadata = {
     title: "Capes - CookieCapes",
@@ -57,12 +58,9 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
                         <p className="text-zinc-400 text-lg">Keine Capes gefunden.</p>
                         <p className="text-zinc-600 text-sm mt-2">Versuche es mit einem anderen Suchbegriff.</p>
                     </div>
-                )}
-                
-                 <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm mb-10">
-                    <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
-                </footer>
+                )}   
             </div>
+            <Footer/>
         </main>
     );
 }

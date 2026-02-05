@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Download, Edit3, Image as ImageIcon, Save, CheckCircle } from "lucide-react";
 import { Metadata } from "next";
+import Footer from "../../components/Footer";
 
 export const metadata: Metadata = {
     title: "Tutorial - CookieCapes",
@@ -134,6 +135,7 @@ export default function TutorialPage() {
                 </div>
             </div>
         </div>
+        <Footer/>
     </main>
   );
 }

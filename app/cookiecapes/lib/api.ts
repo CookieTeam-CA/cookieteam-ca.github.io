@@ -21,7 +21,6 @@ export async function getStats(): Promise<StatsResponse | null> {
 
 export async function getPlayerCount(): Promise<number> {
     try {
-        // Updated logic: POST to list_capes_sorted with {} to get total_count
         const res = await fetch(`${API_BASE_URL}/list_players_sorted`, {
             method: 'POST',
              headers: {
@@ -52,13 +51,16 @@ export interface Cape {
 }
 
 export interface Player {
-cape_id: number;
-  banned: boolean;
-  minecraft_uuid: string;
-  minecraft_name: string;
+    minecraft_uuid: string;
+    minecraft_name: string;
+    current_cape_id: number | null;
+    banned: boolean;
+    ban_reason: string;
+    cape_name: string | null;
+    last_edited: string | null;
 }
 
-export type SortBy = 'active_user_count' | 'last_edited' | 'cape_name' | 'cape_id';
+export type SortBy = 'active_user_count' | 'last_edited' | 'cape_name' | 'cape_id' | 'minecraft_name';
 export type Order = 'asc' | 'desc';
 
 export interface CapesResponse {
@@ -66,6 +68,16 @@ export interface CapesResponse {
     total_count: number;
     offset: number;
     limit: number;
+}
+
+export interface PlayersResponse {
+    players: Player[];
+    total_count: number;
+    offset: number;
+    limit: number;
+    banned_count: number;
+    sort_by: string;
+    order: string;
 }
 
 export async function getCapes(limit = 10): Promise<Cape[]> {
@@ -138,6 +150,47 @@ export async function getCapesSorted(
         return data;
     } catch (error) {
         console.error("Failed to fetch sorted capes:", error);
+        return null;
+    }
+}
+
+export async function getPlayersSorted(
+    page = 1,
+    limit?: number,
+    sortBy: string = 'minecraft_name',
+    order: Order = 'asc',
+    search: string = '',
+    banned: boolean = false
+): Promise<PlayersResponse | null> {
+    try {
+        const body: any = {
+            sort_by: sortBy,
+            order,
+            banned
+        };
+
+        if (limit !== undefined) {
+            body.limit = limit;
+            body.offset = (page - 1) * limit;
+        }
+
+        if (search) {
+            body.query = search;
+        }
+
+        const res = await fetch(`${API_BASE_URL}/list_players_sorted`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            next: { revalidate: 0 }
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch sorted players:", error);
         return null;
     }
 }

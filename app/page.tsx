@@ -1,7 +1,13 @@
 import { getGalleryAssets } from "./lib/gallery";
 import HomeClient from "./components/HomeClient";
+import Footer from "./components/Footer";
 
 export default function Home() {
   const assets = getGalleryAssets();
-  return <HomeClient initialAssets={assets} />;
+  return (
+    <main>
+      <HomeClient initialAssets={assets} />
+      <Footer />
+    </main>
+  );
 }

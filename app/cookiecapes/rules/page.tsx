@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Footer from "../../components/Footer";
 
 export const metadata: Metadata = {
     title: "Regeln - CookieCapes",
@@ -67,6 +68,7 @@ export default function CookieCapesRules() {
             </a>
         </div>
       </div>
+      <Footer/>
     </main>
   );
 }

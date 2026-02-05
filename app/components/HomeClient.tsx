@@ -213,9 +213,6 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
           </span>
         </a>
       </div>
-      <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm mb-10">
-        <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
-      </footer>
     </div>
   );
 }

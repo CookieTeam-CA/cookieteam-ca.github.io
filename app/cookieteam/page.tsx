@@ -6,6 +6,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Footer from "../components/Footer";
 
 if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -193,12 +194,8 @@ export default function CookieTeamPage() {
               </div>
            </div>
         </section>
-
-        <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm">
-            <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
-        </footer>
-
       </div>
+      <Footer/>
     </div>
   );
 }

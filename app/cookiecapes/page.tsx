@@ -3,6 +3,7 @@ import CapeHero from "./components/CapeHero";
 import SetupWizard from "./components/SetupWizard";
 import RandomCapes from "./components/RandomCapes";
 import { getRandomCapes } from "./lib/api";
+import Footer from "../components/Footer";
 
 import DownloadSection from "./components/DownloadSection";
 import { Metadata } from "next";
@@ -30,10 +31,7 @@ export default async function CookieCapesPage() {
       </div>
 
       <DownloadSection/>
-
-       <footer className="mt-20 border-t border-white/10 pt-8 text-center text-gray-500 text-sm mb-10">
-         <p>&copy; {new Date().getFullYear()} CookieTeam. Alle Rechte vorbehalten.</p>
-       </footer>
+      <Footer/>
     </main>
   );
 }
