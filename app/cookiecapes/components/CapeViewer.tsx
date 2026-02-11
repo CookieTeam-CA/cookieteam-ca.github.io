@@ -24,19 +24,28 @@ export default function CapeViewer({
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<SkinViewer | null>(null);
   const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
         (entries) => {
-            if (entries[0].isIntersecting) {
-                setIsVisible(true);
-                setIsLoading(true);
-                observer.disconnect();
+            const entry = entries[0];
+            if (entry.isIntersecting) {
+                if (!hasLoaded) {
+                    setHasLoaded(true);
+                    setIsLoading(true);
+                }
+                if (viewerRef.current) {
+                    viewerRef.current.renderPaused = false;
+                }
+            } else {
+                if (viewerRef.current) {
+                    viewerRef.current.renderPaused = true;
+                }
             }
         },
-        { rootMargin: "100px" }
+        { rootMargin: "50px" }
     );
 
     if (containerRef.current) {
@@ -44,10 +53,10 @@ export default function CapeViewer({
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [hasLoaded]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!hasLoaded) return;
 
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -70,11 +79,14 @@ export default function CapeViewer({
             const initialWidth = width || containerRef.current.clientWidth;
             const initialHeight = height || containerRef.current.clientHeight;
 
+            const dpr = Math.min(window.devicePixelRatio, 1.5);
+
             viewer = new skinview3d.SkinViewer({
                 canvas: canvasRef.current,
                 width: initialWidth,
                 height: initialHeight,
-            });
+                devicePixelRatio: dpr
+            } as any);
 
             viewerRef.current = viewer;
 
@@ -125,7 +137,7 @@ export default function CapeViewer({
       viewerRef.current = null;
       if (resizeObserver) resizeObserver.disconnect();
     };
-  }, [isVisible]); 
+  }, [hasLoaded]); 
 
   useEffect(() => {
     if (viewerRef.current) {
@@ -219,7 +231,7 @@ export default function CapeViewer({
 
   return (
     <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
-      {isVisible ? (
+      {hasLoaded ? (
         <>
             <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
             {isLoading && (

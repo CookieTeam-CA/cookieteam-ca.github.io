@@ -29,6 +29,27 @@ export default function TutorialPage() {
                         Was du brauchst
                     </h2>
                     
+                    <div className="mb-8 bg-gradient-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-6">
+                        <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                                    <span className="bg-orange-500 text-black text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider">Neu</span>
+                                    Web Editor
+                                </h3>
+                                <p className="text-zinc-300">
+                                    Kein Programm zur Hand? Nutze unseren experimentellen Web-Editor, um Capes direkt im Browser zu erstellen.
+                                </p>
+                            </div>
+                            <Link 
+                                href="/cookiecapes/editor"
+                                className="whitespace-nowrap px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 shadow-lg shadow-orange-500/20"
+                            >
+                                <Edit3 size={18} />
+                                Editor öffnen
+                            </Link>
+                        </div>
+                    </div>
+
                     <div className="grid md:grid-cols-2 gap-8">
                         <div>
                             <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
@@ -37,7 +58,7 @@ export default function TutorialPage() {
                             </h3>
                             <p className="text-zinc-400 mb-4">
                                 Wir empfehlen <a href="https://www.getpaint.net/download.html" target="_blank" className="text-orange-400 hover:text-orange-300">Paint.NET</a>. 
-                                Es ist kostenlos, einfach und perfekt für Pixel-Art. Alternativ kannst du jedes andere Bildbearbeitungsprogramm nutzen.
+                                Es ist kostenlos, einfach und perfekt für Pixel-Art.
                             </p>
                         </div>
                         
@@ -47,7 +68,7 @@ export default function TutorialPage() {
                                 Cape Template
                             </h3>
                             <p className="text-zinc-400 mb-6">
-                                Lade dir eines unserer Templates herunter, um das richtige Format zu haben.
+                                Falls du ein externes Programm nutzt, lade dir eines unserer Templates herunter:
                             </p>
                             <div className="flex flex-wrap gap-3">
                                 <a 
@@ -55,16 +76,16 @@ export default function TutorialPage() {
                                     download="cape_template.png"
                                     className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors border border-white/10 flex items-center gap-2"
                                 >
-                                    <Download/>
-                                    Standard Template
+                                    <Download size={16}/>
+                                    Standard
                                 </a>
                                 <a 
                                     href="/template/cape_template_elytra.png" 
                                     download="cape_template_elytra.png"
                                     className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors border border-white/10 flex items-center gap-2"
                                 >
-                                    <Download/>
-                                    Elytra Template
+                                    <Download size={16}/>
+                                    Elytra
                                 </a>
                             </div>
                         </div>

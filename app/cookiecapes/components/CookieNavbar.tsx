@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { fetchStatsAction, fetchPlayerCountAction } from "../actions";
 import { StatsResponse } from "../lib/api";
 
+import { usePathname } from "next/navigation";
+
 export default function CookieNavbar() {
+  const pathname = usePathname();
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [onlineStats, setOnlineStats] = useState<StatsResponse | null>(null);
 
@@ -22,6 +25,8 @@ export default function CookieNavbar() {
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  if (pathname?.startsWith("/cookiecapes/editor")) return null;
 
   return (
     <nav className="fixed top-[10px] left-1/2 -translate-x-1/2 w-[90%] max-w-[1024px] h-[55px] z-[100] transition-all duration-300">
