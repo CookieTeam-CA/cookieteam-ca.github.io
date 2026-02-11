@@ -21,7 +21,6 @@ export default function CapeHero() {
     const startChars = titleStartRef.current?.children;
     const endChars = titleEndRef.current?.children;
     
-    // Initial state
     if (startChars && endChars) {
         gsap.set([...Array.from(startChars), ...Array.from(endChars)], { y: 100, autoAlpha: 0 });
     }

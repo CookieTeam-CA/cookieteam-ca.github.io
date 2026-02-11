@@ -1,9 +1,10 @@
 import { Cape } from "../lib/api";
-import Cape3DViewer from "./Cape3DViewer";
+import CapeViewer from "./CapeViewer";
 import { Users } from "lucide-react";
 import { auth } from "../../../auth";
 import DeleteCapeButton from "./DeleteCapeButton";
 import BanPlayerButton from "./BanPlayerButton";
+import Link from "next/link";
 
 interface CapeCardProps {
     cape: Cape;
@@ -26,7 +27,7 @@ export default async function CapeCard({ cape }: CapeCardProps) {
 
             <div className="relative w-full aspect-[3/4] bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
                 <div className="relative w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                    <Cape3DViewer 
+                    <CapeViewer 
                         capeUrl={capeUrl} 
                         minecraftName={cape.minecraft_name} 
                     />
@@ -38,9 +39,11 @@ export default async function CapeCard({ cape }: CapeCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <h3 className="font-bold text-white group-hover:text-orange-400 transition-colors truncate w-full mb-2" title={cape.cape_name}>
-                    {cape.cape_name}
-                </h3>
+                <Link href={`/cookiecapes/capes/${cape.cape_id}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
+                    <h3 className="font-bold text-white truncate w-full" title={cape.cape_name}>
+                        {cape.cape_name}
+                    </h3>
+                </Link>
 
                 <div className="flex items-center justify-center gap-2 mb-3 w-full">
                     <img 

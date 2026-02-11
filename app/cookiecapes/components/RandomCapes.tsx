@@ -24,6 +24,7 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
               <CapeViewer 
                 capeUrl={cape.cape_image_url} 
                 skinUrl={`https://mineskin.eu/skin/${cape.minecraft_uuid}`}
+                animation="walk"
               />
             </div>
             <div className="text-center">

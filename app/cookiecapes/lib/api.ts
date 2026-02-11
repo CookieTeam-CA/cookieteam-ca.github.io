@@ -1,6 +1,5 @@
 export const API_BASE_URL = "https://api.cookieattack.de:8989";
 export const API_STATS_URL = "https://api.cookieattack.de:8990";
-export const API_PLAYERS_URL = "https://api.cookieattack.de:8989";
 
 export interface StatsResponse {
   online_player_count: number;
@@ -201,4 +200,81 @@ export async function getRandomCapes(count = 3): Promise<Cape[]> {
   
   const shuffled = allCapes.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
+}
+
+export async function getCape(id: number): Promise<Cape | null> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/get_cape?cape_id=${id}`, {
+            next: { revalidate: 60 }
+        });
+        
+        if (!res.ok) return null;
+        
+        const data = await res.json();
+        
+        const imageUrl = `https://api.cookieattack.de:8989/capes/${id}.png`;
+
+        return {
+            cape_id: id,
+            cape_name: data.cape_name,
+            minecraft_uuid: data.minecraft_uuid,
+            minecraft_name: data.minecraft_name,
+            last_edited: data.last_edited,
+            count: 0,
+            active_user_count: 0,
+            cape_image_url: imageUrl
+        };
+    } catch (error) {
+        console.error("Failed to fetch cape:", error);
+        return null;
+    }
+}
+
+export async function getPlayersByCape(capeId: number): Promise<Player[]> {
+    try {
+        const res = await getPlayersSorted(1, 1000, 'minecraft_name', 'asc');
+        
+        if (res && res.players) {
+            return res.players.filter(p => p.current_cape_id === capeId);
+        }
+        return [];
+    } catch (error) {
+        console.error("Failed to fetch players by cape:", error);
+        return [];
+    }
+}
+
+export async function getPlayer(identifier: string): Promise<Player | null> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/get_player?identifier=${identifier}`, {
+            next: { revalidate: 60 }
+        });
+        
+        if (!res.ok) return null;
+        
+        const data = await res.json();
+        
+        return {
+            ...data,
+            current_cape_id: data.cape_id
+        }; 
+    } catch (error) {
+        console.error("Failed to fetch player:", error);
+        return null;
+    }
+}
+
+export async function getCapesByPlayer(playerName: string): Promise<Cape[]> {
+    try {
+        const res = await getCapesSorted(1, 1000, 'last_edited', 'desc');
+        
+        if (res && res.capes) {
+            return res.capes.filter(c => c.minecraft_name.toLowerCase() === playerName.toLowerCase());
+        }
+        
+        return [];
+    } catch (error) {
+        console.error("Failed to fetch capes by player:", error);
+        return [];
+    }
 }

@@ -1,8 +1,9 @@
 import { Player } from "../lib/api";
-import Cape3DViewer from "./Cape3DViewer";
+import CapeViewer from "./CapeViewer";
 import { User, ShieldAlert } from "lucide-react";
 import { auth } from "../../../auth";
 import BanPlayerButton from "./BanPlayerButton";
+import Link from "next/link";
 
 interface PlayerCardProps {
     player: Player;
@@ -26,7 +27,7 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
 
             <div className="relative w-full aspect-[3/4] bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
                 <div className="relative w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                    <Cape3DViewer 
+                    <CapeViewer 
                         capeUrl={capeUrl} 
                         minecraftName={player.minecraft_name} 
                     />
@@ -55,11 +56,11 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
                     </div>
                 )}
                 
-                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-600 transition-colors">
+                <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
+                    <Link href={`/cookiecapes/players/${player.minecraft_name}`} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-500 transition-colors">
                         <User size={14} />
                         <span>Profile View</span>
-                    </div>
+                    </Link>
                 </div>
             </div>
         </div>

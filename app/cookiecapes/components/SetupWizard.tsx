@@ -273,6 +273,7 @@ export default function SetupWizard() {
                             <CapeViewer 
                                 capeUrl={capePreviewUrl}
                                 skinUrl={`https://minotar.net/skin/${minecraftName}`}
+                                animation="walk"
                             />
                         </div>
 

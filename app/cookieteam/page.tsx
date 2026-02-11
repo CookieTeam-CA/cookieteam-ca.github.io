@@ -189,7 +189,7 @@ export default function CookieTeamPage() {
                     Kontakt aufnehmen
                   </a>
                   <p className="mt-4 text-sm text-gray-500">
-                      Oder schreib uns auf Discord!
+                      Oder schreib uns auf <a className="cursor-pointer color-blue" href="https://dc.cookieattack.de">Discord</a>!
                   </p>
               </div>
            </div>
