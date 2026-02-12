@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.discordapp.com',
         pathname: '**',
       },
+      {
+        protocol: 'https',
+        hostname: 'crafthead.net',
+        pathname: '**',
+      },
     ],
   },
 };

@@ -278,3 +278,46 @@ export async function getCapesByPlayer(playerName: string): Promise<Cape[]> {
         return [];
     }
 }
+
+// --- Player History (names.amplitudes.me) ---
+
+export interface UsernameHistoryEntry {
+    username: string;
+    changed_at: string | null;
+}
+
+export interface SkinHistoryEntry {
+    hash: string;
+    changed_at: string;
+    slim: boolean;
+}
+
+export interface SocialEntry {
+    type: string;
+    name: string;
+    verified: boolean;
+}
+
+export interface PlayerHistory {
+    uuid: string;
+    current_username: string;
+    username_history: UsernameHistoryEntry[];
+    skin_history: SkinHistoryEntry[];
+    socials: SocialEntry[];
+    country: string | null;
+}
+
+export async function getPlayerHistory(username: string): Promise<PlayerHistory | null> {
+    try {
+        const res = await fetch(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, {
+            next: { revalidate: 60 }
+        });
+
+        if (!res.ok) return null;
+
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to fetch player history:", error);
+        return null;
+    }
+}
