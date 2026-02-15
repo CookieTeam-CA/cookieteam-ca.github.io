@@ -37,7 +37,7 @@ export default function TutorialPage() {
                                     Web Editor
                                 </h3>
                                 <p className="text-zinc-300">
-                                    Kein Programm zur Hand? Nutze unseren experimentellen Web-Editor, um Capes direkt im Browser zu erstellen.
+                                    Nutze unseren experimentellen Web-Editor, um Capes direkt im Browser zu erstellen.
                                 </p>
                             </div>
                             <Link 

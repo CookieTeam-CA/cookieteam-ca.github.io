@@ -13,7 +13,7 @@ export default function CookieCapesRules() {
             Cookie<span className="text-orange-500">Capes</span> Regeln
         </h1>
 
-        <div className="space-y-12 text-zinc-300 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+        <div className="space-y-12 text-zinc-300">
             <section className="space-y-4">
                 <h2 className="text-2xl font-bold text-white border-l-4 border-orange-500 pl-4">Allgemeines</h2>
                 <ul className="list-disc pl-6 space-y-2">

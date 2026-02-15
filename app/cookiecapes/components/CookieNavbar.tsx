@@ -29,7 +29,7 @@ export default function CookieNavbar() {
   if (pathname?.startsWith("/cookiecapes/editor")) return null;
 
   return (
-    <nav className="fixed top-[10px] left-1/2 -translate-x-1/2 w-[90%] max-w-[1024px] h-[55px] z-[100] transition-all duration-300">
+    <nav className="fixed top-[10px] left-1/2 -translate-x-1/2 w-[90%] max-w-[1024px] h-[55px] z-[100] transition-all duration-300 select-none">
       <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-[10px] h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
 
         <div className="flex items-center">

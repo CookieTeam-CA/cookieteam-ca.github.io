@@ -19,11 +19,11 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {capes.map((cape) => (
-          <div key={cape.cape_id} className="cape-card flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm gap-4 transition-transform hover:-translate-y-2 hover:border-orange-500/50">
+          <div key={cape.cape_id} className="cape-card flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm gap-4 transition-transform">
             <div className="w-full h-[300px] relative flex items-center justify-center">
               <CapeViewer 
                 capeUrl={cape.cape_image_url} 
-                skinUrl={`https://mineskin.eu/skin/${cape.minecraft_uuid}`}
+                skinUrl={`https://minotar.net/skin/${cape.minecraft_uuid}`}
                 animation="walk"
               />
             </div>

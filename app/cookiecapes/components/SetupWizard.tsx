@@ -163,7 +163,7 @@ export default function SetupWizard() {
                          <button 
                             disabled={minecraftName.length < 3 || reachedLimit || isValidating}
                             onClick={handleNext}
-                            className="mt-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-all flex justify-center items-center"
+                            className="mt-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-lg transition-all flex justify-center items-center cursor-pointer"
                         >
                             {isValidating ? "Überprüfe..." : "Weiter"}
                         </button>
