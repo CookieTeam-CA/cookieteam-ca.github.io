@@ -42,14 +42,16 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <h3 className="font-bold text-white group-hover:text-orange-400 transition-colors truncate w-full mb-2">
-                    {player.minecraft_name}
-                </h3>
+                <Link href={`/cookiecapes/players/${player.minecraft_name}`} className="w-full">
+                    <h3 className="font-bold text-white group-hover:text-orange-400 transition-colors truncate w-full mb-2">
+                        {player.minecraft_name}
+                    </h3>
+                </Link>
 
                 {player.cape_name ? (
-                     <div className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-400 text-sm">
+                     <Link href={`/cookiecapes/capes/${player.current_cape_id}`} className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-400 text-sm hover:text-orange-400 transition-colors">
                         <span className="truncate">Cape: {player.cape_name}</span>
-                    </div>
+                    </Link>
                 ) : (
                     <div className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-600 text-sm">
                         <span>Kein Cape</span>

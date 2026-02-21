@@ -45,14 +45,14 @@ export default async function CapeCard({ cape }: CapeCardProps) {
                     </h3>
                 </Link>
 
-                <div className="flex items-center justify-center gap-2 mb-3 w-full">
+                <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 w-full group/player hover:text-orange-400 transition-colors">
                     <img 
                         src={`https://minotar.net/avatar/${cape.minecraft_name}/20`} 
                         alt={cape.minecraft_name} 
                         className="w-5 h-5 rounded-sm"
                     />
-                    <span className="text-sm text-zinc-400 truncate max-w-[150px]">{cape.minecraft_name}</span>
-                </div>
+                    <span className="text-sm text-zinc-400 group-hover/player:text-orange-400 transition-colors truncate max-w-[150px]">{cape.minecraft_name}</span>
+                </Link>
 
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
                     <div className="flex items-center gap-1.5 text-xs text-zinc-600 group-hover:text-zinc-400 transition-colors">

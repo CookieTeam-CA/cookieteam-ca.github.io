@@ -1,5 +1,5 @@
 import { getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
-import CapeViewer from "../../components/CapeViewer";
+import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, User, ShieldAlert, Layers, Globe, MessageCircle, History, Palette, BadgeCheck, Flag, Info } from "lucide-react";
@@ -78,45 +78,13 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
                     <div className="lg:col-span-1">
-                         <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-[3/4] relative group">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
-                            <div className="w-full h-full flex items-center justify-center">
-                                <CapeViewer 
-                                    capeUrl={currentCapeUrl}
-                                    minecraftName={displayName}
-                                    animation="walk"
-                                />
-                            </div>
-                            
-                            {player?.banned && (
-                                <div className="absolute top-4 right-4 z-20 bg-red-500/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-white font-bold border border-red-400/50 flex items-center gap-2 shadow-lg shadow-red-900/20">
-                                    <ShieldAlert size={16} />
-                                    BANNED
-                                </div>
-                            )}
-
-                            <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                                <h1 className="text-3xl font-nexa text-white mb-2 truncate">{displayName}</h1>
-                                {isCookieCapesUser ? (
-                                    currentCapeUrl ? (
-                                        <div className="text-zinc-300 flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                            Trägt Cape #{player.current_cape_id}
-                                        </div>
-                                    ) : (
-                                        <div className="text-zinc-500 flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-zinc-600"></span>
-                                            Kein Cape ausgerüstet
-                                        </div>
-                                    )
-                                ) : (
-                                    <div className="text-zinc-500 flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-zinc-600"></span>
-                                        Kein CookieCapes Nutzer
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <ProfileSkinDisplay 
+                            currentCapeUrl={currentCapeUrl}
+                            displayName={displayName}
+                            player={player}
+                            isCookieCapesUser={isCookieCapesUser}
+                            skinHistory={history?.skin_history}
+                        />
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
@@ -221,38 +189,6 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                         )}
                     </div>
                 </div>
-
-                {history?.skin_history && history.skin_history.length > 0 && (
-                    <div className="mb-16">
-                        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-                            <Palette className="text-orange-500" />
-                            Skin Verlauf
-                            <span className="bg-zinc-800 text-zinc-400 text-sm px-2 py-0.5 rounded-full ml-2">
-                                {history.skin_history.length}
-                            </span>
-                        </h2>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-                            {[...history.skin_history].reverse().map((skin, i) => (
-                                <div key={i} className="group bg-zinc-900/50 border border-white/5 rounded-xl p-3 hover:border-orange-500/30 transition-all hover:scale-105">
-                                    <div className="aspect-square relative mb-2 bg-black/30 rounded-lg overflow-hidden flex items-center justify-center">
-                                        <Image
-                                            src={`https://crafthead.net/avatar/${skin.hash}`}
-                                            alt={`Skin ${i + 1}`}
-                                            width={64}
-                                            height={64}
-                                            unoptimized
-                                            className="w-full h-full object-contain"
-                                            style={{ imageRendering: 'pixelated' }}
-                                        />
-                                    </div>
-                                    <div className="text-[10px] text-zinc-500 text-center truncate">
-                                        {new Date(skin.changed_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {isCookieCapesUser && (
                     <div className="space-y-6">

@@ -69,6 +69,7 @@ export default function CapeViewer({
 
     let viewer: SkinViewer | null = null;
     let resizeObserver: ResizeObserver | null = null;
+    let stopRotation: (() => void) | null = null;
 
     const initViewer = async () => {
         if (!canvasRef.current || !containerRef.current) return;
@@ -103,6 +104,14 @@ export default function CapeViewer({
             viewer.autoRotate = true;
             viewer.autoRotateSpeed = 0.5;
 
+            stopRotation = () => {
+                if (viewer) {
+                    viewer.autoRotate = false;
+                }
+            };
+            canvasRef.current.addEventListener("mousedown", stopRotation);
+            canvasRef.current.addEventListener("touchstart", stopRotation, { passive: true });
+
             loadTextures(viewer, capeUrl, skinUrl, minecraftName);
 
             resizeObserver = new ResizeObserver((entries) => {
@@ -129,6 +138,10 @@ export default function CapeViewer({
     initViewer();
 
     return () => {
+      if (stopRotation && canvasRef.current) {
+          canvasRef.current.removeEventListener("mousedown", stopRotation);
+          canvasRef.current.removeEventListener("touchstart", stopRotation);
+      }
       if (viewer) {
           try {
               viewer.dispose();
@@ -230,7 +243,7 @@ export default function CapeViewer({
   }
 
   return (
-    <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
+    <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center cursor-grab" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
       {hasLoaded ? (
         <>
             <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} w-full h-full`} />

@@ -48,6 +48,7 @@ export default function Cape3DViewer({ skinUrl, capeUrl, minecraftName }: Cape3D
 
         let viewer: SkinViewer | null = null;
         let resizeObserver: ResizeObserver | null = null;
+        let stopRotation: (() => void) | null = null;
 
         try {
             viewer = new SkinViewer({
@@ -70,6 +71,14 @@ export default function Cape3DViewer({ skinUrl, capeUrl, minecraftName }: Cape3D
 
             viewer.autoRotate = true;
             viewer.autoRotateSpeed = 0.5;
+
+            stopRotation = () => {
+                if (viewer) {
+                    viewer.autoRotate = false;
+                }
+            };
+            canvas.addEventListener("mousedown", stopRotation);
+            canvas.addEventListener("touchstart", stopRotation, { passive: true });
 
             viewerRef.current = viewer;
 
@@ -96,6 +105,10 @@ export default function Cape3DViewer({ skinUrl, capeUrl, minecraftName }: Cape3D
         }
 
         return () => {
+             if (stopRotation && canvas) {
+                 canvas.removeEventListener("mousedown", stopRotation);
+                 canvas.removeEventListener("touchstart", stopRotation);
+             }
              if (resizeObserver) resizeObserver.disconnect();
              if (viewer) {
                  try {

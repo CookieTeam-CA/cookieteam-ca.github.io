@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 const nexaHeavy = localFont({
-  src: "../public/fonts/Nexa-Heavy.ttf",
+  src: "../public/fonts/Nexa-Heavy.woff2",
   variable: "--font-nexa",
 });
 

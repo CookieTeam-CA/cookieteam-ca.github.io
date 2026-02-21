@@ -60,9 +60,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
-                    {/* Left Column: Cape Preview & Info */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Cape Viewer */}
                         <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-[4/3] relative group">
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
                             <div className="w-full h-full flex items-center justify-center">

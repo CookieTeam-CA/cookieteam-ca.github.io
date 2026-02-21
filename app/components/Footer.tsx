@@ -39,9 +39,9 @@ export default async function Footer() {
             </div>
         )}
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-zinc-400 font-medium">
-          <a href="/cookiecapes/wip" className="hover:text-orange-500 transition-colors">Impressum</a>
-          <a href="/cookiecapes/wip" className="hover:text-orange-500 transition-colors">Datenschutz</a>
-          <a href="/cookiecapes/wip" className="hover:text-orange-500 transition-colors">Kontakt</a>
+          <a href="/wip" className="hover:text-orange-500 transition-colors">Impressum</a>
+          <a href="/wip" className="hover:text-orange-500 transition-colors">Datenschutz</a>
+          <a href="/wip" className="hover:text-orange-500 transition-colors">Kontakt</a>
           <a href="/cookiecapes/rules" className="hover:text-orange-500 transition-colors">Regeln</a>
           <a href="/cookiecapes/tutorial" className="hover:text-orange-500 transition-colors">Tutorial</a>
         </div>
