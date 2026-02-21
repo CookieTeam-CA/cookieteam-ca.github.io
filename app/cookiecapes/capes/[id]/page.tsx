@@ -85,7 +85,6 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                             </div>
                         </div>
 
-                        {/* Cape Stats */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                 <Hash className="text-orange-500 mb-2" size={20} />
@@ -102,7 +101,6 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                                 <span className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Zuletzt aktualisiert</span>
                                 <span className="text-sm font-medium">{new Date(cape.last_edited).toLocaleDateString()}</span>
                             </div>
-                            {/* Placeholder for potential other stats */}
                             <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                 <User className="text-orange-500 mb-2" size={20} />
                                 <span className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Author</span>
@@ -111,7 +109,6 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                         </div>
                     </div>
 
-                    {/* Right Column: Active Users */}
                     <div className="lg:col-span-1">
                         <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 h-full flex flex-col">
                             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">

@@ -61,12 +61,12 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
             <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-orange-500/50 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-white/15 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
                 <ChevronLeft size={20} className="text-white" />
             </button>
 
-            <div className="flex items-center gap-2 px-2">
+            <div className="flex items-center gap-2 px-2 select-none">
                 {getPageNumbers().map((page, index) => (
                     page === '...' ? (
                         <span key={`dots-${index}`} className="text-zinc-600 px-2">...</span>
@@ -77,7 +77,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
                             className={`min-w-[40px] h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
                                 currentPage === page 
                                     ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20" 
-                                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white hover:border-white/30"
+                                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white hover:border-white/15 cursor-pointer"
                             }`}
                         >
                             {page}
@@ -89,7 +89,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
             <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-orange-500/50 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-white/15 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
                 <ChevronRight size={20} className="text-white" />
             </button>
