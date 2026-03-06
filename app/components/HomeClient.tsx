@@ -227,8 +227,8 @@ const TimelineSection = () => {
     { title: "CookieAttack 2", status: "VERGANGENHEIT", year: "2023" },
     { title: "CookieAttack 3", status: "VERGANGENHEIT", year: "2024" },
     { title: "CookieAttack 4", status: "VERGANGENHEIT", year: "2024" },
-    { title: "CookieAttack 5", status: "AKTUELL", year: "2025" },
-    { title: "CookieAttack 6", status: "GEPLANNT", year: "2026" },
+    { title: "CookieAttack 5", status: "VERGANGENHEIT", year: "2025" },
+    { title: "CookieAttack 6", status: "COMMING SOON", year: "2026" },
   ];
 
   useGSAP(() => {
@@ -284,32 +284,11 @@ const DownloadSection = () => {
   
   const downloads = [
     { 
-      title: "CookieAttack 1", 
-      available: false, 
-      url: "", 
-      sizeZip: "", 
-      sizeUnpacked: "" 
-    },
-    { 
-      title: "CookieAttack 2", 
-      available: false, 
-      url: "", 
-      sizeZip: "", 
-      sizeUnpacked: "" 
-    },
-    { 
       title: "CookieAttack 3", 
       available: true, 
       url: "https://cloud.cookieattack.de/public.php/dav/files/GAw6Q6QBbr4dDb2/?accept=zip", 
       sizeZip: "30,8GB", 
       sizeUnpacked: "ca. 46GB" 
-    },
-    { 
-      title: "CookieAttack 4", 
-      available: false, 
-      url: "", 
-      sizeZip: "", 
-      sizeUnpacked: "" 
     },
     { 
       title: "CookieAttack 5", 
