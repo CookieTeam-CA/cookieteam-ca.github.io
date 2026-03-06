@@ -7,6 +7,18 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Asset } from "../lib/types";
 
+const sanitizeUrl = (url: string) => {
+    try {
+        const parsed = new URL(url, "https://example.com");
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            return url;
+        }
+        return "about:blank";
+    } catch {
+        return "about:blank";
+    }
+};
+
 export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
@@ -133,7 +145,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                         {asset.type === 'video' ? (
                              <div className="relative w-full h-full">
                                 <video 
-                                    src={asset.src} 
+                                    src={sanitizeUrl(asset.src)} 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                     muted
                                     playsInline
@@ -199,7 +211,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                     >
                         {currentAsset.type === 'video' ? (
                              <video 
-                                src={currentAsset.src} 
+                                src={sanitizeUrl(currentAsset.src)} 
                                 className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 
                                 controls
                                 autoPlay
