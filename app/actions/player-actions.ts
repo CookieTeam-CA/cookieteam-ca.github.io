@@ -36,7 +36,7 @@ export async function banPlayer(identifier: string, reason: string = "Regelverst
 
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            console.error(`Failed to ban player ${identifier}:`, errorData);
+            console.error("Failed to ban player %s:", identifier, errorData);
             return { success: false, error: `Failed to ban: ${res.statusText}` };
         }
         

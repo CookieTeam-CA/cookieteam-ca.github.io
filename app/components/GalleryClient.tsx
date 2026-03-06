@@ -7,6 +7,30 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Asset } from "../lib/types";
 
+const sanitizeUrl = (url: string) => {
+    if (typeof url !== "string") {
+        return "about:blank";
+    }
+
+    if (!url.startsWith("/galerie/")) {
+        return "about:blank";
+    }
+
+    const filenamePart = url.slice("/galerie/".length);
+
+    if (
+        !filenamePart ||
+        filenamePart.includes("..") ||
+        filenamePart.includes("\\") ||
+        filenamePart.startsWith("/")
+    ) {
+        return "about:blank";
+    }
+
+    const safeFilename = encodeURIComponent(decodeURIComponent(filenamePart));
+    return `/galerie/${safeFilename}`;
+};
+
 export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
@@ -97,7 +121,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                         className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
                             selectedSeason === "all" 
                             ? "bg-orange-500 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]"
-                            : "bg-white/5 border-white/10 hover:bg-white/10 text-zinc-300"
+                            : "bg-white/5 border-white/10 hover:bg-white/10 text-zinc-300 cursor-pointer"
                         }`}
                     >
                         Alle
@@ -109,7 +133,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                             className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border flex gap-1 ${
                                 selectedSeason === season 
                                 ? "bg-orange-500 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]"
-                                : "bg-white/5 border-white/10 hover:bg-white/10"
+                                : "bg-white/5 border-white/10 hover:bg-white/10 cursor-pointer"
                             }`}
                         >
                             <span className={selectedSeason === season ? "text-white" : "text-orange-500"}>Cookie</span><span className={selectedSeason === season ? "text-white" : "text-zinc-300"}>Attack {season}</span>
@@ -133,7 +157,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                         {asset.type === 'video' ? (
                              <div className="relative w-full h-full">
                                 <video 
-                                    src={asset.src} 
+                                    src={sanitizeUrl(asset.src)} 
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                                     muted
                                     playsInline
@@ -199,7 +223,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                     >
                         {currentAsset.type === 'video' ? (
                              <video 
-                                src={currentAsset.src} 
+                                src={sanitizeUrl(currentAsset.src)} 
                                 className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 
                                 controls
                                 autoPlay

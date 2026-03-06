@@ -22,7 +22,7 @@ export function getGalleryAssets(): Asset[] {
 
       return {
         id: index + 1,
-        src: `/galerie/${file}`,
+        src: `/galerie/${encodeURIComponent(file)}`,
         type,
         season,
       };
