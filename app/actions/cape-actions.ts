@@ -31,7 +31,7 @@ export async function deleteCape(capeId: number) {
 
         if (!res.ok) {
             const errorText = await res.text();
-            console.error(`Failed to delete cape ${capeId}:`, errorText);
+            console.error("Failed to delete cape %s:", capeId, errorText);
             return { success: false, error: `Failed to delete: ${res.statusText}` };
         }
         
