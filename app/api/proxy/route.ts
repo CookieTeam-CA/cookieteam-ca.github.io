@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Invalid URL", { status: 400 });
   }
 
-  const allowedDomains = ["api.cookieattack.de", "minotar.net", "crafatar.com", "mc-heads.net", "visage.surgeplay.com"];
+  const allowedDomains = ["api.cookieattack.de", "minotar.net", "crafatar.com", "mc-heads.net", "visage.surgeplay.com", "crafthead.net", "cookieattack.de", "www.cookieattack.de"];
   if (!allowedDomains.includes(targetUrl.hostname)) {
     return new NextResponse("Forbidden proxy domain", { status: 403 });
   }
