@@ -132,7 +132,7 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
             </span>
-            <span className="text-sm font-medium text-zinc-300">Coming Soon: CookieAttack 6</span>
+            <span className="text-sm font-medium text-zinc-300">Cooking on CookieAttack 6</span>
           </div>
 
           <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter text-center overflow-hidden leading-tight">
