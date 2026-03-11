@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Asset } from "../lib/types";
+import ShinyText from "@/components/ShinyText";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const TimelineSection = dynamic(() => import("./TimelineSection"));
+const DownloadSection = dynamic(() => import("./DownloadSection"));
+const GallerySection = dynamic(() => import("./GallerySection"));
 
 const stats = [
   { label: "Teilnehmer", value: 350, suffix: "+", decimals: 0 },
@@ -27,6 +32,7 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
   const pillRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const joinSectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -132,7 +138,13 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
             </span>
-            <span className="text-sm font-medium text-zinc-300">Cooking on CookieAttack 6</span>
+            <span className="text-sm font-medium text-zinc-300">
+              <ShinyText 
+                text="Cooking on CookieAttack 6"
+                speed={2}
+                yoyo={true}
+              />
+            </span>
           </div>
 
           <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter text-center overflow-hidden leading-tight">
@@ -218,309 +230,3 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
     </div>
   );
 }
-
-const TimelineSection = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  
-  const timelineEvents = [
-    { title: "CookieAttack 1", status: "VERGANGENHEIT", year: "2022" },
-    { title: "CookieAttack 2", status: "VERGANGENHEIT", year: "2023" },
-    { title: "CookieAttack 3", status: "VERGANGENHEIT", year: "2024" },
-    { title: "CookieAttack 4", status: "VERGANGENHEIT", year: "2024" },
-    { title: "CookieAttack 5", status: "VERGANGENHEIT", year: "2025" },
-    { title: "CookieAttack 6", status: "COMMING SOON", year: "2026" },
-  ];
-
-  useGSAP(() => {
-    gsap.from(".timeline-node", {
-      y: 50,
-      opacity: 0,
-      stagger: 0.1,
-      scrollTrigger: {
-        trigger: scrollRef.current,
-        start: "top 80%",
-      }
-    });
-  }, { scope: scrollRef });
-
-  return (
-    <div ref={scrollRef} className="w-full py-24 bg-[#050505] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="relative">
-          <div className="absolute top-1/2 left-0 w-full h-0.5 bg-zinc-800 -translate-y-1/2 hidden md:block"></div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-8 md:gap-4 relative">
-            {timelineEvents.map((event, i) => (
-              <div key={i} className="timeline-node flex flex-col items-center gap-4 relative z-10">
-                <div className={`
-                  w-8 h-8 rounded-full border-4 flex items-center justify-center transition-all duration-500
-                  ${event.status === 'VERGANGENHEIT' ? 'bg-zinc-800 border-zinc-800' : ''}
-                  ${event.status === 'AKTUELL' ? 'bg-orange-500 border-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-125' : ''}
-                  ${event.status === 'GEPLANNT' ? 'bg-[#050505] border-zinc-700 border-dashed' : ''}
-                `}>
-                  {event.status === 'VERGANGENHEIT' && <div className="w-2.5 h-2.5 bg-zinc-500 rounded-full" />}
-                </div>
-                
-                <div className="text-center">
-                  <div className={`font-nexa text-lg ${event.status === 'AKTUELL' ? 'text-orange-500' : 'text-white'}`}>
-                    {event.title}
-                  </div>
-                  <div className="text-sm text-zinc-500">{event.year}</div>
-                  <div className="text-xs font-bold uppercase tracking-wider mt-1 text-zinc-600">
-                    {event.status}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const DownloadSection = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  
-  const downloads = [
-    { 
-      title: "CookieAttack 3", 
-      available: true, 
-      url: "https://cloud.cookieattack.de/public.php/dav/files/GAw6Q6QBbr4dDb2/?accept=zip", 
-      sizeZip: "30,8GB", 
-      sizeUnpacked: "ca. 46GB" 
-    },
-    { 
-      title: "CookieAttack 5", 
-      available: true, 
-      url: "https://cloud.cookieattack.de/public.php/dav/files/kWoxfct2p5LGTYq/?accept=zip", 
-      sizeZip: "20,2GB", 
-      sizeUnpacked: "ca. 25GB" 
-    },
-  ];
-
-  useGSAP(() => {
-    gsap.set(".download-card", { 
-      y: 30, 
-      opacity: 0 
-    });
-
-    gsap.to(".download-card", {
-      y: 0,
-      opacity: 1,
-      stagger: 0.1,
-      duration: 0.6,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: scrollRef.current,
-        start: "top 85%",
-        toggleActions: "play none none reverse"
-      }
-    });
-  }, { scope: scrollRef });
-
-  return (
-    <div id="downloads" ref={scrollRef} className="w-full py-24 bg-[#050505]">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col items-center mb-16 text-center">
-            <h2 className="font-nexa text-4xl md:text-5xl text-white mb-4">Weltdownloads</h2>
-            <div className="h-1 w-20 bg-orange-500 rounded-full mb-6"></div>
-            <p className="text-zinc-400 max-w-2xl text-lg">
-                Hier kannst du die Welten der vergangenen CookieAttacks herunterladen.
-            </p>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          {downloads.map((dl, i) => (
-            <div 
-              key={i} 
-              className="download-card group relative p-6 rounded-2xl border border-white/5 bg-zinc-900/40 transition-all duration-300 hover:bg-zinc-800/60"
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex flex-col gap-1">
-                  <h3 className="font-nexa text-2xl text-white">{dl.title}</h3>
-                </div>
-                
-                {dl.available ? (
-                    <div className="flex flex-wrap items-center gap-8">
-                        <div className="flex gap-6">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] uppercase tracking-widest text-zinc-500 mb-0.5">ZIP Archiv</span>
-                                <span className="text-zinc-300 font-medium text-sm">{dl.sizeZip}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] uppercase tracking-widest text-zinc-500 mb-0.5">Entpackt</span>
-                                <span className="text-zinc-300 font-medium text-sm">{dl.sizeUnpacked}</span>
-                            </div>
-                        </div>
-
-                        <a 
-                            href={dl.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 text-white font-bold transition-all hover:bg-orange-600 active:scale-95 whitespace-nowrap"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                            Download
-                        </a>
-                    </div>
-                ) : (
-                    <div className="px-6 py-2.5 rounded-xl border border-white/5 bg-white/5 text-zinc-600 font-bold opacity-50 cursor-not-allowed">
-                        Nicht Verfügbar
-                    </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-const GallerySection = ({ allAssets }: { allAssets: Asset[] }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [carouselAssets, setCarouselAssets] = useState<Asset[]>([]);
-    
-    const slidesRef = useRef<HTMLDivElement>(null);
-    const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    const totalSlides = carouselAssets.length;
-    const slideDuration = 0.8;
-    const autoPlayDelay = 4000;
-
-    useEffect(() => {
-        if (allAssets.length > 0) {
-            const shuffled = [...allAssets].sort(() => 0.5 - Math.random());
-            setCarouselAssets(shuffled.slice(0, 8));
-        }
-    }, [allAssets]);
-
-    const goToSlide = (index: number) => {
-        if (totalSlides === 0) return;
-        setCurrentIndex((prevIndex) => {
-            let newIndex = index;
-            if (newIndex < 0) newIndex = totalSlides - 1;
-            if (newIndex >= totalSlides) newIndex = 0;
-            return newIndex;
-        });
-        resetAutoPlay();
-    };
-
-    const nextSlide = () => goToSlide(currentIndex + 1);
-    const prevSlide = () => goToSlide(currentIndex - 1);
-
-    const resetAutoPlay = () => {
-        if (autoPlayIntervalRef.current) {
-            clearInterval(autoPlayIntervalRef.current);
-        }
-        if (totalSlides > 0) {
-             autoPlayIntervalRef.current = setInterval(() => {
-                setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
-            }, autoPlayDelay);
-        }
-    };
-
-    useEffect(() => {
-        resetAutoPlay();
-        return () => {
-            if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
-        };
-    }, [totalSlides]);
-
-    useGSAP(() => {
-        if (slidesRef.current && totalSlides > 0) {
-            gsap.to(slidesRef.current, {
-                xPercent: -currentIndex * 100,
-                duration: slideDuration,
-                ease: "power3.out",
-            });
-        }
-    }, { dependencies: [currentIndex, totalSlides], scope: slidesRef });
-
-    return (
-        <div className="w-full py-24 bg-[#050505] overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="relative w-full overflow-hidden rounded-lg shadow-xl border border-white/10 mb-12">
-                    <div ref={slidesRef} className="flex w-full h-[400px] md:h-[500px] lg:h-[600px]">
-                        {carouselAssets.map((asset, index) => (
-                            <div 
-                                key={asset.id} 
-                                className="flex-none w-full h-full relative"
-                            >
-                                <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-white/10 flex gap-1">
-                                    <span className="text-orange-500">Cookie</span>
-                                    <span className="text-white">Attack {asset.season}</span>
-                                </div>
-
-                                {asset.type === 'video' ? (
-                                    <video 
-                                        src={asset.src} 
-                                        className="w-full h-full object-cover" 
-                                        autoPlay 
-                                        loop 
-                                        muted 
-                                        playsInline
-                                    />
-                                ) : (
-                                    <Image 
-                                        src={asset.src} 
-                                        alt="Gallery Image"
-                                        fill
-                                        className="object-cover"
-                                        priority={index === 0}
-                                    />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {totalSlides > 1 && (
-                        <>
-                            <button 
-                                onClick={prevSlide} 
-                                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors z-10 cursor-pointer backdrop-blur-sm border border-white/10"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                </svg>
-                            </button>
-                            <button 
-                                onClick={nextSlide} 
-                                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors z-10 cursor-pointer backdrop-blur-sm border border-white/10"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                </svg>
-                            </button>
-                        </>
-                    )}
-
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                        {carouselAssets.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => goToSlide(index)}
-                                className={`w-3 h-3 rounded-full transition-all cursor-pointer shadow-lg ${
-                                    currentIndex === index ? 'bg-orange-500 w-5' : 'bg-white/50 hover:bg-white/70'
-                                }`}
-                            ></button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="flex justify-center">
-                    <Link 
-                        href="/galerie"
-                        className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
-                    >
-                         <span className="relative z-10">Alle Anzeigen</span>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
-};
