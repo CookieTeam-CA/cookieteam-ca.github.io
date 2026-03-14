@@ -8,6 +8,7 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Asset } from "../lib/types";
 import ShinyText from "@/components/ShinyText";
+import LightRays from "@/components/LightRays";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -128,8 +129,23 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
 
   return (
     <div ref={containerRef} className="relative bg-[#050505] text-white overflow-x-hidden">
-      <div ref={heroSectionRef} className="relative flex min-h-screen flex-col items-center justify-center z-10">
-        <div className="flex flex-col items-center gap-10">
+      <div ref={heroSectionRef} className="relative flex min-h-screen flex-col items-center justify-center z-10 overflow-hidden" style={{width: '100%', height: '600px'}}>
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#ffffff"
+            raysSpeed={1}
+            lightSpread={0.5}
+            rayLength={1}
+            followMouse={false}
+            noiseAmount={0.1}
+            distortion={0}
+            className="rays"
+            fadeDistance={1}
+            saturation={1}
+          />
+        </div>
+        <div className="relative z-10 flex flex-col items-center gap-10">
           <div 
             ref={pillRef} 
             className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 backdrop-blur-md opacity-0"
