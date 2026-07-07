@@ -236,11 +236,30 @@ export default function SetupWizard({ session }: { session: Session | null }) {
             <h3 className="text-3xl font-bold text-white mb-6">Regeln & Bedingungen</h3>
             
             <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-6 text-left mb-6 h-50 overflow-y-auto text-sm text-zinc-300 space-y-4 custom-scrollbar">
-              <p><strong>1. Respektvoller Umgang:</strong> Behandle alle Spieler mit Respekt. Beleidigungen, Rassismus und Diskriminierung sind strengstens untersagt.</p>
-              <p><strong>2. Kein Cheating:</strong> Die Nutzung von modifizierten Clients, X-Ray oder anderen unfairen Vorteilen führt zu einem sofortigen Ausschluss.</p>
-              <p><strong>3. Griefing & Stealing:</strong> Zerstöre keine fremden Bauwerke und stehle keine Items, es sei denn es ist in speziellen Events ausdrücklich erlaubt.</p>
-              <p><strong>4. Anweisungen des Teams:</strong> Den Anweisungen der Moderatoren und Administratoren ist Folge zu leisten.</p>
-              <p>Mir ist bewusst, dass bei Zuwiderhandlung ein temporärer oder permanenter Ausschluss aus dem Projekt erfolgen kann.</p>
+              <p className="font-semibold text-white border-b border-white/10 pb-1">Allgemeine Regeln</p>
+              <p><strong>1. Respektvolles Miteinander:</strong> Keine Diskriminierung oder Beleidigungen gegenüber anderen (außer in beiderseitigem, klar erkennbarem, humorvollem Kontext. Bei Zweifeln entscheidet das Team).</p>
+              <p><strong>2. Sprachaufzeichnung:</strong> Mit dem Betreten des Servers akzeptierst du, dass deine Stimme beim Nutzen des Voicechats ggf. aufgezeichnet werden kann.</p>
+              <p><strong>3. Verbotene Inhalte:</strong> Rassistische, extremistische, sexistische und pornografische Inhalte sind strengstens verboten.</p>
+              <p><strong>4. Verhalten & Belästigung:</strong> Provokatives oder unangemessenes Verhalten ist zu vermeiden. Sexuelle, körperliche oder aufdringliche Belästigung ist untersagt. Sei kein Arsch!</p>
+              <p><strong>5. Team-Vorbehalt:</strong> Wir nehmen uns das Recht heraus, jemanden zu bestrafen, ohne dass es einen expliziten Regelbruch gab, falls die Person etwas getan hat, was wir als unangemessen empfinden.</p>
+
+              <p className="font-semibold text-white border-b border-white/10 pt-2 pb-1">Chat- & Voice-Regeln</p>
+              <p><strong>6. Spam & Falschinformationen:</strong> Kein übermäßiger Spam und keine Verbreitung von Falschinformationen.</p>
+              <p><strong>7. Soundboards & Störgeräusche:</strong> Soundboards sind erlaubt – wenn Mitspieler sich genervt fühlen, müsst ihr jedoch aufhören. Vermeide störende Hintergrundgeräusche (Musik, Essen, Videos etc.). Nutze im Zweifel Push-to-Talk.</p>
+              <p><strong>8. Mikrofon-Nutzung:</strong> Nutze das Mikrofon nicht, um andere Nutzer bewusst zu belästigen oder zu provozieren.</p>
+
+              <p className="font-semibold text-white border-b border-white/10 pt-2 pb-1">Spielregeln</p>
+              <p><strong>9. Server-Performance:</strong> Lag-Maschinen und andere Methoden, die den Server zum Laggen bringen könnten, sind untersagt.</p>
+              <p><strong>10. PvP & Fairplay:</strong> Random PvP ohne Kontext ist unerwünscht. PvP sollte fair und nachvollziehbar sein. Wenn du jemanden tötest, sei fair und gib ihm einen Teil seines Loots zurück – wir wollen niemandem den Spielspaß versauen! Bei Streitfällen entscheidet das Team.</p>
+              <p><strong>11. Hacking & Duplizieren:</strong> Hacking (Kill-Aura, X-Ray, etc.) ist verboten. Duplikations-Maschinen für das Drachenei oder Maschinen, die jeden beliebigen Block duplizieren können, sind untersagt.</p>
+              <p><strong>12. Accounts & Claims:</strong> Pro Spieler ist nur ein Account erlaubt (Verdacht auf Multiaccounting führt zu Maßnahmen). Es ist verboten, geclaimte Bereiche mit eigenen Claims zu umrunden.</p>
+
+              <p className="font-semibold text-white border-b border-white/10 pt-2 pb-1">Mod-Regeln</p>
+              <p><strong>13. Erlaubte Mods:</strong> Clientseitige Freecam-Mods (z. B. für Cinematic-Aufnahmen) sind erlaubt, solange keine X-Ray- oder Wallhack-Funktion aktiv ist und man nicht durch solide Blöcke sehen oder fliegen kann.</p>
+
+              <p className="font-semibold text-white border-b border-white/10 pt-2 pb-1">Bestrafungen</p>
+              <p>Bei Regelverstößen behält sich das Team vor, entsprechende Maßnahmen (temporärer oder permanenter Ausschluss) zu ergreifen – je nach Schwere des Verstoßes.</p>
+              <p>Die Regeln können sich jederzeit ändern, die neuste Version ist immer auf den Discord Server zu finden!</p>
             </div>
 
             <label className="flex items-center gap-3 cursor-pointer group mb-8 text-left">
