@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import gsap from "gsap";
@@ -9,6 +9,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Asset } from "../lib/types";
 import ShinyText from "@/components/ShinyText";
 import LightRays from "@/components/LightRays";
+import { SlotText } from "slot-text/react";
+import "slot-text/style.css";
+import { Session } from "next-auth";
+import SetupWizard from "./SetupWizard";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,7 +28,9 @@ const stats = [
   { label: "avg Latenz", value: 45, prefix: "< ", suffix: " ms", decimals: 0 },
 ];
 
-export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }) {
+const rotatingWords = ["Attack", "Team", "Capes"] as const;
+
+export default function HomeClient({ initialAssets, session }: { initialAssets: Asset[], session: Session | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroSectionRef = useRef<HTMLDivElement>(null);
   const statsSectionRef = useRef<HTMLDivElement>(null);
@@ -34,6 +40,15 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const joinSectionRef = useRef<HTMLDivElement>(null);
+  const [activeWordIndex, setActiveWordIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveWordIndex((current) => (current + 1) % rotatingWords.length);
+    }, 2400);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -156,7 +171,7 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
             </span>
             <span className="text-sm font-medium text-zinc-300">
               <ShinyText 
-                text="Cooking on CookieAttack 6"
+                text="CookieAttack 6 starting soon™..."
                 speed={2}
                 yoyo={true}
               />
@@ -168,7 +183,14 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
               {splitText("Cookie")}
             </span>
             <span ref={titleEndRef} className="inline-block text-white">
-              {splitText("Attack")}
+              <SlotText
+                text={rotatingWords[activeWordIndex]}
+                options={{
+                  skipUnchanged: false,
+                  duration: 800,
+                  bounce: 0
+                }}
+              />
             </span>
           </h1>
 
@@ -180,12 +202,6 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
               <span className="relative z-10">CookieAttack</span>
               <div className="absolute inset-0 -z-10 translate-y-full bg-orange-500 transition-transform duration-300 group-hover:translate-y-0"></div>
             </button>
-            <Link 
-              href="/cookieteam"
-              className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
-            >
-               <span className="relative z-10">CookieTeam</span>
-            </Link>
 
             <Link 
               href="/cookiecapes"
@@ -196,6 +212,9 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
           </div>
         </div>
       </div>
+      
+      <SetupWizard session={session} />
+
       <div ref={statsSectionRef} className="relative flex min-h-[50vh] w-full items-center justify-center py-20 bg-[#050505]">
           <div className="w-full max-w-7xl px-6">
              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 text-center">
@@ -225,9 +244,9 @@ export default function HomeClient({ initialAssets }: { initialAssets: Asset[] }
 
       <div className="relative flex w-full flex-col items-center justify-center py-32 bg-[#050505] text-center gap-8">
         <h2 className="font-nexa text-4xl md:text-6xl text-white max-w-4xl px-4 leading-tight">
-          Bock auf das Projekt? 
+          Du hast so weit gescrollt?
           <br />
-          <span className="text-orange-500">Joine Jetzt!</span>
+          <span className="text-orange-500">Dann solltest du jetzt joinen!</span>
         </h2>
         <a 
           href="https://dc.cookieattack.de" 
