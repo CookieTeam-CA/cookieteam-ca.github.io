@@ -18,15 +18,38 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [rulesAccepted, setRulesAccepted] = useState(false);
+  const wizardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const isReturning = typeof window !== "undefined" && sessionStorage.getItem("discord_login_scroll") === "true";
+    if (isReturning) {
+      setTimeout(() => {
+        wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 800);
+    }
+  }, []);
 
   useEffect(() => {
     if (session) {
       checkRegistration().then(res => {
         setIsRegistered(res.registered);
+        
+        const isReturning = typeof window !== "undefined" && sessionStorage.getItem("discord_login_scroll") === "true";
+        if (isReturning) {
+          sessionStorage.removeItem("discord_login_scroll");
+        }
+
         if (res.registered) {
           setStep(10);
-        } else if (step === 0) {}
+        } else if (isReturning) {
+          setStep(2);
+        }
       });
+    } else {
+      const isReturning = typeof window !== "undefined" && sessionStorage.getItem("discord_login_scroll") === "true";
+      if (isReturning) {
+        sessionStorage.removeItem("discord_login_scroll");
+      }
     }
   }, [session]);
 
@@ -40,6 +63,9 @@ export default function SetupWizard({ session }: { session: Session | null }) {
 
   const handleLogin = async () => {
     setIsLoading(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("discord_login_scroll", "true");
+    }
     await login();
   };
 
@@ -102,7 +128,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto my-12 px-6">
+    <div ref={wizardRef} className="relative w-full max-w-4xl mx-auto my-12 px-6">
 
       
       <div className="relative z-10 bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl transition-all duration-500 overflow-hidden min-h-112.5 flex flex-col items-center justify-center">
