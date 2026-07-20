@@ -21,7 +21,7 @@ export default async function CookieCapesPage() {
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
       <CapeHero/>
 
-      <Suspense fallback={<div className="h-[500px] w-full flex items-center justify-center text-zinc-500">Lade Capes...</div>}>
+      <Suspense fallback={<div className="h-125 w-full flex items-center justify-center text-zinc-500">Lade Capes...</div>}>
          <RandomCapes capes={capes} />
       </Suspense>
 

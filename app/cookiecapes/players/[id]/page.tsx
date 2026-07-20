@@ -1,12 +1,11 @@
 import { getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, User, ShieldAlert, Layers, Globe, MessageCircle, History, Palette, BadgeCheck, Flag, Info } from "lucide-react";
+import { ArrowLeft, User, Layers, Globe, MessageCircle, History, BadgeCheck, Info } from "lucide-react";
 import Footer from "../../../components/Footer";
 import CapeCard from "../../components/CapeCard";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 interface PageProps {
     params: Promise<{ id: string }>;

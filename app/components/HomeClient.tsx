@@ -39,7 +39,6 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
   const pillRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const joinSectionRef = useRef<HTMLDivElement>(null);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
 
   useEffect(() => {
@@ -169,7 +168,7 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
             </span>
-            <span className="text-sm font-medium text-zinc-300">
+            <span className="text-sm font-medium text-zinc-300 select-none">
               <ShinyText 
                 text="CookieAttack 6 starting soon™..."
                 speed={2}
@@ -208,6 +207,13 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
               className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
             >
                <span className="relative z-10">CookieCapes</span>
+            </Link>
+
+            <Link 
+              href="/leaderboards/points"
+              className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
+            >
+               <span className="relative z-10">Leaderboards</span>
             </Link>
           </div>
         </div>

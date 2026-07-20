@@ -395,7 +395,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
                   disabled={isLoading}
                   className="rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 px-8 py-3 font-medium transition-all border border-red-500/20 disabled:opacity-50 cursor-pointer"
                 >
-                  {isLoading ? "Bitte warten..." : "Wieder abmelden"}
+                  {isLoading ? "Bitte warten..." : "Abmelden"}
                 </button>
             </div>
           </div>
