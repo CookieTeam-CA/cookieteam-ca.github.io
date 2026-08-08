@@ -16,7 +16,7 @@ export default function TimelineSection() {
     { title: "CookieAttack 3", status: "VERGANGENHEIT", year: "2024" },
     { title: "CookieAttack 4", status: "VERGANGENHEIT", year: "2024" },
     { title: "CookieAttack 5", status: "VERGANGENHEIT", year: "2025" },
-    { title: "CookieAttack 6", status: "COMMING SOON", year: "2026" },
+    { title: "CookieAttack 6", status: "AKTUELL", year: "2026" },
   ];
 
   useGSAP(() => {

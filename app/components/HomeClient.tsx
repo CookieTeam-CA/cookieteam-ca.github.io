@@ -36,11 +36,47 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
   const statsSectionRef = useRef<HTMLDivElement>(null);
   const titleStartRef = useRef<HTMLSpanElement>(null);
   const titleEndRef = useRef<HTMLSpanElement>(null);
-  const pillRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLButtonElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const joinSectionRef = useRef<HTMLDivElement>(null);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
+  const [serverStatus, setServerStatus] = useState<{
+    online: boolean;
+    players: { online: number; max: number } | null;
+    loading: boolean;
+  }>({ online: false, players: null, loading: true });
+  const [copyToast, setCopyToast] = useState<{ x: number; y: number; id: number } | null>(null);
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("https://api.mcstatus.io/v2/status/java/play.cookieattack.de");
+        if (!res.ok) throw new Error("Failed to fetch server status");
+        const data = await res.json();
+        setServerStatus({
+          online: !!data.online,
+          players: data.players ? { online: data.players.online ?? 0, max: data.players.max ?? 0 } : null,
+          loading: false,
+        });
+      } catch (err) {
+        console.error("Error fetching Minecraft server status:", err);
+        setServerStatus({ online: false, players: null, loading: false });
+      }
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleCopyIp = (e: React.MouseEvent<HTMLButtonElement>) => {
+    navigator.clipboard.writeText("play.cookieattack.de");
+    setCopyToast({ x: e.clientX, y: e.clientY - 10, id: Date.now() });
+    setTimeout(() => {
+      setCopyToast(null);
+    }, 1000);
+  };
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -161,22 +197,46 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
           />
         </div>
         <div className="relative z-10 flex flex-col items-center gap-10">
-          <div 
-            ref={pillRef} 
-            className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 backdrop-blur-md opacity-0"
+          <button
+            ref={pillRef}
+            onClick={handleCopyIp}
+            className="group relative flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 backdrop-blur-md opacity-0 transition-all duration-300 hover:bg-white/10 cursor-pointer select-none"
           >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+              {serverStatus.loading ? (
+                <span className="h-2.5 w-2.5 rounded-full bg-zinc-500 animate-pulse" />
+              ) : serverStatus.online ? (
+                <>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                </>
+              ) : (
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+              )}
             </span>
-            <span className="text-sm font-medium text-zinc-300">
-              <ShinyText 
-                text="CookieAttack 6 starting soon™..."
-                speed={2}
-                yoyo={true}
-              />
-            </span>
-          </div>
+
+            <div className="flex items-center gap-2.5 text-sm font-medium">
+              <span className="text-zinc-200 group-hover:text-white transition-colors">
+                <ShinyText text="play.cookieattack.de" speed={2.5} yoyo={true} />
+              </span>
+
+              <span className="h-3.5 w-[1px] bg-white/20" />
+
+              {serverStatus.loading ? (
+                <span className="text-zinc-400 text-xs font-normal">Status wird geladen...</span>
+              ) : serverStatus.online ? (
+                <span className="text-emerald-400 text-xs font-semibold flex items-center gap-1">
+                  {serverStatus.players !== null && (
+                    <span className="text-zinc-300 font-normal">
+                      ({serverStatus.players.online}{serverStatus.players.max ? `/${serverStatus.players.max}` : ""} Spieler)
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="text-rose-400 text-xs font-semibold">Offline</span>
+              )}
+            </div>
+          </button>
 
           <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter text-center overflow-hidden leading-tight">
             <span ref={titleStartRef} className="inline-block text-orange-500">
@@ -262,6 +322,16 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
           </span>
         </a>
       </div>
+
+      {copyToast && (
+        <div
+          key={copyToast.id}
+          style={{ left: copyToast.x, top: copyToast.y }}
+          className="fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-full px-2.5 py-1 text-xs font-medium text-green-400 bg-black/90 rounded-full shadow-lg backdrop-blur-md animate-in fade-in zoom-in-90 duration-150"
+        >
+          Kopiert!
+        </div>
+      )}
     </div>
   );
 }
