@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useTransform } from 'motion/react';
+import { useMotionValue, useAnimationFrame, useTransform, useMotionValueEvent } from 'motion/react';
 
 interface ShinyTextProps {
   text: string;
@@ -29,6 +29,7 @@ const ShinyText: React.FC<ShinyTextProps> = ({
   delay = 0
 }) => {
   const [isPaused, setIsPaused] = useState(false);
+  const spanRef = useRef<HTMLSpanElement>(null);
   const progress = useMotionValue(0);
   const elapsedRef = useRef(0);
   const lastTimeRef = useRef<number | null>(null);
@@ -98,7 +99,10 @@ const ShinyText: React.FC<ShinyTextProps> = ({
   }, [direction]);
 
   // Transform: p=0 -> 150% (shine off right), p=100 -> -50% (shine off left)
-  const backgroundPosition = useTransform(progress, p => `${150 - p * 2}% center`);
+  const backgroundPosition = useTransform(progress, [0, 100], ['150% center', '-50% center']);
+  useMotionValueEvent(backgroundPosition, 'change', position => {
+    if (spanRef.current) spanRef.current.style.backgroundPosition = position;
+  });
 
   const handleMouseEnter = useCallback(() => {
     if (pauseOnHover) setIsPaused(true);
@@ -117,14 +121,15 @@ const ShinyText: React.FC<ShinyTextProps> = ({
   };
 
   return (
-    <motion.span
+    <span
+      ref={spanRef}
       className={`inline-block ${className}`}
-      style={{ ...gradientStyle, backgroundPosition }}
+      style={{ ...gradientStyle, backgroundPosition: '150% center' }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {text}
-    </motion.span>
+    </span>
   );
 };
 

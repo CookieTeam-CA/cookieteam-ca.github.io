@@ -7,9 +7,12 @@ import {
     Pencil, RotateCcw, RotateCw, Save, Upload, Move, 
     Trash2, Eye, EyeOff, Plus, Lock, Unlock, MousePointer2, PaintBucket 
 } from "lucide-react";
-import { Stage, Layer, Image as KonvaImage, Line, Transformer, Rect } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Line, Transformer } from "react-konva/lib/ReactKonvaCore";
+import "konva/lib/shapes/Image";
+import "konva/lib/shapes/Line";
+import "konva/lib/shapes/Transformer";
 import useImage from "use-image";
-import Konva from "konva";
+import type Konva from "konva";
 
 type Tool = "brush" | "eraser" | "move" | "picker" | "fill";
 type LayerType = "template" | "drawing" | "image";

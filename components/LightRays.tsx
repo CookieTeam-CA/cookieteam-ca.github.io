@@ -136,12 +136,13 @@ const LightRays: React.FC<LightRaysProps> = ({
       cleanupFunctionRef.current = null;
     }
 
+    let cancelled = false;
     const initializeWebGL = async () => {
-      if (!containerRef.current) return;
+      if (cancelled || !containerRef.current) return;
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      if (!containerRef.current) return;
+      if (cancelled || !containerRef.current) return;
 
       const renderer = new Renderer({
         dpr: Math.min(window.devicePixelRatio, 2),
@@ -371,6 +372,7 @@ void main() {
     initializeWebGL();
 
     return () => {
+      cancelled = true;
       if (cleanupFunctionRef.current) {
         cleanupFunctionRef.current();
         cleanupFunctionRef.current = null;
