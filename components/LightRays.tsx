@@ -311,6 +311,7 @@ void main() {
       };
 
       const loop = (t: number) => {
+        animationIdRef.current = null;
         if (!rendererRef.current || !uniformsRef.current || !meshRef.current) {
           return;
         }
@@ -323,12 +324,13 @@ void main() {
           smoothMouseRef.current.x = smoothMouseRef.current.x * smoothing + mouseRef.current.x * (1 - smoothing);
           smoothMouseRef.current.y = smoothMouseRef.current.y * smoothing + mouseRef.current.y * (1 - smoothing);
 
-          uniforms.mousePos.value = [smoothMouseRef.current.x, smoothMouseRef.current.y];
+          uniforms.mousePos.value[0] = smoothMouseRef.current.x;
+          uniforms.mousePos.value[1] = smoothMouseRef.current.y;
         }
 
         try {
           renderer.render({ scene: mesh });
-          animationIdRef.current = requestAnimationFrame(loop);
+          if (!document.hidden) animationIdRef.current = requestAnimationFrame(loop);
         } catch (error) {
           console.warn('WebGL rendering error:', error);
           return;
@@ -337,7 +339,14 @@ void main() {
 
       window.addEventListener('resize', updatePlacement);
       updatePlacement();
-      animationIdRef.current = requestAnimationFrame(loop);
+      const syncVisibility = () => {
+        if (document.hidden) {
+          if (animationIdRef.current !== null) cancelAnimationFrame(animationIdRef.current);
+          animationIdRef.current = null;
+        } else if (animationIdRef.current === null) animationIdRef.current = requestAnimationFrame(loop);
+      };
+      document.addEventListener('visibilitychange', syncVisibility);
+      syncVisibility();
 
       cleanupFunctionRef.current = () => {
         if (animationIdRef.current) {
@@ -346,6 +355,7 @@ void main() {
         }
 
         window.removeEventListener('resize', updatePlacement);
+        document.removeEventListener('visibilitychange', syncVisibility);
 
         if (renderer) {
           try {
@@ -436,7 +446,8 @@ void main() {
       const rect = containerRef.current.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
-      mouseRef.current = { x, y };
+      mouseRef.current.x = x;
+      mouseRef.current.y = y;
     };
 
     if (followMouse) {

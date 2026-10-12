@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { gsap } from "gsap";
@@ -36,9 +36,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
     const [isZoomed, setIsZoomed] = useState(false);
     
-    const filteredAssets = selectedSeason === "all" 
-        ? allAssets 
-        : allAssets.filter(asset => asset.season === selectedSeason);
+    const filteredAssets = useMemo(() => selectedSeason === "all" ? allAssets : allAssets.filter(asset => asset.season === selectedSeason), [allAssets, selectedSeason]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     
@@ -47,30 +45,28 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     const openLightbox = (index: number) => {
         setLightboxIndex(index);
         setIsZoomed(false);
-        document.body.style.overflow = "hidden";
     };
 
-    const closeLightbox = () => {
+    const closeLightbox = useCallback(() => {
         setLightboxIndex(null);
         setIsZoomed(false);
-        document.body.style.overflow = "unset";
-    };
+    }, []);
 
-    const nextImage = (e?: React.MouseEvent) => {
+    const nextImage = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (lightboxIndex !== null) {
             setLightboxIndex((prev) => (prev! + 1) % filteredAssets.length);
             setIsZoomed(false);
         }
-    };
+    }, [lightboxIndex, filteredAssets.length]);
 
-    const prevImage = (e?: React.MouseEvent) => {
+    const prevImage = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (lightboxIndex !== null) {
             setLightboxIndex((prev) => (prev! - 1 + filteredAssets.length) % filteredAssets.length);
             setIsZoomed(false);
         }
-    };
+    }, [lightboxIndex, filteredAssets.length]);
 
     const toggleZoom = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -90,7 +86,14 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [lightboxIndex, filteredAssets]);
+    }, [lightboxIndex, nextImage, prevImage, closeLightbox]);
+
+    useEffect(() => {
+        if (lightboxIndex === null) return;
+        const original = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => { document.body.style.overflow = original; };
+    }, [lightboxIndex]);
 
     useGSAP(() => {
         gsap.fromTo(".gallery-item", 
@@ -156,12 +159,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
 
                         {asset.type === 'video' ? (
                              <div className="relative w-full h-full">
-                                <video 
-                                    src={sanitizeUrl(asset.src)} 
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                                    muted
-                                    playsInline
-                                />
+                                {asset.poster ? <Image src={asset.poster} alt={`Video CookieAttack ${asset.season}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" /> : <video src={sanitizeUrl(asset.src)} preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />}
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 drop-shadow-lg">
                                         <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />

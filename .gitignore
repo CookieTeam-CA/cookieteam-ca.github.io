@@ -19,6 +19,7 @@
 
 # production
 /build
+/.performance/
 
 # misc
 .DS_Store

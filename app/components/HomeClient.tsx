@@ -13,6 +13,7 @@ import { SlotText } from "slot-text/react";
 import "slot-text/style.css";
 import { Session } from "next-auth";
 import SetupWizard from "./SetupWizard";
+import { useElementActive, usePageVisible } from "../lib/visibility";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,13 +34,14 @@ const rotatingWords = ["Attack", "Team", "Capes"] as const;
 export default function HomeClient({ initialAssets, session }: { initialAssets: Asset[], session: Session | null }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroSectionRef = useRef<HTMLDivElement>(null);
+  const heroActive = useElementActive(heroSectionRef);
+  const pageVisible = usePageVisible();
   const statsSectionRef = useRef<HTMLDivElement>(null);
   const titleStartRef = useRef<HTMLSpanElement>(null);
   const titleEndRef = useRef<HTMLSpanElement>(null);
   const pillRef = useRef<HTMLButtonElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const joinSectionRef = useRef<HTMLDivElement>(null);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [serverStatus, setServerStatus] = useState<{
     online: boolean;
@@ -49,9 +51,14 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
   const [copyToast, setCopyToast] = useState<{ x: number; y: number; id: number } | null>(null);
 
   useEffect(() => {
+    if (!pageVisible) return;
+    const controller = new AbortController();
+    let fetching = false;
     const fetchStatus = async () => {
+      if (fetching) return;
+      fetching = true;
       try {
-        const res = await fetch("https://api.mcstatus.io/v2/status/java/play.cookieattack.de");
+        const res = await fetch("https://api.mcstatus.io/v2/status/java/play.cookieattack.de", { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) });
         if (!res.ok) throw new Error("Failed to fetch server status");
         const data = await res.json();
         setServerStatus({
@@ -60,15 +67,16 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
           loading: false,
         });
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error("Error fetching Minecraft server status:", err);
         setServerStatus({ online: false, players: null, loading: false });
-      }
+      } finally { fetching = false; }
     };
 
     fetchStatus();
     const interval = setInterval(fetchStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => { controller.abort(); clearInterval(interval); };
+  }, [pageVisible]);
 
   const handleCopyIp = (e: React.MouseEvent<HTMLButtonElement>) => {
     navigator.clipboard.writeText("play.cookieattack.de");
@@ -79,12 +87,13 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
   };
 
   useEffect(() => {
+    if (!heroActive) return;
     const interval = window.setInterval(() => {
       setActiveWordIndex((current) => (current + 1) % rotatingWords.length);
     }, 2400);
 
     return () => window.clearInterval(interval);
-  }, []);
+  }, [heroActive]);
 
   useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -268,6 +277,9 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
               className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
             >
                <span className="relative z-10">CookieCapes</span>
+            </Link>
+            <Link href="/stats" className="rounded-full border border-orange-500/40 bg-orange-500/10 px-8 py-3.5 font-bold text-orange-400 hover:bg-orange-500/20">
+              CookieStats
             </Link>
           </div>
         </div>

@@ -3,4 +3,5 @@ export interface Asset {
   src: string;
   type: "image" | "video";
   season: number;
+  poster?: string;
 }

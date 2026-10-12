@@ -25,9 +25,20 @@ export function getGalleryAssets(): Asset[] {
         src: `/galerie/${encodeURIComponent(file)}`,
         type,
         season,
+        ...(type === "video" && fs.existsSync(path.join(process.cwd(), "public", "galerie-posters", `${file}.webp`)) ? { poster: `/galerie-posters/${encodeURIComponent(file)}.webp` } : {}),
       };
     })
     .sort((a, b) => a.season - b.season || a.id - b.id);
 
   return assets;
+}
+
+export function getHomeGalleryAssets(): Asset[] {
+  const assets = getGalleryAssets();
+  // Select on the server so the homepage does not hydrate the entire catalog.
+  for (let i = assets.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [assets[i], assets[j]] = [assets[j], assets[i]];
+  }
+  return assets.slice(0, 8);
 }

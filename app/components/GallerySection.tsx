@@ -6,56 +6,41 @@ import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Asset } from "../lib/types";
+import { useElementActive } from "../lib/visibility";
 
 export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [carouselAssets, setCarouselAssets] = useState<Asset[]>([]);
+    const carouselAssets = allAssets;
     
     const slidesRef = useRef<HTMLDivElement>(null);
-    const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const carouselRef = useRef<HTMLDivElement>(null);
+    const active = useElementActive(carouselRef);
+    const nearby = useElementActive(carouselRef, "800px");
+    const [autoPlayVersion, setAutoPlayVersion] = useState(0);
 
     const totalSlides = carouselAssets.length;
     const slideDuration = 0.8;
     const autoPlayDelay = 4000;
 
-    useEffect(() => {
-        if (allAssets.length > 0) {
-            const shuffled = [...allAssets].sort(() => 0.5 - Math.random());
-            setCarouselAssets(shuffled.slice(0, 8));
-        }
-    }, [allAssets]);
-
     const goToSlide = (index: number) => {
         if (totalSlides === 0) return;
-        setCurrentIndex((prevIndex) => {
+        setCurrentIndex(() => {
             let newIndex = index;
             if (newIndex < 0) newIndex = totalSlides - 1;
             if (newIndex >= totalSlides) newIndex = 0;
             return newIndex;
         });
-        resetAutoPlay();
+        setAutoPlayVersion(version => version + 1);
     };
 
     const nextSlide = () => goToSlide(currentIndex + 1);
     const prevSlide = () => goToSlide(currentIndex - 1);
 
-    const resetAutoPlay = () => {
-        if (autoPlayIntervalRef.current) {
-            clearInterval(autoPlayIntervalRef.current);
-        }
-        if (totalSlides > 0) {
-             autoPlayIntervalRef.current = setInterval(() => {
-                setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
-            }, autoPlayDelay);
-        }
-    };
-
     useEffect(() => {
-        resetAutoPlay();
-        return () => {
-            if (autoPlayIntervalRef.current) clearInterval(autoPlayIntervalRef.current);
-        };
-    }, [totalSlides]);
+        if (!active || totalSlides < 2) return;
+        const interval = setInterval(() => setCurrentIndex(index => (index + 1) % totalSlides), autoPlayDelay);
+        return () => clearInterval(interval);
+    }, [active, totalSlides, autoPlayVersion]);
 
     useGSAP(() => {
         if (slidesRef.current && totalSlides > 0) {
@@ -70,7 +55,7 @@ export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
     return (
         <div className="w-full py-24 bg-[#050505] overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="relative w-full overflow-hidden rounded-lg shadow-xl border border-white/10 mb-12">
+                <div ref={carouselRef} className="relative w-full overflow-hidden rounded-lg shadow-xl border border-white/10 mb-12">
                     <div ref={slidesRef} className="flex w-full h-[400px] md:h-[500px] lg:h-[600px]">
                         {carouselAssets.map((asset, index) => (
                             <div 
@@ -83,15 +68,8 @@ export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
                                 </div>
 
                                 {asset.type === 'video' ? (
-                                    <video 
-                                        src={asset.src} 
-                                        className="w-full h-full object-cover" 
-                                        autoPlay 
-                                        loop 
-                                        muted 
-                                        playsInline
-                                    />
-                                ) : (
+                                    <CarouselVideo asset={asset} active={active && currentIndex === index} nearby={nearby} />
+                                ) : nearby ? (
                                     <Image 
                                         src={asset.src} 
                                         alt="Gallery Image"
@@ -99,8 +77,9 @@ export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
                                         className="object-cover"
                                         // Removed priority={index === 0} to improve initial page load since this is below the fold
                                         loading="lazy"
+                                        sizes="(max-width: 1280px) calc(100vw - 48px), 1232px"
                                     />
-                                )}
+                                ) : null}
                             </div>
                         ))}
                     </div>
@@ -153,4 +132,17 @@ export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
             </div>
         </div>
     );
+}
+
+function CarouselVideo({ asset, active, nearby }: { asset: Asset; active: boolean; nearby: boolean }) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (active) void video.play().catch(() => {});
+        else video.pause();
+        return () => video.pause();
+    }, [active]);
+    // Removing an inactive source also releases the decoder and its frame buffers.
+    return <video ref={videoRef} src={active ? asset.src : undefined} poster={nearby ? asset.poster : undefined} preload="none" className="w-full h-full object-cover" loop muted playsInline />;
 }

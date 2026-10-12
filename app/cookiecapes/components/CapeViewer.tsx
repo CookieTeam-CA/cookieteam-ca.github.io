@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { SkinViewer } from "skinview3d";
+import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 
 interface CapeViewerProps {
   capeUrl?: string | null;
@@ -12,179 +13,14 @@ interface CapeViewerProps {
   animation?: "idle" | "walk" | "run" | "none";
 }
 
-export default function CapeViewer({ 
-    capeUrl, 
-    skinUrl, 
-    minecraftName,
-    width, 
-    height,
-    animation = "idle" 
-}: CapeViewerProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<SkinViewer | null>(null);
-  const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-        (entries) => {
-            const entry = entries[0];
-            if (entry.isIntersecting) {
-                if (!hasLoaded) {
-                    setHasLoaded(true);
-                    setIsLoading(true);
-                }
-                if (viewerRef.current) {
-                    viewerRef.current.renderPaused = false;
-                }
-            } else {
-                if (viewerRef.current) {
-                    viewerRef.current.renderPaused = true;
-                }
-            }
-        },
-        { rootMargin: "50px" }
-    );
-
-    if (containerRef.current) {
-        observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasLoaded]);
-
-  useEffect(() => {
-    if (!hasLoaded) return;
-
-    const canvas = document.createElement("canvas");
-    const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    if (!gl) {
-        setWebglSupported(false);
-        setIsLoading(false);
-        return;
-    }
-    setWebglSupported(true);
-
-    let viewer: SkinViewer | null = null;
-    let resizeObserver: ResizeObserver | null = null;
-    let stopRotation: (() => void) | null = null;
-
-    const initViewer = async () => {
-        if (!canvasRef.current || !containerRef.current) return;
-
-        try {
-            const skinview3d = await import("skinview3d");
-
-            const initialWidth = width || containerRef.current.clientWidth;
-            const initialHeight = height || containerRef.current.clientHeight;
-
-            const dpr = Math.min(window.devicePixelRatio, 1.5);
-
-            viewer = new skinview3d.SkinViewer({
-                canvas: canvasRef.current,
-                width: initialWidth,
-                height: initialHeight,
-                devicePixelRatio: dpr
-            } as any);
-
-            viewerRef.current = viewer;
-
-            viewer.camera.position.set(0, 0, 60);
-
-            if (viewer.controls) {
-                viewer.controls.enableZoom = true;
-                viewer.controls.enableRotate = true;
-            }
-            
-            setAnimation(viewer, skinview3d, animation);
-
-            viewer.playerObject.rotation.y = Math.PI;
-            viewer.autoRotate = true;
-            viewer.autoRotateSpeed = 0.5;
-
-            stopRotation = () => {
-                if (viewer) {
-                    viewer.autoRotate = false;
-                }
-            };
-            canvasRef.current.addEventListener("mousedown", stopRotation);
-            canvasRef.current.addEventListener("touchstart", stopRotation, { passive: true });
-
-            loadTextures(viewer, capeUrl, skinUrl, minecraftName);
-
-            resizeObserver = new ResizeObserver((entries) => {
-                for (const entry of entries) {
-                     if (viewer && !width && !height) {
-                         const newWidth = entry.contentRect.width;
-                         const newHeight = entry.contentRect.height;
-                         if (newWidth > 0 && newHeight > 0) {
-                            viewer.setSize(newWidth, newHeight);
-                         }
-                     }
-                }
-            });
-            resizeObserver.observe(containerRef.current);
-            
-            setTimeout(() => setIsLoading(false), 500);
-
-        } catch (error) {
-            console.error("Failed to load skinview3d:", error);
-            setIsLoading(false);
-        }
-    };
-
-    initViewer();
-
-    return () => {
-      if (stopRotation && canvasRef.current) {
-          canvasRef.current.removeEventListener("mousedown", stopRotation);
-          canvasRef.current.removeEventListener("touchstart", stopRotation);
-      }
-      if (viewer) {
-          try {
-              viewer.dispose();
-          } catch (e) { }
-      }
-      viewerRef.current = null;
-      if (resizeObserver) resizeObserver.disconnect();
-    };
-  }, [hasLoaded]); 
-
-  useEffect(() => {
-    if (viewerRef.current) {
-        setIsLoading(true);
-        loadTextures(viewerRef.current, capeUrl, skinUrl, minecraftName);
-        setTimeout(() => setIsLoading(false), 300);
-    }
-  }, [capeUrl, skinUrl, minecraftName]);
-
-  useEffect(() => {
-    if (viewerRef.current && width && height) {
-        viewerRef.current.setSize(width, height);
-    }
-  }, [width, height]);
-  
-  useEffect(() => {
-      if (viewerRef.current) {
-          import("skinview3d").then(skinview3d => {
-              if (viewerRef.current) {
-                  setAnimation(viewerRef.current, skinview3d, animation);
-              }
-          });
-      }
-  }, [animation]);
-
-
-  const setAnimation = (viewer: SkinViewer, skinview3d: any, animType: string) => {
+function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"), animType: string) {
       viewer.animation = null;
-      
+
       switch (animType) {
           case "walk":
               viewer.animation = new skinview3d.WalkingAnimation();
               if (viewer.animation) {
-                  (viewer.animation as any).speed = 0.5;
+                  viewer.animation.speed = 0.5;
               }
               break;
           case "run":
@@ -198,14 +34,14 @@ export default function CapeViewer({
               viewer.animation = null;
               break;
       }
-  };
+}
 
-  const loadTextures = (viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined) => {
+function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined) {
         const getProxiedUrl = (url: string | null | undefined) => {
             if (!url) return null;
             if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("/")) return url;
             return `/api/proxy?url=${encodeURIComponent(url)}`;
-        };
+      }
 
         let finalSkinUrl = null;
         if (skin) {
@@ -216,17 +52,186 @@ export default function CapeViewer({
              finalSkinUrl = "https://minotar.net/skin/MHF_Steve";
         }
 
-        if (finalSkinUrl) {
-             viewer.loadSkin(finalSkinUrl);
-        }
-
         const finalCapeUrl = getProxiedUrl(cape);
-        if (finalCapeUrl) {
-            viewer.loadCape(finalCapeUrl);
-        } else {
-            viewer.loadCape(null);
+        return Promise.all([finalSkinUrl ? viewer.loadSkin(finalSkinUrl) : viewer.loadSkin(null), finalCapeUrl ? viewer.loadCape(finalCapeUrl) : viewer.loadCape(null)]);
+}
+
+
+export default function CapeViewer({
+    capeUrl,
+    skinUrl,
+    minecraftName,
+    width,
+    height,
+    animation = "idle"
+}: CapeViewerProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<SkinViewer | null>(null);
+  const visibleRef = useRef(false);
+  const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
+  const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation }; }, [capeUrl, skinUrl, minecraftName, width, height, animation]);
+
+  useEffect(() => {
+    const sync = () => {
+      const active = visibleRef.current && !document.hidden;
+      if (active && !hasLoaded) { setHasLoaded(true); setIsLoading(true); }
+      if (viewerRef.current) viewerRef.current.renderPaused = !active;
+    };
+    const observer = new IntersectionObserver(
+        (entries) => {
+            visibleRef.current = entries[0].isIntersecting;
+            sync();
+        },
+        { rootMargin: "50px" }
+    );
+
+    if (containerRef.current) {
+        observer.observe(containerRef.current);
+    }
+
+    document.addEventListener("visibilitychange", sync);
+    return () => { observer.disconnect(); document.removeEventListener("visibilitychange", sync); };
+  }, [hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+    let cancelled = false;
+
+    let viewer: SkinViewer | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+    let stopRotation: (() => void) | null = null;
+
+    const initViewer = async () => {
+        if (!canvasRef.current || !containerRef.current) return;
+
+        try {
+            const skinview3d = await import("skinview3d");
+            if (cancelled) return;
+
+            const { width, height, animation, capeUrl, skinUrl, minecraftName } = optionsRef.current;
+            const initialWidth = width || container.clientWidth;
+            const initialHeight = height || container.clientHeight;
+
+            const dpr = Math.min(window.devicePixelRatio, 1.5);
+
+            viewer = new skinview3d.SkinViewer({
+                canvas,
+                width: initialWidth,
+                height: initialHeight,
+                pixelRatio: dpr,
+                renderPaused: !visibleRef.current || document.hidden,
+            });
+            setWebglSupported(true);
+
+            viewerRef.current = viewer;
+
+            viewer.camera.position.set(0, 0, 60);
+
+            if (viewer.controls) {
+                viewer.controls.enableZoom = true;
+                viewer.controls.enableRotate = true;
+            }
+
+            setAnimation(viewer, skinview3d, animation);
+
+            viewer.playerObject.rotation.y = Math.PI;
+            viewer.autoRotate = true;
+            viewer.autoRotateSpeed = 0.5;
+
+            stopRotation = () => {
+                if (viewer) {
+                    viewer.autoRotate = false;
+                }
+            };
+            canvas.addEventListener("mousedown", stopRotation);
+            canvas.addEventListener("touchstart", stopRotation, { passive: true });
+
+            resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                     if (viewer && !width && !height) {
+                         const newWidth = entry.contentRect.width;
+                         const newHeight = entry.contentRect.height;
+                         if (newWidth > 0 && newHeight > 0) {
+                            viewer.setSize(newWidth, newHeight);
+                         }
+                     }
+                }
+            });
+            resizeObserver.observe(container);
+            await loadTextures(viewer, capeUrl, skinUrl, minecraftName);
+            if (cancelled) { viewer.resetSkin(); viewer.resetCape(); }
+            else setIsLoading(false);
+
+        } catch (error) {
+            if (!cancelled) {
+                console.error("Failed to load skinview3d:", error);
+                if (!viewer) setWebglSupported(false);
+                setIsLoading(false);
+            }
         }
-  };
+    };
+
+    initViewer();
+
+    return () => {
+      cancelled = true;
+      if (stopRotation) {
+          canvas.removeEventListener("mousedown", stopRotation);
+          canvas.removeEventListener("touchstart", stopRotation);
+      }
+      if (viewer) {
+          try {
+              disposeSkinViewer(viewer);
+          } catch { }
+      }
+      viewerRef.current = null;
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [hasLoaded]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    let cancelled = false;
+    if (viewer) {
+        setIsLoading(true);
+        void loadTextures(viewer, capeUrl, skinUrl, minecraftName).catch(error => {
+            if (!cancelled) console.error("Failed to load skin textures:", error);
+        }).finally(() => {
+            if (viewer.disposed) { viewer.resetSkin(); viewer.resetCape(); }
+            if (!cancelled) setIsLoading(false);
+        });
+    }
+    return () => { cancelled = true; };
+  }, [capeUrl, skinUrl, minecraftName]);
+
+  useEffect(() => {
+    if (viewerRef.current && width && height) {
+        viewerRef.current.setSize(width, height);
+    }
+  }, [width, height]);
+
+  useEffect(() => {
+      const viewer = viewerRef.current;
+      let cancelled = false;
+      if (viewer) {
+          import("skinview3d").then(skinview3d => {
+              if (!cancelled && !viewer.disposed) {
+                  setAnimation(viewer, skinview3d, animation);
+              }
+          });
+      }
+      return () => { cancelled = true; };
+  }, [animation]);
+
 
   if (webglSupported === false) {
       return (
