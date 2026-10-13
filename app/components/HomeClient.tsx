@@ -229,7 +229,7 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
                 <ShinyText text="play.cookieattack.de" speed={2.5} yoyo={true} />
               </span>
 
-              <span className="h-3.5 w-[1px] bg-white/20" />
+              <span className="h-3.5 w-px bg-white/20" />
 
               {serverStatus.loading ? (
                 <span className="text-zinc-400 text-xs font-normal">Status wird geladen...</span>
@@ -272,14 +272,15 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
               <div className="absolute inset-0 -z-10 translate-y-full bg-orange-500 transition-transform duration-300 group-hover:translate-y-0"></div>
             </button>
 
+            <Link href="/stats" className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer">
+              CookieStats
+            </Link>
+
             <Link 
               href="/cookiecapes"
               className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-all hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
             >
                <span className="relative z-10">CookieCapes</span>
-            </Link>
-            <Link href="/stats" className="rounded-full border border-orange-500/40 bg-orange-500/10 px-8 py-3.5 font-bold text-orange-400 hover:bg-orange-500/20">
-              CookieStats
             </Link>
           </div>
         </div>

@@ -37,25 +37,25 @@ export default function StatsNav() {
   };
 
   return (
-    <header className="fixed top-[10px] left-1/2 -translate-x-1/2 w-[90%] max-w-[1024px] h-[55px] z-[100] select-none font-[Arial]">
-      <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-[10px] h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
+    <header className="fixed top-2.5 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-13.75 z-100 select-none font-[Arial]">
+      <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-2.5 h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
         <div className="flex items-center">
           <Link href="/" aria-label="CookieAttack Startseite" onClick={() => setMenuOpen(false)}>
             <Image src="/minilogo.png" alt="CookieTeam Logo" width={32} height={32}
               className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]" />
           </Link>
-          <Link href="/stats" aria-label="CookieStats Übersicht" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 pl-[10px] group">
+          <Link href="/stats" aria-label="CookieStats Übersicht" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 pl-2.5 group">
             <span className="font-nexa text-2xl tracking-tight hidden md:block"><span className={isStatsHome ? "text-[#ff7b00]" : "text-white"}>Cookie</span><span className="text-[#ff7b00]">Stats</span></span>
           </Link>
         </div>
 
-        <nav aria-label="Statistik-Navigation" className="hidden md:flex items-center gap-[30px]">
+        <nav aria-label="Statistik-Navigation" className="hidden md:flex items-center gap-7.5">
           {links.slice(1).map(renderLink)}
         </nav>
 
         <button ref={menuButton} type="button" aria-label={menuOpen ? "Navigation schließen" : "Navigation öffnen"}
           aria-expanded={menuOpen} aria-controls="stats-mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden flex items-center justify-center bg-white/10 hover:bg-white/15 px-[12px] py-[8px] rounded-[12px] text-zinc-300 cursor-pointer">
+          className="md:hidden flex items-center justify-center bg-white/10 hover:bg-white/15 px-3 py-2 rounded-[12px] text-zinc-300 cursor-pointer">
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
