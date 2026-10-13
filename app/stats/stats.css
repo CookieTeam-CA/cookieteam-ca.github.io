@@ -138,6 +138,8 @@
 .stats-rules summary { cursor: pointer; color: #eee; font-weight: 500; list-style-position: inside; }
 .stats-rules summary span { float: right; color: var(--stats-orange); font-size: 11px; }
 .stats-rules p { margin-top: 16px; max-width: 900px; }
+.stats-rules[open] p { animation: stats-rules-reveal .22s ease-out both; }
+@keyframes stats-rules-reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 .stats-progress { height: 6px; background: #ffffff1a; border-radius: 4px; margin: 14px 0; }
 .stats-progress > span { display: block; height: 100%; background: var(--stats-orange); border-radius: 4px; }
 .stats-key { display: block; font-family: var(--font-geist-mono), monospace; font-size: 10px !important; overflow-wrap: anywhere; }
@@ -158,8 +160,8 @@
 .stats-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: end; padding-top: 20px; }
 .stats-podium-card { display: flex; flex-direction: column; align-items: center; padding: 26px 20px; gap: 12px; background: radial-gradient(ellipse at top, var(--podium-bg), transparent), #18181b80; border: 1px solid var(--podium-border); border-radius: 24px; text-align: center; min-width: 0; }
 .stats-podium-card:hover { border-color: var(--podium-color); }
-.stats-podium-card.podium-1 { order: 2; padding-top: 40px; padding-bottom: 36px; }
-.stats-podium-card.podium-2 { order: 1; }.stats-podium-card.podium-3 { order: 3; }
+.stats-podium-card.podium-1 { order: 2; padding-top: 50px; }
+.stats-podium-card.podium-2 { order: 1; }.stats-podium-card.podium-3 { order: 3; padding-top: 14px; }
 .stats-podium-medal { display: inline-flex; align-items: center; gap: 8px; color: var(--podium-color); font-size: 13px; font-weight: 600; }
 .stats-podium-card h2 { font-family: var(--font-nexa), sans-serif; font-size: 24px; overflow-wrap: anywhere; max-width: 100%; }
 .stats-podium-card > strong { font-family: var(--font-nexa), sans-serif; font-size: 30px; color: var(--podium-color); }
@@ -180,7 +182,7 @@
 @keyframes stats-pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 .stats-search-results { opacity: 1; transition: opacity .18s ease-out; }
 .stats-search-results[aria-busy="true"] { opacity: .7; }
-@media (prefers-reduced-motion: reduce) { .stats-skeleton { animation: none; } .stats-search-results { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .stats-skeleton { animation: none; } .stats-search-results { transition: none; } .stats-rules[open] p { animation: none; } }
 @media (max-width: 900px) {
   .stats-podium { gap: 12px; }.stats-podium-card { padding-left: 12px; padding-right: 12px; }.stats-podium-card h2 { font-size: 19px; }
 }

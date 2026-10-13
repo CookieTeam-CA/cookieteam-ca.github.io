@@ -15,7 +15,7 @@ export function excludedCategories(query: CollectionQuery, prefix = ""): string[
 export type CollectionRow = {
   id: string; name: string; href: string; category?: string; description?: string; iconKey?: string;
   achievement?: boolean; player?: { uuid: string; username: string }; heads?: { uuid: string; username: string }[];
-  participants?: number; value?: number; statKey?: string; rank?: number; points?: number; time?: string; completed?: boolean;
+  participants?: number; value?: number; statKey?: string; rank?: number | null; points?: number; time?: string | null; completed?: boolean;
   searchText?: string;
 };
 export const nameSort: SortOption[] = [{ value: "name_asc", label: "Name: A–Z" }, { value: "name_desc", label: "Name: Z–A" }];

@@ -16,5 +16,5 @@ export default function AnimatedNumber({ value }: { value: string | number }) {
   const hydrated = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
   // Keep meaningful numbers in server HTML and render statically for reduced motion.
   if (!hydrated || reducedMotion) return <span ref={element}>{text}</span>;
-  return <span ref={element} className="stats-animated-number"><span className="sr-only">{text}</span><SlotText aria-hidden="true" text={inView ? text : text.replace(/\d/g, "0")} options={{ duration: 550, stagger: 28, bounce: 0.1, direction: "up", skipUnchanged: true }} /></span>;
+  return <span ref={element} className="stats-animated-number"><span className="sr-only">{text}</span><SlotText aria-hidden="true" text={inView ? text : text.replace(/\d/g, "0")} options={{ duration: 800, stagger: 28, bounce: 0.1, direction: "up", skipUnchanged: true }} /></span>;
 }

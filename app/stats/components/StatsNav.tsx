@@ -9,6 +9,7 @@ import { Menu, X } from "lucide-react";
 const links = [["/stats", "Übersicht"], ["/stats/statistiken", "Statistiken"], ["/stats/punkte", "Punkte"], ["/stats/achievements", "Achievements"], ["/stats/spieler", "Spieler"]];
 export default function StatsNav() {
   const pathname = usePathname();
+  const isStatsHome = pathname === "/stats";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -44,7 +45,7 @@ export default function StatsNav() {
               className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]" />
           </Link>
           <Link href="/stats" aria-label="CookieStats Übersicht" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 pl-[10px] group">
-            <span className="font-nexa text-[#ff7b00] text-2xl tracking-tight hidden md:block">CookieStats</span>
+            <span className="font-nexa text-2xl tracking-tight hidden md:block"><span className={isStatsHome ? "text-[#ff7b00]" : "text-white"}>Cookie</span><span className="text-[#ff7b00]">Stats</span></span>
           </Link>
         </div>
 

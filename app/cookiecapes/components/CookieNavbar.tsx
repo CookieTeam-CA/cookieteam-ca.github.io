@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 
 export default function CookieNavbar() {
   const pathname = usePathname();
+  const isCookieCapesHome = pathname === "/cookiecapes";
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [onlineStats, setOnlineStats] = useState<StatsResponse | null>(null);
 
@@ -35,7 +36,7 @@ export default function CookieNavbar() {
         <div className="flex items-center">
           <a href="../"><img src="/minilogo.png" alt="CookieTeam Logo" className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]"/></a>
             <Link href="/cookiecapes" className="flex items-center gap-3 pl-[10px] group">
-              <span className="font-nexa text-[#ff7b00] text-2xl tracking-tight hidden md:block">CookieCapes</span>
+              <span className="font-nexa text-2xl tracking-tight hidden md:block"><span className={isCookieCapesHome ? "text-[#ff7b00]" : "text-white"}>Cookie</span><span className="text-[#ff7b00]">Capes</span></span>
             </Link>
         </div>
 
