@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import Discord from "next-auth/providers/discord"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Discord],
+  providers: [Discord({ issuer: "https://discord.com" })],
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
