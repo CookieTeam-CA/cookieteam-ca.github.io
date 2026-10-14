@@ -14,6 +14,14 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Invalid URL", { status: 400 });
   }
 
+  // Minotar redirects hyphenated UUIDs; use its canonical path without allowing redirects.
+  if (targetUrl.hostname === "minotar.net") {
+    targetUrl.pathname = targetUrl.pathname.replace(
+      /^\/(skin|avatar|helm)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(\/\d+)?\/?$/i,
+      (_path, type, uuid, size = "") => `/${type}/${uuid.replaceAll("-", "")}${size}`,
+    );
+  }
+
   const imagePaths: Record<string, RegExp> = {
     "https://api.cookieattack.de:8989": /^\/capes\/\d+\.png$/,
     "https://minotar.net": /^\/(skin|avatar|helm)\/[A-Za-z0-9_-]+(?:\/\d+)?\/?$/,
@@ -27,6 +35,11 @@ export async function GET(request: NextRequest) {
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(targetUrl, { redirect: "error", signal: controller.signal });
+    // Deleted cape images are an expected absence, not a failed preview request.
+    if (response.status === 404 && targetUrl.origin === "https://api.cookieattack.de:8989") {
+      await response.body?.cancel();
+      return new NextResponse(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+    }
     if (!response.ok) {
         return new NextResponse(`Failed to fetch image: ${response.statusText}`, { status: response.status });
     }

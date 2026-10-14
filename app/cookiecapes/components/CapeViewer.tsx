@@ -36,7 +36,7 @@ function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"
       }
 }
 
-function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined) {
+function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean) {
         const getProxiedUrl = (url: string | null | undefined) => {
             if (!url) return null;
             if (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("/")) return url;
@@ -53,7 +53,23 @@ function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin:
         }
 
         const finalCapeUrl = getProxiedUrl(cape);
-        return Promise.all([finalSkinUrl ? viewer.loadSkin(finalSkinUrl) : viewer.loadSkin(null), finalCapeUrl ? viewer.loadCape(finalCapeUrl) : viewer.loadCape(null)]);
+        // A cape is optional; a missing image must not prevent the player preview.
+        const capeLoad = (async () => {
+            if (!finalCapeUrl) return viewer.loadCape(null);
+            if (!finalCapeUrl.startsWith("/api/proxy?")) return viewer.loadCape(finalCapeUrl);
+            const response = await fetch(finalCapeUrl);
+            if (!isCurrent()) return;
+            if (response.status === 204 || !response.ok) return viewer.loadCape(null);
+            const imageUrl = URL.createObjectURL(await response.blob());
+            try {
+                if (isCurrent()) await viewer.loadCape(imageUrl);
+            } finally {
+                URL.revokeObjectURL(imageUrl);
+            }
+        })().catch(() => {
+            if (isCurrent()) viewer.loadCape(null);
+        });
+        return Promise.all([finalSkinUrl ? viewer.loadSkin(finalSkinUrl) : viewer.loadSkin(null), capeLoad]);
 }
 
 
@@ -69,10 +85,14 @@ export default function CapeViewer({
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<SkinViewer | null>(null);
   const visibleRef = useRef(false);
+  const texturesReadyRef = useRef(false);
   const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
   const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [viewerReady, setViewerReady] = useState(false);
+  const [textureError, setTextureError] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation }; }, [capeUrl, skinUrl, minecraftName, width, height, animation]);
 
@@ -80,7 +100,7 @@ export default function CapeViewer({
     const sync = () => {
       const active = visibleRef.current && !document.hidden;
       if (active && !hasLoaded) { setHasLoaded(true); setIsLoading(true); }
-      if (viewerRef.current) viewerRef.current.renderPaused = !active;
+      if (viewerRef.current) viewerRef.current.renderPaused = !active || !texturesReadyRef.current;
     };
     const observer = new IntersectionObserver(
         (entries) => {
@@ -117,7 +137,7 @@ export default function CapeViewer({
             const skinview3d = await import("skinview3d");
             if (cancelled) return;
 
-            const { width, height, animation, capeUrl, skinUrl, minecraftName } = optionsRef.current;
+            const { width, height, animation } = optionsRef.current;
             const initialWidth = width || container.clientWidth;
             const initialHeight = height || container.clientHeight;
 
@@ -128,7 +148,7 @@ export default function CapeViewer({
                 width: initialWidth,
                 height: initialHeight,
                 pixelRatio: dpr,
-                renderPaused: !visibleRef.current || document.hidden,
+                renderPaused: true,
             });
             setWebglSupported(true);
 
@@ -167,9 +187,7 @@ export default function CapeViewer({
                 }
             });
             resizeObserver.observe(container);
-            await loadTextures(viewer, capeUrl, skinUrl, minecraftName);
-            if (cancelled) { viewer.resetSkin(); viewer.resetCape(); }
-            else setIsLoading(false);
+            setViewerReady(true);
 
         } catch (error) {
             if (!cancelled) {
@@ -194,6 +212,7 @@ export default function CapeViewer({
           } catch { }
       }
       viewerRef.current = null;
+      texturesReadyRef.current = false;
       if (resizeObserver) resizeObserver.disconnect();
     };
   }, [hasLoaded]);
@@ -202,16 +221,23 @@ export default function CapeViewer({
     const viewer = viewerRef.current;
     let cancelled = false;
     if (viewer) {
+        texturesReadyRef.current = false;
+        viewer.renderPaused = true;
         setIsLoading(true);
-        void loadTextures(viewer, capeUrl, skinUrl, minecraftName).catch(error => {
-            if (!cancelled) console.error("Failed to load skin textures:", error);
+        setTextureError(false);
+        void loadTextures(viewer, capeUrl, skinUrl, minecraftName, () => !cancelled && !viewer.disposed).then(() => {
+            if (cancelled || viewer.disposed) return;
+            texturesReadyRef.current = true;
+            viewer.renderPaused = !visibleRef.current || document.hidden;
+        }).catch(() => {
+            if (!cancelled && !viewer.disposed) setTextureError(true);
         }).finally(() => {
             if (viewer.disposed) { viewer.resetSkin(); viewer.resetCape(); }
             if (!cancelled) setIsLoading(false);
         });
     }
     return () => { cancelled = true; };
-  }, [capeUrl, skinUrl, minecraftName]);
+  }, [viewerReady, capeUrl, skinUrl, minecraftName, retry]);
 
   useEffect(() => {
     if (viewerRef.current && width && height) {
@@ -251,7 +277,11 @@ export default function CapeViewer({
     <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center cursor-grab" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
       {hasLoaded ? (
         <>
-            <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
+            <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading || textureError ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
+            {textureError && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+                <p className="text-sm text-zinc-400">3D-Vorschau konnte nicht geladen werden.</p>
+                <button onClick={() => setRetry(value => value + 1)} className="rounded-lg bg-orange-500 px-4 py-2 font-bold">Erneut versuchen</button>
+            </div>}
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-8 h-8 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
