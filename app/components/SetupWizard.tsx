@@ -232,7 +232,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
                   </div>
                   {mcError && <span className="text-red-400 text-sm mt-1">{mcError}</span>}
                   {!mcUuid && !mcError && mcName.length < 3 && mcName.length > 0 && (
-                    <span className="text-zinc-500 text-sm">Mindestens 3 Zeichen eingeben…</span>
+                    <span className="text-zinc-500 text-sm">Mindestens 3 Zeichen eingeben...</span>
                   )}
                 </div>
 

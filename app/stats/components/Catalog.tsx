@@ -12,7 +12,7 @@ export default async function Catalog({ query, achievement = false }: { query: Q
     heads: item.top5, participants: item.participants, value: "highest_value" in item ? item.highest_value : undefined, statKey: achievement ? undefined : item.id,
   }));
   const sortOptions = [...nameSort, { value: "category_asc", label: "Kategorie: A–Z" }, { value: "participants_desc", label: "Meiste Spieler" }, { value: "participants_asc", label: "Wenigste Spieler" }, ...(!achievement ? valueSort.map(option => ({ ...option, label: option.label.replace("Wert", "Highscore") })) : [])];
-  return <Collection rows={rows} data={data} query={query} categories categoryLabel={achievement ? "Tab" : "Kategorie"}
-    label={achievement ? "Achievements" : "Statistiken"} placeholder={achievement ? "Achievement suchen …" : "Statistik oder Schlüssel suchen …"}
+  return <Collection rows={rows} data={data} query={query} categories
+    label={achievement ? "Achievements" : "Statistiken"} placeholder={achievement ? "Achievement suchen ..." : "Statistik suchen ..."}
     sortOptions={sortOptions} columns={[{ key: "category", label: achievement ? "Tab" : "Kategorie" }, { key: "participants", label: "Spieler" }, ...(!achievement ? [{ key: "value" as const, label: "Highscore" }] : [])]} />;
 }

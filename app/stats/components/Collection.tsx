@@ -14,13 +14,12 @@ import { formatStatValue } from "../lib/stat-units";
 type Column = { key: "category" | "value" | "rank" | "points" | "time" | "completed" | "participants"; label: string };
 type Props = {
   rows: CollectionRow[]; data: CollectionData; query: Query; columns: Column[]; sortOptions?: SortOption[]; defaultSort?: string;
-  defaultView?: "cards" | "list"; prefix?: string; categories?: boolean; categoryLabel?: string;
+  defaultView?: "cards" | "list"; prefix?: string; categories?: boolean;
   label?: string; placeholder?: string; empty?: string;
 };
 
-export default function Collection({ rows, data, query, columns, sortOptions = nameSort, defaultSort = "name_asc", defaultView = "cards", prefix = "", categories = false, categoryLabel = "Kategorie", label = "Einträge", placeholder = "Einträge suchen …", empty = "Keine passenden Einträge gefunden." }: Props) {
+export default function Collection({ rows, data, query, columns, sortOptions = nameSort, defaultSort = "name_asc", defaultView = "cards", prefix = "", categories = false, label = "Einträge", placeholder = "Einträge suchen ...", empty = "Keine passenden Einträge gefunden." }: Props) {
   const search = queryText(query, `${prefix}search`);
-  const category = queryText(query, `${prefix}category`);
   const requestedSort = queryText(query, `${prefix}sort`);
   const sort = sortOptions.some(option => option.value === requestedSort) ? requestedSort : defaultSort;
   const requestedView = queryText(query, `${prefix}view`);
@@ -42,7 +41,7 @@ export default function Collection({ rows, data, query, columns, sortOptions = n
     return row.player ? <PlayerVisual uuid={row.player.uuid} username={row.player.username} size={40} /> : row.iconKey ? <MinecraftIcon statKey={row.iconKey} achievement={row.achievement} /> : null;
   }
   return <>
-    <Filters search={search} category={category} categories={categoryList} categoryLabel={categoryLabel} sort={sort} sortOptions={sortOptions} defaultSort={defaultSort} view={view} defaultView={defaultView} prefix={prefix} label={label} placeholder={placeholder} />
+    <Filters search={search} sort={sort} sortOptions={sortOptions} defaultSort={defaultSort} view={view} defaultView={defaultView} prefix={prefix} label={label} placeholder={placeholder} />
     {categories && categoryList.length > 0 && <CategoryFilters categories={categoryList} excluded={excluded} prefix={prefix} />}
     <p className="stats-note" aria-live="polite">{number(total)} {label}</p>
     <SearchResults table={view === "list"}>

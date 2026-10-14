@@ -50,12 +50,12 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
       </div>)}
     </section>
     <section aria-label="Spielerstatistiken"><div className="stats-section-heading"><h2>Spielerstatistiken</h2></div>
-      <Collection rows={stats} data={player.stats} query={query} label="Statistiken" categories placeholder="In den Spielerstatistiken suchen …" defaultSort="value_desc" defaultView="list"
+      <Collection rows={stats} data={player.stats} query={query} label="Statistiken" categories placeholder="In den Spielerstatistiken suchen ..." defaultSort="value_desc" defaultView="list"
         sortOptions={[...valueSort, ...rankSort, ...nameSort, { value: "category_asc", label: "Kategorie: A–Z" }]}
         columns={[{ key: "category", label: "Kategorie" }, { key: "value", label: "Wert" }, { key: "rank", label: "Platz" }]} />
     </section>
     <section aria-label="Spieler-Achievements"><div className="stats-section-heading"><h2>Achievements</h2><span className="stats-muted">{player.legacy_advancement_count} / {CA6_ACHIEVEMENT_TOTAL} abgeschlossen</span></div>
-      <Collection rows={achievements} data={player.advancements} query={query} prefix="achievements_" label="Achievements" categories categoryLabel="Tab" placeholder="In den Achievements suchen …" defaultSort="time_desc"
+      <Collection rows={achievements} data={player.advancements} query={query} prefix="achievements_" label="Achievements" categories placeholder="In den Achievements suchen ..." defaultSort="time_desc"
         sortOptions={[...timeSort, ...nameSort, ...rankSort, { value: "completed_desc", label: "Abgeschlossene zuerst" }, { value: "completed_asc", label: "Offene zuerst" }, { value: "category_asc", label: "Tab: A–Z" }]}
         columns={[{ key: "category", label: "Tab" }, { key: "completed", label: "Status" }, { key: "time", label: "Abgeschlossen am" }, { key: "rank", label: "Platz" }]} />
     </section>
