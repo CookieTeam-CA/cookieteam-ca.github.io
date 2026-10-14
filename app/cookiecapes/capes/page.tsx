@@ -17,11 +17,12 @@ interface PageProps {
 
 export default async function CapesGalleryPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = Number(params.page) || 1;
+    const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const limit = 8;
-    const sort = (params.sort as SortBy) || "active_user_count";
-    const order = (params.order as Order) || "desc";
-    const query = (params.q as string) || "";
+    const sort: SortBy = typeof params.sort === "string" && ["active_user_count", "last_edited", "cape_name", "cape_id"].includes(params.sort) ? params.sort as SortBy : "active_user_count";
+    const order: Order = params.order === "asc" ? "asc" : "desc";
+    const query = typeof params.q === "string" ? params.q : "";
 
     const data = await getCapesSorted(page, limit, sort, order, query);
 

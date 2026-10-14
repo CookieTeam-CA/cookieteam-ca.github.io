@@ -1,19 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { playerHref } from "../lib/api";
-import type { Entry } from "../lib/scoring";
-import PlayerVisual from "./PlayerVisual";
-import { SearchResults } from "./SearchProvider";
 import AnimatedNumber from "./AnimatedNumber";
 import { queryParams } from "../lib/collections";
 export { default as Filters } from "./Filters";
 
 export type Query = { [key: string]: string | string[] | undefined };
 export const queryText = (query: Query, key: string) => typeof query[key] === "string" ? query[key] as string : "";
-export function pageNumber(query: Query, total: number, size = 50, prefix = "") {
-  const number = Number(queryText(query, `${prefix}page`));
-  return Math.min(Math.max(1, Math.floor(total / size) + (total % size ? 1 : 0)), Number.isSafeInteger(number) && number > 0 ? number : 1);
-}
 const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "medium", timeZone: "Europe/Berlin" });
 export const number = (value: number) => numberFormatter.format(value);
@@ -34,9 +26,3 @@ export function Pagination({ page, total, query, size = 50, prefix = "", totalPa
   return <div className="stats-pagination"><span>{number(total)} Einträge · Seite {page} von {pages}</span><div>{page > 1 && <Link className="stats-button secondary" href={href(page - 1)}>← Zurück</Link>}{page < pages && <Link className="stats-button secondary" href={href(page + 1)}>Weiter →</Link>}</div></div>;
 }
 export function Empty({ children = "Keine Einträge gefunden." }: { children?: ReactNode }) { return <div className="stats-empty">{children}</div>; }
-export function PlayerLink({ uuid, username }: { uuid?: string; username: string }) {
-  return <Link prefetch={false} className="stats-player-link" href={playerHref(uuid ?? username)}><PlayerVisual uuid={uuid} username={username} /><span>{username}</span></Link>;
-}
-export function Board({ entries, achievement = false, valueLabel = "Wert", showPoints = true }: { entries: Entry[]; achievement?: boolean; valueLabel?: string; showPoints?: boolean }) {
-  return <SearchResults table>{!entries.length ? <Empty>Noch keine Platzierungen vorhanden.</Empty> : <div className="stats-table-wrap"><table className="stats-table"><thead><tr><th scope="col">Platz</th><th scope="col">Spieler</th><th scope="col">{achievement ? "Abgeschlossen am" : valueLabel}</th>{showPoints && <th scope="col">Punkte</th>}</tr></thead><tbody>{entries.map(entry => <tr key={entry.uuid} className={entry.rank <= 3 ? `stats-podium-row podium-${entry.rank}` : undefined}><td><span className={`stats-rank rank-${entry.rank}`}>{entry.rank.toString().padStart(2, "0")}</span></td><td><PlayerLink {...entry} /></td><td className="stats-value">{achievement ? date(entry.completed_at) : number(entry.value)}</td>{showPoints && <td><span className={entry.points ? "stats-points" : "stats-muted"}>{entry.points ? `+${entry.points}` : "–"}</span></td>}</tr>)}</tbody></table></div>}</SearchResults>;
-}

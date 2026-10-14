@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "bundle:size": "node scripts/bundle-size.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "bun test"
@@ -13,19 +12,14 @@
   "dependencies": {
     "@betterlytics/tracker": "^0.2.0",
     "@gsap/react": "^2.1.2",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/rapier": "^2.2.0",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gsap": "^3.14.2",
     "konva": "^10.2.3",
     "lucide-react": "^1.6.0",
-    "meshline": "^3.3.1",
     "motion": "^12.38.0",
     "next": "^16.2.6",
     "next-auth": "5.0.0-beta.32",
     "ogl": "^1.0.11",
-    "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-konva": "^19.2.3",
@@ -37,7 +31,6 @@
     "use-image": "^1.1.4"
   },
   "devDependencies": {
-    "@napi-rs/canvas": "^1.0.10",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25",
     "@types/react": "^19",

@@ -1,44 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ShieldAlert, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { ShieldAlert, ArrowUpDown } from "lucide-react";
+
+import GallerySearch from "./GallerySearch";
 
 export default function PlayerGalleryControls() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [search, setSearch] = useState(searchParams.get("q") || "");
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-             const params = new URLSearchParams(searchParams);
-             if (search) {
-                 params.set("q", search);
-             } else {
-                 params.delete("q");
-             }
-             
-             if (search !== (searchParams.get("q") || "")) {
-                params.set("page", "1");
-                router.push(`?${params.toString()}`);
-             }
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [search, router, searchParams]);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const params = new URLSearchParams(searchParams);
-        if (search) {
-            params.set("q", search);
-        } else {
-            params.delete("q");
-        }
-        params.set("page", "1");
-        router.push(`?${params.toString()}`);
-    };
-
     const toggleOrder = () => {
         const currentOrder = searchParams.get("order") || "asc";
         const newOrder = currentOrder === "desc" ? "asc" : "desc";
@@ -61,16 +30,7 @@ export default function PlayerGalleryControls() {
 
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <form onSubmit={handleSearch} className="flex-1 relative">
-                <input
-                    type="text"
-                    placeholder="Suche nach Spielern..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full bg-zinc-900 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:border-orange-500 focus:outline-none transition-colors"
-                />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
-            </form>
+            <GallerySearch placeholder="Suche nach Spielern..." />
 
             <div className="flex gap-2">
                 <button

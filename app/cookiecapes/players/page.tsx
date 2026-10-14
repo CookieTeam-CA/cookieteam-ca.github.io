@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Spieler - CookieCapes",
 };
 
-import { getPlayersSorted, SortBy, Order } from "../lib/api";
+import { getPlayersSorted, Order } from "../lib/api";
 import PlayerCard from "../components/PlayerCard";
 import Pagination from "../components/Pagination";
 import PlayerGalleryControls from "../components/PlayerGalleryControls";
@@ -18,21 +18,17 @@ interface PageProps {
 
 export default async function CookiePlayerPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    const page = Number(params.page) || 1;
+    const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const limit = 8;
-    const sort = (params.sort as string) || "minecraft_name";
-    const order = (params.order as Order) || "asc";
-    const query = (params.q as string) || "";
+    const sort = typeof params.sort === "string" && ["minecraft_name", "minecraft_uuid", "current_cape_id", "banned"].includes(params.sort) ? params.sort : "minecraft_name";
+    const order: Order = params.order === "desc" ? "desc" : "asc";
+    const query = typeof params.q === "string" ? params.q : "";
     const banned = params.banned === 'true';
 
-    const data = await getPlayersSorted(1, undefined, sort, order, query, banned);
-    
-    const filteredPlayers = data?.players.filter(player => player.minecraft_name && player.minecraft_name.trim() !== "") || [];
-    
-    const totalCount = filteredPlayers.length;
-    const totalPages = Math.ceil(totalCount / limit);
-    const startIndex = (page - 1) * limit;
-    const paginatedPlayers = filteredPlayers.slice(startIndex, startIndex + limit);
+    const data = await getPlayersSorted(page, limit, sort, order, query || "_", banned);
+    const paginatedPlayers = data.players.filter(player => player.minecraft_name?.trim());
+    const totalCount = data.total_count;
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">

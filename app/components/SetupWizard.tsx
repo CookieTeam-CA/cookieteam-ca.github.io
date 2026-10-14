@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { login, logout } from "../actions/auth-actions";
+import { login } from "../actions/auth-actions";
 import { checkRegistration, registerUser, unregisterUser, verifyMinecraftAccount } from "../actions/user-registration-actions";
 import CapeViewer from "../cookiecapes/components/CapeViewer";
 import { Session } from "next-auth";
@@ -16,6 +16,12 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   const [capeUrl, setCapeUrl] = useState<string | null>(null);
   const [mcError, setMcError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lookupSequence = useRef(0);
+
+  useEffect(() => () => {
+    clearTimeout(debounceRef.current ?? undefined);
+    lookupSequence.current++;
+  }, []);
 
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
@@ -69,11 +75,12 @@ export default function SetupWizard({ session }: { session: Session | null }) {
     await login();
   };
 
-  const handleMcVerify = async (name: string) => {
+  const handleMcVerify = async (name: string, sequence: number) => {
     if (!name || name.length < 3) return;
     setIsLoading(true);
     setMcError("");
     const res = await verifyMinecraftAccount(name);
+    if (sequence !== lookupSequence.current) return;
     setIsLoading(false);
     
     if (res.success) {
@@ -88,13 +95,15 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   };
 
   const handleMcNameChange = (value: string) => {
+    const sequence = ++lookupSequence.current;
     setMcName(value);
     setMcUuid("");
     setCapeUrl(null);
     setMcError("");
+    setIsLoading(false);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (value.length >= 3) {
-      debounceRef.current = setTimeout(() => handleMcVerify(value), 600);
+      debounceRef.current = setTimeout(() => handleMcVerify(value, sequence), 600);
     }
   };
 

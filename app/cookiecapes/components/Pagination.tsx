@@ -41,7 +41,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
         }
         range.push(totalPages);
 
-        for (let i of range) {
+        for (const i of range) {
             if (l) {
                 if (i - l === 2) {
                     rangeWithDots.push(l + 1);

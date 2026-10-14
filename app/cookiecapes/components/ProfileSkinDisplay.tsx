@@ -5,6 +5,7 @@ import CapeViewer from "./CapeViewer";
 import { ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import gsap from "gsap";
+import type { Player } from "../lib/api";
 
 interface SkinHistoryEntry {
     hash: string;
@@ -14,7 +15,7 @@ interface SkinHistoryEntry {
 interface ProfileSkinDisplayProps {
     currentCapeUrl: string | null;
     displayName: string;
-    player: any;
+    player: Player | null;
     isCookieCapesUser: boolean;
     skinHistory?: SkinHistoryEntry[];
 }
@@ -77,7 +78,7 @@ export default function ProfileSkinDisplay({
                         currentCapeUrl ? (
                             <div className="text-zinc-300 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                Trägt Cape #{player.current_cape_id}
+                            Trägt Cape #{player?.current_cape_id}
                             </div>
                         ) : (
                             <div className="text-zinc-500 flex items-center gap-2">

@@ -4,14 +4,16 @@ import { cookies } from "next/headers";
 import { getStats, getPlayerCount, StatsResponse } from "./lib/api";
 
 export async function fetchStatsAction(): Promise<StatsResponse | null> {
-    return await getStats();
+    try { return await getStats(); }
+    catch (error) { console.error("Failed to load online stats:", error); return null; }
 }
 
-export async function fetchPlayerCountAction(): Promise<number> {
-    return await getPlayerCount();
+export async function fetchPlayerCountAction(): Promise<number | null> {
+    try { return await getPlayerCount(); }
+    catch (error) { console.error("Failed to load player count:", error); return null; }
 }
 
-export async function uploadCape(prevState: any, formData: FormData) {
+export async function uploadCape(prevState: unknown, formData: FormData) {
   const WORKER_URL = "https://cloudcookieapi.leonmt12345.workers.dev";
   
   const minecraftName = formData.get("minecraft_name");

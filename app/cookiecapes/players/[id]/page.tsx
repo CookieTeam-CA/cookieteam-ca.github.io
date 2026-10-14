@@ -60,7 +60,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     }
 
     const displayName = player?.minecraft_name ?? history?.current_username ?? id;
-    const createdCapes = player ? await getCapesByPlayer(displayName) : [];
+    const createdCapes = player ? await getCapesByPlayer(player.minecraft_uuid) : [];
     const currentCapeUrl = player?.current_cape_id 
         ? `/api/proxy?url=${encodeURIComponent(`https://api.cookieattack.de:8989/capes/${player.current_cape_id}.png`)}`
         : null;

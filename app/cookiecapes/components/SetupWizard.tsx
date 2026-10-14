@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, ChangeEvent } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore, ChangeEvent } from "react";
 import gsap from "gsap";
 import { uploadCape } from "../actions";
 import CapeViewer from "./CapeViewer";
-import { Bold } from "lucide-react";
+const subscribe = () => () => {};
+const uploadLimit = () => document.cookie.split("; ").includes("cape_upload_limit=true");
+const serverUploadLimit = () => false;
 
 export default function SetupWizard() {
   const [step, setStep] = useState(1);
@@ -15,7 +17,7 @@ export default function SetupWizard() {
   const [capePreviewUrl, setCapePreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ success?: boolean; error?: string; capeId?: number } | null>(null);
-  const [reachedLimit, setReachedLimit] = useState(false);
+  const reachedLimit = useSyncExternalStore(subscribe, uploadLimit, serverUploadLimit);
   
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -23,12 +25,6 @@ export default function SetupWizard() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (document.cookie.includes("cape_upload_limit=true")) {
-        setReachedLimit(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -267,7 +263,7 @@ export default function SetupWizard() {
                  {step === 5 && (
                     <div className="flex flex-col gap-6 items-center">
                         <h3 className="text-2xl font-bold text-white">Schritt 5: Vorschau</h3>
-                        <p className="text-zinc-400 text-center">Überprüfe ob das Cape richtig angezeigt wird und ob es überhaupt sichtbar ist.<br/> Sollte alles gut aussehen klicke auf "Hochladen".</p>
+                        <p className="text-zinc-400 text-center">Überprüfe ob das Cape richtig angezeigt wird und ob es überhaupt sichtbar ist.<br/> Sollte alles gut aussehen klicke auf &quot;Hochladen&quot;.</p>
                         
                         <div className="w-full max-w-[300px] h-[400px]">
                             <CapeViewer 

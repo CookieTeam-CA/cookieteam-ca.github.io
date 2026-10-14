@@ -7,35 +7,26 @@ export interface StatsResponse {
   connected_players_uuids: string[];
 }
 
-export async function getStats(): Promise<StatsResponse | null> {
-    try {
-        const res = await fetch(`${API_STATS_URL}/stats`, { next: { revalidate: 30 } });
-        if (!res.ok) return null;
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to fetch stats:", error);
-        return null;
-    }
+class CapeApiError extends Error {
+  constructor(readonly status: number) { super("Das API-Ergebnis konnte nicht geladen werden."); }
+}
+
+async function request<T>(url: string, options: RequestInit & { next?: { revalidate: number } } = {}): Promise<T> {
+  const response = await fetch(url, { ...options, signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new CapeApiError(response.status);
+  return await response.json();
+}
+
+export async function getStats(): Promise<StatsResponse> {
+  return await request(`${API_STATS_URL}/stats`, { next: { revalidate: 30 } });
 }
 
 export async function getPlayerCount(): Promise<number> {
-    try {
-        const res = await fetch(`${API_BASE_URL}/list_players_sorted`, {
-            method: 'POST',
-             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-             next: { revalidate: 60 }
-        });
-
-        if (!res.ok) return 0;
-        const data = await res.json();
-        return data.total_count || 0;
-    } catch (error) {
-        console.error("Failed to fetch player count:", error);
-        return 0;
-    }
+  const data = await request<PlayersResponse>(`${API_BASE_URL}/list_players_sorted`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit: 1, offset: 0 }), next: { revalidate: 60 },
+  });
+  return data.total_count;
 }
 
 export interface Cape {
@@ -80,203 +71,83 @@ export interface PlayersResponse {
 }
 
 export async function getCapes(limit = 10): Promise<Cape[]> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/list_capes_sorted`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        limit: limit,
-        sort_by: "active_user_count",
-        order: "desc",
-        offset: 0
-      }),
-      next: { revalidate: 60 },
-    });
-    
-    if (!res.ok) {
-        console.error(`API Error: ${res.status} ${res.statusText}`);
-        return [];
-    }
-    
-    const data = await res.json();
-    return data.capes || [];
-  } catch (error) {
-    console.error("Failed to fetch capes:", error);
-    return [];
-  }
+  const data = await request<CapesResponse>(`${API_BASE_URL}/list_capes_sorted`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit, offset: 0, sort_by: "active_user_count", order: "desc" }),
+    next: { revalidate: 60 },
+  });
+  return data.capes.map(cape => ({ ...cape, cape_image_url: `${API_BASE_URL}/capes/${cape.cape_id}.png` }));
 }
 
 export async function getCapesSorted(
-    page = 1, 
-    limit = 24, 
-    sortBy: SortBy = 'active_user_count', 
-    order: Order = 'desc',
-    search: string = ''
-): Promise<CapesResponse | null> {
-    try {
-        const offset = (page - 1) * limit;
-        const body: any = {
-            limit,
-            offset,
-            sort_by: sortBy,
-            order
-        };
-
-        if (search) {
-            body.query = search;
-        }
-
-        const res = await fetch(`${API_BASE_URL}/list_capes_sorted`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-            next: { revalidate: 0 }
-        });
-
-        if (!res.ok) return null;
-        
-        const data = await res.json();
-        
-        if (data && data.capes) {
-            data.capes = data.capes.map((cape: Cape) => ({
-                ...cape,
-                cape_image_url: `/api/proxy?url=${encodeURIComponent(`https://api.cookieattack.de:8989/capes/${cape.cape_id}.png`)}`
-            }));
-        }
-
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch sorted capes:", error);
-        return null;
-    }
+  page = 1, limit = 24, sortBy: SortBy = "active_user_count", order: Order = "desc", search = "", owner?: string,
+): Promise<CapesResponse> {
+  const data = await request<CapesResponse>(`${API_BASE_URL}/list_capes_sorted`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, query: search || undefined, owner }),
+    next: { revalidate: 0 },
+  });
+  return { ...data, capes: data.capes.map(cape => ({
+    ...cape, cape_image_url: `/api/proxy?url=${encodeURIComponent(`${API_BASE_URL}/capes/${cape.cape_id}.png`)}`,
+  })) };
 }
 
 export async function getPlayersSorted(
-    page = 1,
-    limit?: number,
-    sortBy: string = 'minecraft_name',
-    order: Order = 'asc',
-    search: string = '',
-    banned: boolean = false
-): Promise<PlayersResponse | null> {
-    try {
-        const body: any = {
-            sort_by: sortBy,
-            order,
-            banned
-        };
-
-        if (limit !== undefined) {
-            body.limit = limit;
-            body.offset = (page - 1) * limit;
-        }
-
-        if (search) {
-            body.query = search;
-        }
-
-        const res = await fetch(`${API_BASE_URL}/list_players_sorted`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-            next: { revalidate: 0 }
-        });
-
-        if (!res.ok) return null;
-
-        const data = await res.json();
-        return data;
-    } catch (error) {
-        console.error("Failed to fetch sorted players:", error);
-        return null;
-    }
+  page = 1, limit = 24, sortBy = "minecraft_name", order: Order = "asc", search = "", banned = false,
+): Promise<PlayersResponse> {
+  return await request(`${API_BASE_URL}/list_players_sorted`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, banned, query: search || undefined }),
+    next: { revalidate: 0 },
+  });
 }
 
 export async function getRandomCapes(count = 3): Promise<Cape[]> {
-  const allCapes = await getCapes(30); 
-  if (allCapes.length === 0) return [];
-  
+  const allCapes = await getCapes(30);
   const shuffled = allCapes.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
 export async function getCape(id: number): Promise<Cape | null> {
-    try {
-        const res = await fetch(`${API_BASE_URL}/get_cape?cape_id=${id}`, {
-            next: { revalidate: 60 }
-        });
-        
-        if (!res.ok) return null;
-        
-        const data = await res.json();
-        
-        const imageUrl = `https://api.cookieattack.de:8989/capes/${id}.png`;
-
-        return {
-            cape_id: id,
-            cape_name: data.cape_name,
-            minecraft_uuid: data.minecraft_uuid,
-            minecraft_name: data.minecraft_name,
-            last_edited: data.last_edited,
-            count: 0,
-            active_user_count: 0,
-            cape_image_url: imageUrl
-        };
-    } catch (error) {
-        console.error("Failed to fetch cape:", error);
-        return null;
-    }
+  try {
+    const data = await request<Cape>(`${API_BASE_URL}/get_cape?cape_id=${id}`, { next: { revalidate: 60 } });
+    return { ...data, cape_id: id, count: 0, cape_image_url: `${API_BASE_URL}/capes/${id}.png` };
+  } catch (error) {
+    if (error instanceof CapeApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export async function getPlayersByCape(capeId: number): Promise<Player[]> {
-    try {
-        const res = await getPlayersSorted(1, 1000, 'minecraft_name', 'asc');
-        
-        if (res && res.players) {
-            return res.players.filter(p => p.current_cape_id === capeId);
-        }
-        return [];
-    } catch (error) {
-        console.error("Failed to fetch players by cape:", error);
-        return [];
-    }
+  const players: Player[] = [];
+  for (let page = 1; ; page++) {
+    const data = await getPlayersSorted(page, 1000, "minecraft_name", "asc");
+    if (data.offset !== (page - 1) * 1000 || !Number.isSafeInteger(data.total_count) || data.total_count < 0) throw new Error("Incomplete player API result");
+    players.push(...data.players.filter(player => player.current_cape_id === capeId));
+    if (data.offset + data.players.length >= data.total_count) return players;
+    if (data.players.length !== 1000) throw new Error("Incomplete player API result");
+  }
 }
 
 export async function getPlayer(identifier: string): Promise<Player | null> {
-    try {
-        const res = await fetch(`${API_BASE_URL}/get_player?identifier=${identifier}`, {
-            next: { revalidate: 60 }
-        });
-        
-        if (!res.ok) return null;
-        
-        const data = await res.json();
-        
-        return {
-            ...data,
-            current_cape_id: data.cape_id
-        }; 
-    } catch (error) {
-        console.error("Failed to fetch player:", error);
-        return null;
-    }
+  try {
+    const data = await request<Player & { cape_id: number | null }>(`${API_BASE_URL}/get_player?identifier=${encodeURIComponent(identifier)}`, { next: { revalidate: 60 } });
+    return { ...data, current_cape_id: data.cape_id };
+  } catch (error) {
+    if (error instanceof CapeApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
-export async function getCapesByPlayer(playerName: string): Promise<Cape[]> {
-    try {
-        const res = await getCapesSorted(1, 1000, 'last_edited', 'desc');
-        
-        if (res && res.capes) {
-            return res.capes.filter(c => c.minecraft_name.toLowerCase() === playerName.toLowerCase());
-        }
-        
-        return [];
-    } catch (error) {
-        console.error("Failed to fetch capes by player:", error);
-        return [];
-    }
+export async function getCapesByPlayer(owner: string): Promise<Cape[]> {
+  const capes: Cape[] = [];
+  for (let page = 1; ; page++) {
+    const data = await getCapesSorted(page, 1000, "last_edited", "desc", "", owner);
+    if (data.offset !== (page - 1) * 1000 || !Number.isSafeInteger(data.total_count) || data.total_count < 0) throw new Error("Incomplete cape API result");
+    capes.push(...data.capes);
+    if (data.offset + data.capes.length >= data.total_count) return capes;
+    if (data.capes.length !== 1000) throw new Error("Incomplete cape API result");
+  }
 }
 
 // --- Player History (names.amplitudes.me) ---
@@ -308,16 +179,10 @@ export interface PlayerHistory {
 }
 
 export async function getPlayerHistory(username: string): Promise<PlayerHistory | null> {
-    try {
-        const res = await fetch(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, {
-            next: { revalidate: 60 }
-        });
-
-        if (!res.ok) return null;
-
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to fetch player history:", error);
-        return null;
-    }
+  try {
+    return await request(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, { next: { revalidate: 60 } });
+  } catch (error) {
+    if (error instanceof CapeApiError && error.status === 404) return null;
+    throw error;
+  }
 }

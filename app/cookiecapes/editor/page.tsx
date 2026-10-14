@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { 
-    ArrowLeft, Download, Eraser, Image as ImageIcon, Layers, 
-    Pencil, RotateCcw, RotateCw, Save, Upload, Move, 
-    Trash2, Eye, EyeOff, Plus, Lock, Unlock, MousePointer2, PaintBucket 
+    ArrowLeft, Download, Eraser, Image as ImageIcon,
+    Pencil, RotateCcw, RotateCw, Move,
+    Trash2, Eye, EyeOff, Plus, MousePointer2, PaintBucket
 } from "lucide-react";
 import { Stage, Layer, Image as KonvaImage, Line, Transformer } from "react-konva/lib/ReactKonvaCore";
 import "konva/lib/shapes/Image";
@@ -111,7 +111,10 @@ function floodFill(
     return imageData;
 }
 
-const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: any) => {
+const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: {
+    src: string; layerProps: Partial<EditorLayer>; isSelected: boolean;
+    onSelect?: () => void; onChange?: (attributes: Partial<EditorLayer>) => void;
+}) => {
     const [image] = useImage(src, "anonymous");
     const shapeRef = useRef<Konva.Image>(null);
     const trRef = useRef<Konva.Transformer>(null);
@@ -133,7 +136,7 @@ const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: any) => {
                 onClick={onSelect}
                 onTap={onSelect}
                 onDragEnd={(e) => {
-                    onChange({
+                    onChange?.({
                         ...layerProps,
                         x: e.target.x(),
                         y: e.target.y(),
@@ -146,7 +149,7 @@ const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: any) => {
                     const scaleY = node.scaleY();
                     node.scaleX(1);
                     node.scaleY(1);
-                    onChange({
+                    onChange?.({
                         ...layerProps,
                         x: node.x(),
                         y: node.y(),
@@ -182,20 +185,27 @@ export default function CapeEditorPage() {
     const [brushSize, setBrushSize] = useState(1);
     const [zoom, setZoom] = useState(1);
     
-    const [history, setHistory] = useState<HistoryState[]>([]);
-    const [historyStep, setHistoryStep] = useState(-1);
+    const [{ states: history, step: historyStep }, setHistory] = useState<{ states: HistoryState[]; step: number }>({ states: [], step: -1 });
+    const initialized = useRef(false);
+    const [templateError, setTemplateError] = useState("");
 
     const stageRef = useRef<Konva.Stage>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const isDrawing = useRef(false);
 
     useEffect(() => {
+        let cancelled = false;
         const init = async () => {
             const templateSrc = TEMPLATES[activeTemplate];
             const img = new Image();
-            img.src = templateSrc;
             img.crossOrigin = "anonymous";
-            await new Promise((resolve) => { img.onload = resolve; });
+            await new Promise<void>((resolve, reject) => {
+                img.onload = () => resolve();
+                img.onerror = () => reject(new Error("Die Vorlage konnte nicht geladen werden."));
+                img.src = templateSrc;
+            });
+            if (cancelled) return;
+            setTemplateError("");
 
             const templateId = "layer-template";
             const newLayer: EditorLayer = {
@@ -226,39 +236,40 @@ export default function CapeEditorPage() {
             const initialLayers = [templateId, drawId]
                 .map(id => id === templateId ? newLayer : drawLayer);
 
-            setLayers(initialLayers);
-            setActiveLayerId(drawId);
-            addToHistory(initialLayers);
+            setLayers(current => current.length ? current.map(layer => layer.type === "template" ? { ...newLayer, visible: layer.visible } : layer) : initialLayers);
+            if (!initialized.current) {
+                initialized.current = true;
+                setActiveLayerId(drawId);
+                setHistory({ states: [{ layers: initialLayers }], step: 0 });
+            }
         };
         
-        setHistory([]);
-        setHistoryStep(-1);
-        init();
+        void init().catch(error => { if (!cancelled) setTemplateError(error.message); });
+        return () => { cancelled = true; };
     }, [activeTemplate]);
 
-    const addToHistory = useCallback((newLayers: EditorLayer[]) => {
-        const newState = { layers: JSON.parse(JSON.stringify(newLayers)) };
+    const addToHistory = (newLayers: EditorLayer[]) => {
+        const newState = { layers: structuredClone(newLayers) };
         setHistory(prev => {
-            const sliced = prev.slice(0, historyStep + 1);
+            const sliced = prev.states.slice(0, prev.step + 1);
             sliced.push(newState);
             if (sliced.length > 20) sliced.shift();
-            setHistoryStep(sliced.length - 1);
-            return sliced;
+            return { states: sliced, step: sliced.length - 1 };
         });
-    }, [historyStep]);
+    };
 
     const undo = () => {
         if (historyStep <= 0) return;
         const prevStep = historyStep - 1;
-        setLayers(history[prevStep].layers);
-        setHistoryStep(prevStep);
+        setLayers(current => [...current.filter(layer => layer.type === "template"), ...history[prevStep].layers.filter(layer => layer.type !== "template")]);
+        setHistory(prev => ({ ...prev, step: prevStep }));
     };
 
     const redo = () => {
         if (historyStep >= history.length - 1) return;
         const nextStep = historyStep + 1;
-        setLayers(history[nextStep].layers);
-        setHistoryStep(nextStep);
+        setLayers(current => [...current.filter(layer => layer.type === "template"), ...history[nextStep].layers.filter(layer => layer.type !== "template")]);
+        setHistory(prev => ({ ...prev, step: nextStep }));
     };
 
     const updateLayers = (newLayers: EditorLayer[], saveToHistory = true) => {
@@ -481,6 +492,7 @@ export default function CapeEditorPage() {
 
     return (
         <div className="flex flex-col h-screen bg-[#050505] text-white overflow-hidden">
+             {templateError && <p role="alert" className="bg-red-950 p-3 text-red-200">{templateError}</p>}
              <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0a0a]">
                 <div className="flex items-center gap-4">
                     <Link href="/cookiecapes/tutorial" className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -577,7 +589,7 @@ export default function CapeEditorPage() {
                                                         setActiveLayerId(layer.id);
                                                     }
                                                 }}
-                                                onChange={(newAttrs: any) => {
+                                                onChange={(newAttrs) => {
                                                     updateLayers(layers.map(l => l.id === layer.id ? { ...l, ...newAttrs } : l));
                                                 }}
                                             />
