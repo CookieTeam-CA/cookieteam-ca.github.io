@@ -18,7 +18,7 @@ export default function TutorialPage() {
                     Cape Erstellen <span className="text-orange-500">Tutorial</span>
                 </h1>
                 <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-                    Lerne Schritt für Schritt, wie du dein eigenes Minecraft Cape designst und hochlädst.
+                    Lerne Schritt für Schritt, wie du dein eigenes Minecraft Cape designst. Der Website-Upload ist bis zur sicheren Minecraft-Verknüpfung deaktiviert.
                 </p>
             </div>
 
@@ -29,7 +29,7 @@ export default function TutorialPage() {
                         Was du brauchst
                     </h2>
                     
-                    <div className="mb-8 bg-gradient-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-6">
+                    <div className="mb-8 bg-linear-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-6">
                         <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
                             <div>
                                 <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
@@ -127,6 +127,7 @@ export default function TutorialPage() {
                                 </p>
                                 <ul className="list-disc list-inside text-zinc-400 ml-2 space-y-1">
                                     <li>Wähle unbedingt <strong>PNG (*.png)</strong> als Dateityp.</li>
+                                    <li>Maximal 3 MiB und 4096 × 4096 Pixel; nur ein einzelnes Bild, keine Animation.</li>
                                     <li>Gib dem Cape einen Namen.</li>
                                     <li>Speichere es ab.</li>
                                 </ul>
@@ -151,7 +152,7 @@ export default function TutorialPage() {
                         href="/cookiecapes"
                         className="inline-flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform"
                      >
-                        Zum Upload
+                        Zum Upload-Status
                      </Link>
                 </div>
             </div>

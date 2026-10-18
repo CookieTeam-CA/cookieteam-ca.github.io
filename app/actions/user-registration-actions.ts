@@ -1,9 +1,9 @@
 "use server";
 
 import { auth } from "../../auth";
+import { API_BASE_URL } from "../cookiecapes/lib/api";
 
 const API_URL = "http://api.cookieattack.de:8100";
-const COOKIECAPES_API_URL = "https://api.cookieattack.de:8989";
 
 const getHeaders = () => {
   const token = process.env.COOKIEATTACK_BACKEND_KEY || "";
@@ -97,13 +97,12 @@ export async function verifyMinecraftAccount(name: string) {
     const uuid = data.data.player.id;
     const username = data.data.player.username;
 
-    let capeId: number | null = null;
+    let capeUrl: string | null = null;
     try {
-      const capeRes = await fetch(`${COOKIECAPES_API_URL}/get_player?identifier=${uuid}`, { cache: "no-store" });
+      const capeRes = await fetch(`${API_BASE_URL}/get_player?identifier=${uuid}`, { cache: "no-store" });
       if (capeRes.ok) {
         const capeData = await capeRes.json();
-        capeId = capeData.cape_id ?? null;
-        console.log("[CookieCapes] Player data for", uuid, "→ cape_id:", capeId);
+        capeUrl = capeData.cape_image_url || (capeData.cape_id != null ? `${API_BASE_URL}/capes/${capeData.cape_id}.png` : null);
       } else {
         console.log("[CookieCapes] Player not found in CookieCapes, status:", capeRes.status);
       }
@@ -115,7 +114,7 @@ export async function verifyMinecraftAccount(name: string) {
       success: true, 
       uuid, 
       username,
-      capeUrl: capeId != null ? `https://api.cookieattack.de:8989/capes/${capeId}.png` : null
+      capeUrl
     };
 
   } catch (err) {

@@ -2,7 +2,7 @@
 
 import { Trash2, AlertCircle, X, Check } from "lucide-react";
 import { deleteCape } from "../../actions/cape-actions";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface DeleteCapeButtonProps {
@@ -14,6 +14,7 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
     const [isDeleting, setIsDeleting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const router = useRouter();
+    const pending = useRef(false);
 
     if (!isAdmin) return null;
 
@@ -21,16 +22,24 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
         e.preventDefault();
         e.stopPropagation();
 
+        if (pending.current) return;
+        pending.current = true;
         setIsDeleting(true);
-        const result = await deleteCape(capeId);
-        
-        if (result.success) {
-            router.refresh();
-        } else {
-            alert(`Fehler: ${result.error}`);
-            setShowConfirm(false);
+        try {
+            const result = await deleteCape(capeId);
+
+            if (result.success) {
+                router.refresh();
+            } else {
+                alert(`Fehler: ${result.error}`);
+                setShowConfirm(false);
+            }
+        } catch {
+            alert("Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es später erneut.");
+        } finally {
+            pending.current = false;
+            setIsDeleting(false);
         }
-        setIsDeleting(false);
     };
 
     if (showConfirm) {

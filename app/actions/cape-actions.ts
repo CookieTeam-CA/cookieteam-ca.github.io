@@ -2,37 +2,39 @@
 
 import { auth } from "../../auth";
 import { revalidatePath } from "next/cache";
+import { API_BASE_URL, CapeApiError, capeApiError } from "../cookiecapes/lib/api";
 
 export async function deleteCape(capeId: number) {
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
-        return { success: false, error: "Unauthorized" };
+        return { success: false, error: "Bitte melde dich an." };
     }
 
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
     if (!adminIds.includes(session.user.id)) {
-        return { success: false, error: "Forbidden: You are not an admin." };
+        return { success: false, error: "Diese Aktion ist nur für Administratoren erlaubt." };
     }
+
+    if (!Number.isSafeInteger(capeId) || capeId < 1) return { success: false, error: "Ungültige Cape-ID." };
 
     try {
         const token = process.env.COOKIECAPES_API_TOKEN;
         if (!token) {
             console.error("COOKIECAPES_API_TOKEN is missing");
-            return { success: false, error: "Server Configuration Error" };
+            return { success: false, error: "Die Admin-Funktion ist derzeit nicht konfiguriert." };
         }
 
-        const res = await fetch(`https://api.cookieattack.de:8989/delete_cape?cape_id=${capeId}`, {
+        const res = await fetch(`${API_BASE_URL}/delete_cape?cape_id=${capeId}`, {
             method: 'DELETE',
+            signal: AbortSignal.timeout(15000),
             headers: {
                 'authorization': `Bearer ${token}`,
             }
         });
 
         if (!res.ok) {
-            const errorText = await res.text();
-            console.error("Failed to delete cape %s:", capeId, errorText);
-            return { success: false, error: `Failed to delete: ${res.statusText}` };
+            throw await capeApiError(res);
         }
         
         revalidatePath("/cookiecapes/capes");
@@ -42,6 +44,6 @@ export async function deleteCape(capeId: number) {
 
     } catch (error) {
         console.error("Exception in deleteCape:", error);
-        return { success: false, error: "Internal Server Error" };
+        return { success: false, error: error instanceof CapeApiError ? error.message : "Die API ist vorübergehend nicht erreichbar." };
     }
 }

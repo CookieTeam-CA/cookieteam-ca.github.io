@@ -47,7 +47,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
         );
     }
 
-    const capeUrl = `/api/proxy?url=${encodeURIComponent(`https://api.cookieattack.de:8989/capes/${cape.cape_id}.png`)}`;
+    const capeUrl = cape.cape_image_url;
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
@@ -61,8 +61,8 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-[4/3] relative group">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
+                        <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-4/3 relative group">
+                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
                             <div className="w-full h-full flex items-center justify-center">
                                 <CapeViewer 
                                     capeUrl={capeUrl}
@@ -120,7 +120,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                             </h3>
 
                             {players.length > 0 ? (
-                                <div className="flex flex-col gap-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+                                <div className="flex flex-col gap-3 overflow-y-auto max-h-150 pr-2 custom-scrollbar">
                                     {players.map((player) => (
                                         <div key={player.minecraft_uuid} className="bg-black/30 border border-white/5 rounded-lg p-3 flex items-center gap-3 hover:bg-white/5 transition-colors">
                                             <img 

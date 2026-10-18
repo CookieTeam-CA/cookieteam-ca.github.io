@@ -2,7 +2,7 @@
 
 import { Gavel, AlertCircle, X, Check } from "lucide-react";
 import { banPlayer } from "../../actions/player-actions";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface BanPlayerButtonProps {
@@ -16,6 +16,7 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
     const [showConfirm, setShowConfirm] = useState(false);
     const [reason, setReason] = useState("Regelverstoß");
     const router = useRouter();
+    const pending = useRef(false);
 
     if (!isAdmin) return null;
 
@@ -23,23 +24,31 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
         e.preventDefault();
         e.stopPropagation();
 
+        if (pending.current) return;
+        pending.current = true;
         setIsBanning(true);
-        const result = await banPlayer(minecraftName, reason);
-        
-        if (result.success) {
-            router.refresh();
-            setShowConfirm(false);
-        } else {
-            alert(`Fehler: ${result.error}`);
-            setShowConfirm(false);
+        try {
+            const result = await banPlayer(minecraftName, reason);
+
+            if (result.success) {
+                router.refresh();
+                setShowConfirm(false);
+            } else {
+                alert(`Fehler: ${result.error}`);
+                setShowConfirm(false);
+            }
+        } catch {
+            alert("Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es später erneut.");
+        } finally {
+            pending.current = false;
+            setIsBanning(false);
         }
-        setIsBanning(false);
     };
 
     if (showConfirm) {
         return (
             <div 
-                className={`absolute top-2 left-2 flex flex-col gap-2 bg-red-700 rounded-lg p-2 z-30 shadow-2xl border border-red-400/30 animate-in fade-in zoom-in duration-200 min-w-[200px] ${className}`}
+                className={`absolute top-2 left-2 flex flex-col gap-2 bg-red-700 rounded-lg p-2 z-30 shadow-2xl border border-red-400/30 animate-in fade-in zoom-in duration-200 min-w-50 ${className}`}
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
                 <div className="flex items-center justify-between w-full">

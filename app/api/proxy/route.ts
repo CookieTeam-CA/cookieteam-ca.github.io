@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
   }
 
   const imagePaths: Record<string, RegExp> = {
-    "https://api.cookieattack.de:8989": /^\/capes\/\d+\.png$/,
     "https://minotar.net": /^\/(skin|avatar|helm)\/[A-Za-z0-9_-]+(?:\/\d+)?\/?$/,
     "https://crafthead.net": /^\/(skin|avatar)\/[A-Za-z0-9_-]+(?:\/\d+)?\/?$/,
   };
@@ -35,11 +34,6 @@ export async function GET(request: NextRequest) {
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(targetUrl, { redirect: "error", signal: controller.signal });
-    // Deleted cape images are an expected absence, not a failed preview request.
-    if (response.status === 404 && targetUrl.origin === "https://api.cookieattack.de:8989") {
-      await response.body?.cancel();
-      return new NextResponse(null, { status: 204, headers: { "Cache-Control": "no-store" } });
-    }
     if (!response.ok) {
         return new NextResponse(`Failed to fetch image: ${response.statusText}`, { status: response.status });
     }

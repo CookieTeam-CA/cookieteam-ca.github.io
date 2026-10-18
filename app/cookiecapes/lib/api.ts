@@ -1,24 +1,44 @@
-export const API_BASE_URL = "https://api.cookieattack.de:8989";
-export const API_STATS_URL = "https://api.cookieattack.de:8990";
+export const API_BASE_URL = "https://api.cookieattack.de";
 
-export interface StatsResponse {
-  online_player_count: number;
-  websocket_connection_status: string;
-  connected_players_uuids: string[];
+export class CapeApiError extends Error {
+  constructor(readonly status: number, message: string, readonly retryAfter: string | null = null) { super(message); }
 }
 
-class CapeApiError extends Error {
-  constructor(readonly status: number) { super("Das API-Ergebnis konnte nicht geladen werden."); }
+export async function capeApiError(response: Response): Promise<CapeApiError> {
+  const messages: Record<number, string> = {
+    401: "Die Anmeldung fehlt, ist abgelaufen oder ungültig.",
+    403: "Diese Aktion ist nicht erlaubt.",
+    400: "Bitte prüfe deine Eingaben.",
+    422: "Bitte prüfe deine Eingaben.",
+    413: "Die Anfrage ist zu groß.",
+    429: "Zu viele Anfragen. Bitte warte, bevor du es erneut versuchst.",
+    469: "Das Cape wurde von der Moderation abgelehnt.",
+    503: "Ein externer Dienst ist vorübergehend nicht verfügbar.",
+  };
+  let detail = await response.text();
+  try {
+    const data = JSON.parse(detail);
+    detail = typeof data?.detail === "string" ? data.detail : "";
+  } catch { /* The API may also return plain text. */ }
+  const retryAfter = response.headers.get("Retry-After");
+  let message = messages[response.status] ?? `Die API-Anfrage ist fehlgeschlagen (HTTP ${response.status}).`;
+  if (detail && !detail.trimStart().startsWith("<")) message += ` ${detail.slice(0, 400)}`;
+  if (response.status === 429 && retryAfter) {
+    const seconds = /^\d+$/.test(retryAfter) ? Number(retryAfter) : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
+    if (Number.isFinite(seconds) && seconds > 0) message += ` Bitte frühestens in ${seconds} Sekunden erneut versuchen.`;
+  }
+  return new CapeApiError(response.status, message, retryAfter);
 }
 
 async function request<T>(url: string, options: RequestInit & { next?: { revalidate: number } } = {}): Promise<T> {
-  const response = await fetch(url, { ...options, signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new CapeApiError(response.status);
-  return await response.json();
-}
-
-export async function getStats(): Promise<StatsResponse> {
-  return await request(`${API_STATS_URL}/stats`, { next: { revalidate: 30 } });
+  try {
+    const response = await fetch(url, { ...options, signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw await capeApiError(response);
+    return await response.json();
+  } catch (error) {
+    if (error instanceof CapeApiError) throw error;
+    throw new CapeApiError(0, "Die API ist vorübergehend nicht erreichbar oder hat eine ungültige Antwort geliefert.");
+  }
 }
 
 export async function getPlayerCount(): Promise<number> {
@@ -46,11 +66,12 @@ export interface Player {
     current_cape_id: number | null;
     banned: boolean;
     ban_reason: string;
+    cape_image_url?: string | null;
     cape_name: string | null;
     last_edited: string | null;
 }
 
-export type SortBy = 'active_user_count' | 'last_edited' | 'cape_name' | 'cape_id' | 'minecraft_name';
+export type SortBy = 'active_user_count' | 'last_edited' | 'cape_name' | 'cape_id';
 export type Order = 'asc' | 'desc';
 
 export interface CapesResponse {
@@ -76,7 +97,7 @@ export async function getCapes(limit = 10): Promise<Cape[]> {
     body: JSON.stringify({ limit, offset: 0, sort_by: "active_user_count", order: "desc" }),
     next: { revalidate: 60 },
   });
-  return data.capes.map(cape => ({ ...cape, cape_image_url: `${API_BASE_URL}/capes/${cape.cape_id}.png` }));
+  return data.capes.map(cape => ({ ...cape, cape_image_url: cape.cape_image_url || `${API_BASE_URL}/capes/${cape.cape_id}.png` }));
 }
 
 export async function getCapesSorted(
@@ -88,7 +109,7 @@ export async function getCapesSorted(
     next: { revalidate: 0 },
   });
   return { ...data, capes: data.capes.map(cape => ({
-    ...cape, cape_image_url: `/api/proxy?url=${encodeURIComponent(`${API_BASE_URL}/capes/${cape.cape_id}.png`)}`,
+    ...cape, cape_image_url: cape.cape_image_url || `${API_BASE_URL}/capes/${cape.cape_id}.png`,
   })) };
 }
 
@@ -111,7 +132,7 @@ export async function getRandomCapes(count = 3): Promise<Cape[]> {
 export async function getCape(id: number): Promise<Cape | null> {
   try {
     const data = await request<Cape>(`${API_BASE_URL}/get_cape?cape_id=${id}`, { next: { revalidate: 60 } });
-    return { ...data, cape_id: id, count: 0, cape_image_url: `${API_BASE_URL}/capes/${id}.png` };
+    return { ...data, cape_id: id, count: data.count ?? 0, cape_image_url: data.cape_image_url || `${API_BASE_URL}/capes/${id}.png` };
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;

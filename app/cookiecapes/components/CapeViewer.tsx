@@ -52,20 +52,10 @@ function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin:
              finalSkinUrl = "https://minotar.net/skin/MHF_Steve";
         }
 
-        const finalCapeUrl = getProxiedUrl(cape);
         // A cape is optional; a missing image must not prevent the player preview.
         const capeLoad = (async () => {
-            if (!finalCapeUrl) return viewer.loadCape(null);
-            if (!finalCapeUrl.startsWith("/api/proxy?")) return viewer.loadCape(finalCapeUrl);
-            const response = await fetch(finalCapeUrl);
-            if (!isCurrent()) return;
-            if (response.status === 204 || !response.ok) return viewer.loadCape(null);
-            const imageUrl = URL.createObjectURL(await response.blob());
-            try {
-                if (isCurrent()) await viewer.loadCape(imageUrl);
-            } finally {
-                URL.revokeObjectURL(imageUrl);
-            }
+            if (cape) await viewer.loadCape(cape);
+            else viewer.loadCape(null);
         })().catch(() => {
             if (isCurrent()) viewer.loadCape(null);
         });

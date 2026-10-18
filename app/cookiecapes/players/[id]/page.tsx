@@ -1,4 +1,4 @@
-import { getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
+import { API_BASE_URL, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
 import Image from "next/image";
@@ -61,8 +61,8 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
     const displayName = player?.minecraft_name ?? history?.current_username ?? id;
     const createdCapes = player ? await getCapesByPlayer(player.minecraft_uuid) : [];
-    const currentCapeUrl = player?.current_cape_id 
-        ? `/api/proxy?url=${encodeURIComponent(`https://api.cookieattack.de:8989/capes/${player.current_cape_id}.png`)}`
+    const currentCapeUrl = player?.current_cape_id != null
+        ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png`
         : null;
 
     const isCookieCapesUser = !!player;

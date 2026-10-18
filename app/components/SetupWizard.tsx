@@ -86,7 +86,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
     if (res.success) {
       setMcUuid(res.uuid!);
       const rawCape = res.capeUrl || null;
-      setCapeUrl(rawCape ? `/api/proxy?url=${encodeURIComponent(rawCape)}` : null);
+      setCapeUrl(rawCape);
     } else {
       setMcError(res.error || "Fehler aufgetreten");
       setMcUuid("");

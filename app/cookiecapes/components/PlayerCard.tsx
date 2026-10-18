@@ -1,4 +1,4 @@
-import { Player } from "../lib/api";
+import { API_BASE_URL, Player } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 import { User, ShieldAlert } from "lucide-react";
 import { auth } from "../../../auth";
@@ -14,8 +14,8 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
     const isAdmin = session?.user?.id && adminIds.includes(session.user.id) ? true : false;
 
-    const capeUrl = player.current_cape_id 
-        ? `/api/proxy?url=${encodeURIComponent(`https://api.cookieattack.de:8989/capes/${player.current_cape_id}.png`)}`
+    const capeUrl = player.current_cape_id != null
+        ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png`
         : "";
 
     return (
@@ -25,7 +25,7 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
                 <BanPlayerButton minecraftName={player.minecraft_name} isAdmin={isAdmin} />
             )}
 
-            <div className="relative w-full aspect-[3/4] bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
+            <div className="relative w-full aspect-3/4 bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
                 <div className="relative w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <CapeViewer 
                         capeUrl={capeUrl} 
