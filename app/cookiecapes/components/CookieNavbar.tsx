@@ -45,6 +45,7 @@ export default function CookieNavbar() {
         </div>
 
         <div className="flex items-center gap-3.75">
+            <Link href="/cookiecapes/account" className="text-orange-400 hover:text-white">Account</Link>
             <div id="player-count-container" className="relative group cursor-help flex items-center gap-2 bg-white/10 px-3 py-2 rounded-[12px] transition-all hover:bg-white/15">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-zinc-500">
                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>

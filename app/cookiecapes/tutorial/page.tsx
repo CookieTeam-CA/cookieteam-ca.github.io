@@ -18,7 +18,7 @@ export default function TutorialPage() {
                     Cape Erstellen <span className="text-orange-500">Tutorial</span>
                 </h1>
                 <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-                    Lerne Schritt für Schritt, wie du dein eigenes Minecraft Cape designst. Der Website-Upload ist bis zur sicheren Minecraft-Verknüpfung deaktiviert.
+                    Lerne Schritt für Schritt, wie du dein eigenes Minecraft Cape designst.
                 </p>
             </div>
 

@@ -202,7 +202,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
         {step === 2 && (
           <div className="w-full max-w-3xl animate-in fade-in slide-in-from-right-8 duration-500">
             <h3 className="text-3xl font-bold text-white mb-2 text-center">Minecraft Account</h3>
-            <p className="text-zinc-400 mb-8 text-center">Bitte gib deinen genauen Minecraft ein.</p>
+            <p className="text-zinc-400 mb-8 text-center">Namensabfrage für die Projektregistrierung. Dies bestätigt keinen Minecraft-Accountbesitz.</p>
             
             <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
               <div className="flex-1 min-w-0">

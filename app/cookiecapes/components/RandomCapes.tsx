@@ -1,6 +1,6 @@
 "use client";
+import VerificationBadge from "./VerificationBadge";
 
-import { useEffect, useRef } from "react";
 import { Cape } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 
@@ -28,7 +28,7 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
               />
             </div>
             <div className="text-center">
-              <h3 className="font-bold text-xl text-white">{cape.cape_name}</h3>
+              <h3 className="font-bold text-xl text-white">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h3>
               <p className="text-zinc-500 text-sm">von {cape.minecraft_name}</p>
               <div className="mt-2 text-xs text-orange-400 font-mono bg-orange-500/10 px-2 py-1 rounded">
                 ID: {cape.cape_id}

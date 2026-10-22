@@ -94,7 +94,7 @@ export default function CapeHero() {
       <p ref={descriptionRef} className="max-w-xl text-zinc-400 mt-4 text-sm md:text-base">
         Entdecke Capes aus der Community und gestalte dein eigenes im Editor.
         <br/>
-        Der Cape-Upload ist vorrübergehend deaktiviert.
+        Lade Capes über deinen bestätigten Minecraft-Account hoch.
       </p>
 
       <div ref={buttonsRef} className="flex flex-wrap justify-center gap-4 mt-4">

@@ -12,7 +12,7 @@ export async function deleteCape(capeId: number) {
     }
 
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    if (!adminIds.includes(session.user.id)) {
+    if (!adminIds.includes(session.user.discordId ?? "")) {
         return { success: false, error: "Diese Aktion ist nur für Administratoren erlaubt." };
     }
 

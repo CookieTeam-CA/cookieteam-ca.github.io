@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Übersicht - CookieCapes",
 };
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function CookieCapesPage() {
   const capes = await getRandomCapes(3);

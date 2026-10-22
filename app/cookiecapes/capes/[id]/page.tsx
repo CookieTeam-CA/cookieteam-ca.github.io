@@ -1,10 +1,11 @@
+import VerificationBadge from "../../components/VerificationBadge";
 import { getCape, getPlayersByCape } from "../../lib/api";
 import CapeViewer from "../../components/CapeViewer";
 import Link from "next/link";
 import { ArrowLeft, User, Calendar, Hash, Users } from "lucide-react";
 import Footer from "../../../components/Footer";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -71,7 +72,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                                 />
                             </div>
                             <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
-                                <h1 className="text-3xl md:text-5xl font-nexa text-white mb-2">{cape.cape_name}</h1>
+                                <h1 className="text-3xl md:text-5xl font-nexa text-white mb-2">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h1>
                                 <div className="flex items-center gap-3">
                                     <img 
                                         src={`https://minotar.net/avatar/${cape.minecraft_name}/32`} 
@@ -79,7 +80,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                                         className="w-8 h-8 rounded"
                                     />
                                     <div className="text-zinc-300">
-                                        Erstellt von <span className="text-white font-bold">{cape.minecraft_name}</span>
+                                        Hochgeladen von <span className="text-white font-bold">{cape.minecraft_name}</span>
                                     </div>
                                 </div>
                             </div>

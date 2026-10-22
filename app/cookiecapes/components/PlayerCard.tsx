@@ -12,7 +12,7 @@ interface PlayerCardProps {
 export default async function PlayerCard({ player }: PlayerCardProps) {
     const session = await auth();
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    const isAdmin = session?.user?.id && adminIds.includes(session.user.id) ? true : false;
+    const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
 
     const capeUrl = player.current_cape_id != null
         ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png`

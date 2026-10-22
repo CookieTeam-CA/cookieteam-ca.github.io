@@ -1,3 +1,4 @@
+import VerificationBadge from "./VerificationBadge";
 import { Cape } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 import { Users } from "lucide-react";
@@ -13,7 +14,7 @@ interface CapeCardProps {
 export default async function CapeCard({ cape }: CapeCardProps) {
     const session = await auth();
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    const isAdmin = session?.user?.id && adminIds.includes(session.user.id) ? true : false;
+    const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
     
     const capeUrl = cape.cape_image_url;
 
@@ -41,7 +42,7 @@ export default async function CapeCard({ cape }: CapeCardProps) {
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
                 <Link href={`/cookiecapes/capes/${cape.cape_id}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
                     <h3 className="font-bold text-white truncate w-full" title={cape.cape_name}>
-                        {cape.cape_name}
+                        {cape.cape_name} <VerificationBadge verification={cape.verification} />
                     </h3>
                 </Link>
 
