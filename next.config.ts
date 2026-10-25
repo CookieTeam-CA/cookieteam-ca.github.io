@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: { serverActions: { bodySizeLimit: "4mb" } },
+  experimental: {
+    agentUpgrade: "security",
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   async headers() {
     return [{
       source: "/cookiecapes/account/:path*",
