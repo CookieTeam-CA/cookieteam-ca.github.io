@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -20,40 +22,40 @@ export default function CapeHero() {
 
     const startChars = titleStartRef.current?.children;
     const endChars = titleEndRef.current?.children;
-    
+
     if (startChars && endChars) {
-        gsap.set([...Array.from(startChars), ...Array.from(endChars)], { y: 100, autoAlpha: 0 });
+      gsap.set([...Array.from(startChars), ...Array.from(endChars)], { y: 100, autoAlpha: 0 });
     }
     gsap.set(tagsRef.current?.children || [], { y: 20, autoAlpha: 0 });
     gsap.set(descriptionRef.current, { y: 20, autoAlpha: 0 });
     gsap.set(buttonsRef.current, { y: 20, autoAlpha: 0 });
 
     tl.to([...Array.from(startChars || []), ...Array.from(endChars || [])], {
-        y: 0,
-        autoAlpha: 1,
-        stagger: 0.05,
-        duration: 1,
-        ease: "back.out(1.7)",
-        delay: 0.2
-    })
-    .to(tagsRef.current?.children || [], {
       y: 0,
       autoAlpha: 1,
-      stagger: 0.1,
-      duration: 0.8,
-      ease: "back.out(1.7)"
-    }, "-=0.4")
-    .to(descriptionRef.current, {
+      stagger: 0.05,
+      duration: 1,
+      ease: "back.out(1.7)",
+      delay: 0.2
+    })
+      .to(tagsRef.current?.children || [], {
+        y: 0,
+        autoAlpha: 1,
+        stagger: 0.1,
+        duration: 0.8,
+        ease: "back.out(1.7)"
+      }, "-=0.4")
+      .to(descriptionRef.current, {
         y: 0,
         autoAlpha: 1,
         duration: 0.8,
-    }, "-=0.4")
-    .to(buttonsRef.current, {
+      }, "-=0.4")
+      .to(buttonsRef.current, {
         y: 0,
         autoAlpha: 1,
         duration: 0.8,
         ease: "power3.out"
-    }, "-=0.4");
+      }, "-=0.4");
 
   }, { scope: containerRef });
 
@@ -70,7 +72,7 @@ export default function CapeHero() {
   return (
     <div ref={containerRef} className="relative flex flex-col items-center justify-center py-20 md:py-32 gap-8 text-center px-4">
       <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 blur-[100px] -z-10 pointer-events-none rounded-full" />
-      
+
       <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter drop-shadow-lg overflow-hidden leading-tight">
         <span ref={titleStartRef} className="inline-block text-white">
           {splitText("Cookie")}
@@ -82,18 +84,18 @@ export default function CapeHero() {
 
       <div ref={tagsRef} className="flex flex-wrap justify-center gap-4 md:gap-8">
         {["Schnell", "Performant", "Kostenlos"].map((tag, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className="px-6 py-2 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 font-bold backdrop-blur-sm shadow-[0_0_15px_rgba(249,115,22,0.2)]"
           >
             {tag}
           </div>
         ))}
       </div>
-      
+
       <p ref={descriptionRef} className="max-w-xl text-zinc-400 mt-4 text-sm md:text-base">
         Entdecke Capes aus der Community und gestalte dein eigenes im Editor.
-        <br/>
+        <br />
         Lade Capes über deinen bestätigten Minecraft-Account hoch.
       </p>
 
@@ -102,7 +104,7 @@ export default function CapeHero() {
             onClick={scrollToSetup}
             className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-white transition-all hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
           >
-              <span className="relative z-10">Upload-Status</span>
+              <span className="relative z-10">Cape Upload</span>
           </button>
           
           <button 

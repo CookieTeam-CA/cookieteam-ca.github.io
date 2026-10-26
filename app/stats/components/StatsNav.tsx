@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,11 +55,11 @@ export default function StatsNav() {
           {links.slice(1).map(renderLink)}
         </nav>
 
-        <button ref={menuButton} type="button" aria-label={menuOpen ? "Navigation schließen" : "Navigation öffnen"}
+        <Button ref={menuButton} type="button" variant="ghost" size="icon" aria-label={menuOpen ? "Navigation schließen" : "Navigation öffnen"}
           aria-expanded={menuOpen} aria-controls="stats-mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden flex items-center justify-center bg-white/10 hover:bg-white/15 px-3 py-2 rounded-[12px] text-zinc-300 cursor-pointer">
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+          className="bg-white/10 text-zinc-300 md:hidden">
+          {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+        </Button>
       </div>
 
       {menuOpen && <nav id="stats-mobile-navigation" aria-label="Mobile Statistik-Navigation"

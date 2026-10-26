@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useState, useRef, useLayoutEffect } from "react";
 import CapeViewer from "./CapeViewer";
 import { ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
@@ -36,7 +37,7 @@ export default function ProfileSkinDisplay({
 
     useLayoutEffect(() => {
         if (!gridRef.current) return;
-        
+
         if (isExpanded) {
             gsap.to(gridRef.current, {
                 height: "auto",
@@ -54,17 +55,17 @@ export default function ProfileSkinDisplay({
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-[3/4] relative group">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
+            <div className="bg-zinc-900/50 border border-white/10 rounded-2xl overflow-hidden aspect-3/4 relative group">
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
                 <div className="w-full h-full flex items-center justify-center">
-                    <CapeViewer 
+                    <CapeViewer
                         capeUrl={currentCapeUrl}
                         minecraftName={activeSkinUrl ? undefined : displayName}
                         skinUrl={activeSkinUrl}
                         animation="walk"
                     />
                 </div>
-                
+
                 {player?.banned && (
                     <div className="absolute top-4 right-4 z-20 bg-red-500/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-white font-bold border border-red-400/50 flex items-center gap-2 shadow-lg shadow-red-900/20">
                         <ShieldAlert size={16} />
@@ -78,7 +79,7 @@ export default function ProfileSkinDisplay({
                         currentCapeUrl ? (
                             <div className="text-zinc-300 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                            Trägt Cape #{player?.current_cape_id}
+                                Trägt Cape #{player?.current_cape_id}
                             </div>
                         ) : (
                             <div className="text-zinc-500 flex items-center gap-2">
@@ -100,15 +101,16 @@ export default function ProfileSkinDisplay({
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-sm font-bold text-zinc-300">Skins ({skinHistory.length})</h3>
                     </div>
-                    <div 
+                    <div
                         ref={gridRef}
                         className="flex flex-wrap gap-2 overflow-hidden"
                         style={{ height: "56px" }}
                     >
                         {reversedHistory.map((skin, i) => (
-                            <div 
-                                key={i} 
-                                className="group relative shrink-0 cursor-pointer overflow-hidden rounded-lg border border-white/5 hover:border-orange-500/50 transition-all w-13 h-13 flex flex-col items-center justify-center bg-black/20"
+                            <Button type="button" variant="ghost" size="icon-lg"
+                                key={i}
+                                className="group relative h-13 w-13 shrink-0 overflow-hidden border border-white/5 bg-black/20 hover:border-orange-500/50"
+                                aria-label={`Skin ${i + 1} anzeigen`}
                                 onMouseEnter={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
                                 onClick={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
                             >
@@ -121,14 +123,15 @@ export default function ProfileSkinDisplay({
                                     className="object-contain group-hover:scale-110 transition-transform"
                                     style={{ imageRendering: 'pixelated' }}
                                 />
-                            </div>
+                            </Button>
                         ))}
                     </div>
-                    
+
                     {hasMore && (
-                        <button 
+                        <Button
+                            variant="ghost" size="sm"
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className="w-full mt-0.5 py-1.5 flex items-center justify-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-white hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 cursor-pointer"
+                            className="mt-0.5 w-full text-xs text-zinc-500 hover:text-white"
                         >
                             {isExpanded ? (
                                 <>
@@ -141,7 +144,7 @@ export default function ProfileSkinDisplay({
                                     <ChevronDown size={14} />
                                 </>
                             )}
-                        </button>
+                        </Button>
                     )}
                 </div>
             )}

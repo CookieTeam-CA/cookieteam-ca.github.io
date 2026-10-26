@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 import { useEffect, useOptimistic, useRef, useTransition } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { categoryColor } from "../lib/collections";
@@ -34,11 +36,11 @@ export default function CategoryFilters({ categories, excluded, prefix = "" }: {
     {categories.map(category => {
       const active = !optimisticExcluded.includes(category);
       const color = categoryColor(category);
-      return <button type="button" key={category} className="stats-category-chip" aria-pressed={active}
+      return <Button type="button" variant="ghost" size="sm" key={category} className="stats-category-chip" aria-pressed={active}
         title={`${category} ${active ? "ausschließen" : "wieder einschließen"}`} onClick={() => toggle(category)}
         style={active ? { color, backgroundColor: `${color}18` } : undefined}>
         <span aria-hidden="true" style={active ? { backgroundColor: color } : undefined} />{category}
-      </button>;
+      </Button>;
     })}
   </div>;
 }

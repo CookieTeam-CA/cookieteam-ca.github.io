@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,11 +37,11 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [selectedSeason, setSelectedSeason] = useState<number | "all">("all");
     const [isZoomed, setIsZoomed] = useState(false);
-    
+
     const filteredAssets = useMemo(() => selectedSeason === "all" ? allAssets : allAssets.filter(asset => asset.season === selectedSeason), [allAssets, selectedSeason]);
 
     const containerRef = useRef<HTMLDivElement>(null);
-    
+
     const seasons = Array.from(new Set(allAssets.map(a => a.season))).sort((a, b) => a - b);
 
     const openLightbox = (index: number) => {
@@ -78,7 +80,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (lightboxIndex === null) return;
-            
+
             if (e.key === "Escape") closeLightbox();
             if (e.key === "ArrowRight") nextImage();
             if (e.key === "ArrowLeft") prevImage();
@@ -96,7 +98,7 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
     }, [lightboxIndex]);
 
     useGSAP(() => {
-        gsap.fromTo(".gallery-item", 
+        gsap.fromTo(".gallery-item",
             { y: 30, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: "power2.out" }
         );
@@ -106,49 +108,39 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
 
     return (
         <div ref={containerRef} className="min-h-screen bg-[#050505] text-white p-6 md:p-12">
-            
+
             <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
                 <h1 className="font-nexa text-4xl md:text-5xl text-white">Galerie</h1>
-                <Link 
-                    href="/" 
-                    className="px-6 py-2 rounded-full border border-white/20 hover:bg-white/10 transition-colors font-bold text-sm"
-                >
+                <Button asChild variant="outline"><Link href="/">
                     Zurück
-                </Link>
+                </Link></Button>
             </div>
 
             <div className="max-w-7xl mx-auto mb-10 overflow-x-auto pb-4">
                 <div className="flex gap-3">
-                    <button
+                    <Button variant={selectedSeason === "all" ? "default" : "outline"}
                         onClick={() => setSelectedSeason("all")}
-                        className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
-                            selectedSeason === "all" 
-                            ? "bg-orange-500 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]"
-                            : "bg-white/5 border-white/10 hover:bg-white/10 text-zinc-300 cursor-pointer"
-                        }`}
+                        aria-pressed={selectedSeason === "all"}
                     >
                         Alle
-                    </button>
+                    </Button>
                     {seasons.map(season => (
-                        <button
+                        <Button variant={selectedSeason === season ? "default" : "outline"}
                             key={season}
                             onClick={() => setSelectedSeason(season)}
-                            className={`px-5 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border flex gap-1 ${
-                                selectedSeason === season 
-                                ? "bg-orange-500 border-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)]"
-                                : "bg-white/5 border-white/10 hover:bg-white/10 cursor-pointer"
-                            }`}
+                            aria-pressed={selectedSeason === season}
+                            className="gap-1"
                         >
                             <span className={selectedSeason === season ? "text-white" : "text-orange-500"}>Cookie</span><span className={selectedSeason === season ? "text-white" : "text-zinc-300"}>Attack {season}</span>
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredAssets.map((asset, index) => (
-                    <div 
-                        key={asset.id} 
+                    <div
+                        key={asset.id}
                         onClick={() => openLightbox(index)}
                         className="gallery-item relative aspect-video rounded-xl overflow-hidden cursor-pointer border border-white/10 bg-zinc-900 group"
                     >
@@ -158,17 +150,17 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                         </div>
 
                         {asset.type === 'video' ? (
-                             <div className="relative w-full h-full">
+                            <div className="relative w-full h-full">
                                 {asset.poster ? <Image src={asset.poster} alt={`Video CookieAttack ${asset.season}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" /> : <video src={sanitizeUrl(asset.src)} preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" muted playsInline />}
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 drop-shadow-lg">
                                         <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
                                     </svg>
                                 </div>
-                             </div>
+                            </div>
                         ) : (
-                            <Image 
-                                src={asset.src} 
+                            <Image
+                                src={asset.src}
                                 alt={`Gallery Item Season ${asset.season}`}
                                 fill
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -181,37 +173,37 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
             </div>
 
             {currentAsset && (
-                <div 
+                <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md animate-in fade-in duration-300"
                     onClick={closeLightbox}
                 >
-                    <button 
+                    <Button variant="secondary" size="icon-lg" aria-label="Galerie schließen"
                         onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
-                        className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-50 cursor-pointer"
+                        className="absolute right-6 top-6 z-50 rounded-full"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-8">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                    </button>
+                    </Button>
 
-                    <button 
-                         onClick={prevImage}
-                         className="absolute left-4 md:left-8 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-50 cursor-pointer hidden md:block"
+                    <Button variant="secondary" size="icon-lg" aria-label="Vorheriges Bild"
+                        onClick={prevImage}
+                        className="absolute left-4 z-50 hidden rounded-full md:left-8 md:inline-flex"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-8">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                         </svg>
-                    </button>
-                    <button 
-                         onClick={nextImage}
-                         className="absolute right-4 md:right-8 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors z-50 cursor-pointer hidden md:block"
+                    </Button>
+                    <Button variant="secondary" size="icon-lg" aria-label="Nächstes Bild"
+                        onClick={nextImage}
+                        className="absolute right-4 z-50 hidden rounded-full md:right-8 md:inline-flex"
                     >
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                         </svg>
-                    </button>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-8">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </Button>
 
-                    <div 
+                    <div
                         className={`
                             relative transition-transform duration-300 ease-out
                             ${isZoomed ? "scale-150 cursor-zoom-out" : "scale-100 cursor-zoom-in"}
@@ -220,17 +212,17 @@ export default function GalleryClient({ allAssets }: { allAssets: Asset[] }) {
                         onClick={toggleZoom}
                     >
                         {currentAsset.type === 'video' ? (
-                             <video 
-                                src={sanitizeUrl(currentAsset.src)} 
-                                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" 
+                            <video
+                                src={sanitizeUrl(currentAsset.src)}
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                                 controls
                                 autoPlay
-                                onClick={(e) => e.stopPropagation()} 
-                             />
+                                onClick={(e) => e.stopPropagation()}
+                            />
                         ) : (
                             <div className="relative w-full h-full flex items-center justify-center">
-                                <Image 
-                                    src={currentAsset.src} 
+                                <Image
+                                    src={currentAsset.src}
                                     alt={`Season ${currentAsset.season}`}
                                     className="object-contain"
                                     fill

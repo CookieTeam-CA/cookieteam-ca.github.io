@@ -11,7 +11,7 @@ export async function capeApiError(response: Response): Promise<CapeApiError> {
     400: "Bitte prüfe deine Eingaben.",
     422: "Bitte prüfe deine Eingaben.",
     413: "Die Anfrage ist zu groß.",
-    429: "Zu viele Anfragen. Bitte warte, bevor du es erneut versuchst.",
+    429: "Zu viele Anfragen. Probiere es später erneut.",
     469: "Das Cape wurde von der Moderation abgelehnt.",
     503: "Ein externer Dienst ist vorübergehend nicht verfügbar.",
   };
@@ -117,11 +117,11 @@ export async function getCapesSorted(
 }
 
 export async function getPlayersSorted(
-  page = 1, limit = 24, sortBy = "minecraft_name", order: Order = "asc", search = "", banned = false,
+  page = 1, limit = 24, sortBy = "minecraft_name", order: Order = "asc", search = "", banned = false, capeId?: number,
 ): Promise<PlayersResponse> {
   return await request(`${API_BASE_URL}/list_players_sorted`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, banned, query: search || undefined }),
+    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, banned, query: search || undefined, cape_id: capeId }),
     next: { revalidate: 0 },
   });
 }
@@ -145,9 +145,9 @@ export async function getCape(id: number): Promise<Cape | null> {
 export async function getPlayersByCape(capeId: number): Promise<Player[]> {
   const players: Player[] = [];
   for (let page = 1; ; page++) {
-    const data = await getPlayersSorted(page, 1000, "minecraft_name", "asc");
+    const data = await getPlayersSorted(page, 1000, "minecraft_name", "asc", "", false, capeId);
     if (data.offset !== (page - 1) * 1000 || !Number.isSafeInteger(data.total_count) || data.total_count < 0) throw new Error("Incomplete player API result");
-    players.push(...data.players.filter(player => player.current_cape_id === capeId));
+    players.push(...data.players);
     if (data.offset + data.players.length >= data.total_count) return players;
     if (data.players.length !== 1000) throw new Error("Incomplete player API result");
   }

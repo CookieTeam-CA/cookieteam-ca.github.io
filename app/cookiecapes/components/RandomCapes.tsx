@@ -16,13 +16,13 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
       <h2 className="font-nexa text-3xl md:text-5xl text-white text-center mb-12">
         Entdecke <span className="text-orange-500">Community</span> Capes
       </h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {capes.map((cape) => (
           <div key={cape.cape_id} className="cape-card flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm gap-4 transition-transform">
-            <div className="w-full h-[300px] relative flex items-center justify-center">
-              <CapeViewer 
-                capeUrl={cape.cape_image_url} 
+            <div className="w-full h-75 relative flex items-center justify-center">
+              <CapeViewer
+                capeUrl={cape.cape_image_url}
                 skinUrl={`https://minotar.net/skin/${cape.minecraft_uuid}`}
                 animation="walk"
               />

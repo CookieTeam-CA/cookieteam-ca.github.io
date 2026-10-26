@@ -20,7 +20,7 @@ function PlayerHead({ identifier, username, size, priority }: { identifier: stri
   return <span className="stats-player-visual stats-head" style={{ width: size, height: size }}>
     {!loaded && !failed && <span className="stats-skeleton stats-image-skeleton" aria-hidden="true" />}
     {failed ? <UserRound className="stats-image-fallback" aria-label={`Skin von ${username} nicht verfügbar`} /> : <Image
-      src={`https://minotar.net/avatar/${identifier}/64`}
+      src={`https://minotar.net/helm/${identifier}/64`}
       alt=""
       width={size} height={size} unoptimized
       loading={priority ? "eager" : "lazy"} onLoad={() => setLoaded(true)} onError={() => setFailed(true)}

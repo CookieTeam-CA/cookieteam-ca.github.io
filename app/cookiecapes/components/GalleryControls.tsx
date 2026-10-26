@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
@@ -42,16 +43,17 @@ export default function GalleryControls() {
                     <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" size={18} />
                 </div>
 
-                <button
+                <Button
+                    variant="outline" size="icon-lg"
                     onClick={toggleOrder}
-                    className="bg-zinc-900 border border-white/10 rounded-lg px-4 flex items-center justify-center hover:bg-zinc-800 hover:border-orange-500/50 transition-colors group"
+                    className="group h-auto self-stretch hover:border-orange-500/50"
                     title={searchParams.get("order") === "asc" ? "Aufsteigend" : "Absteigend"}
                 >
-                    <ArrowUpDown 
-                        size={20} 
-                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "asc" ? "rotate-180" : ""}`} 
+                    <ArrowUpDown
+                        size={20}
+                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "asc" ? "rotate-180" : ""}`}
                     />
-                </button>
+                </Button>
             </div>
         </div>
     );

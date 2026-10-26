@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, LayoutGrid, List, ChevronDown } from "lucide-react";
@@ -46,8 +48,8 @@ export default function Filters({ search, placeholder = "Statistik suchen ...", 
     <label className="stats-search"><Search size={18} aria-hidden="true" /><span className="sr-only">{label} suchen</span><input ref={input} name={`${prefix}search`} defaultValue={search} placeholder={placeholder} type="text" role="searchbox" enterKeyHint="search" onChange={() => update()} autoComplete="off" /></label>
     <label className="stats-sort-select stats-select-wrap"><span className="sr-only">{label} sortieren</span><select ref={sortSelect} name={`${prefix}sort`} defaultValue={sort} onChange={() => update(true)}>{sortOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><ChevronDown size={16} aria-hidden="true" /></label>
     <div className="stats-view-switch" role="group" aria-label={`${label}: Ansicht`}>
-      <button type="button" aria-label="Kartenansicht" title="Kartenansicht" aria-pressed={view === "cards"} onClick={() => update(true, "cards")}><LayoutGrid size={18} /></button>
-      <button type="button" aria-label="Listenansicht" title="Listenansicht" aria-pressed={view === "list"} onClick={() => update(true, "list")}><List size={18} /></button>
+      <Button type="button" variant="ghost" size="icon-lg" className="h-full rounded-none" aria-label="Kartenansicht" title="Kartenansicht" aria-pressed={view === "cards"} onClick={() => update(true, "cards")}><LayoutGrid className="size-4.5" /></Button>
+      <Button type="button" variant="ghost" size="icon-lg" className="h-full rounded-none" aria-label="Listenansicht" title="Listenansicht" aria-pressed={view === "list"} onClick={() => update(true, "list")}><List className="size-4.5" /></Button>
     </div>
     <span className="sr-only" role="status">{pending ? "Suche läuft" : "Suche aktualisiert sich automatisch"}</span>
   </form>;
