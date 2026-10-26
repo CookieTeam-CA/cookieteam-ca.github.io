@@ -20,12 +20,12 @@ export default function PlayersLoading() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <div key={i} className="bg-zinc-900 border border-white/10 rounded-xl overflow-hidden flex flex-col">
-                            <div className="w-full aspect-[3/4] bg-[#1a1a1a]"></div>
-                            
+                            <div className="w-full aspect-3/4 bg-[#1a1a1a]"></div>
+
                             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center">
                                 <div className="w-3/4 h-5 bg-zinc-800 rounded mb-2 mt-1"></div>
                                 <div className="w-1/2 h-4 bg-zinc-800 rounded mb-1"></div>
-                                
+
                                 <div className="border-t border-white/5 w-full pt-3 mt-4 flex justify-center">
                                     <div className="w-20 h-4 bg-zinc-800 rounded"></div>
                                 </div>
@@ -34,7 +34,7 @@ export default function PlayersLoading() {
                     ))}
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </main>
     );
 }

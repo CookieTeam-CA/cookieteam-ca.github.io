@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+    serverActions: { bodySizeLimit: "4mb" },
+  },
+  async headers() {
+    return [{
+      source: "/cookiecapes/account/:path*",
+      headers: [
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "Cache-Control", value: "private, no-store, max-age=0" },
+      ],
+    }];
+  },
   images: {
     remotePatterns: [
       {

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { 
+import { Button } from "@/components/ui/button";
+import {
     ArrowLeft, Download, Eraser, Image as ImageIcon,
     Pencil, RotateCcw, RotateCw, Move,
     Trash2, Eye, EyeOff, Plus, MousePointer2, PaintBucket
@@ -56,7 +57,7 @@ const TEMPLATES = {
 };
 
 const COMMON_COLORS = [
-    "#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff", 
+    "#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff",
     "#ffff00", "#00ffff", "#ff00ff", "#ffa500", "#808080"
 ];
 
@@ -184,13 +185,14 @@ export default function CapeEditorPage() {
     const [color, setColor] = useState("#ffffff");
     const [brushSize, setBrushSize] = useState(1);
     const [zoom, setZoom] = useState(1);
-    
+
     const [{ states: history, step: historyStep }, setHistory] = useState<{ states: HistoryState[]; step: number }>({ states: [], step: -1 });
     const initialized = useRef(false);
     const [templateError, setTemplateError] = useState("");
 
     const stageRef = useRef<Konva.Stage>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
     const isDrawing = useRef(false);
 
     useEffect(() => {
@@ -243,7 +245,7 @@ export default function CapeEditorPage() {
                 setHistory({ states: [{ layers: initialLayers }], step: 0 });
             }
         };
-        
+
         void init().catch(error => { if (!cancelled) setTemplateError(error.message); });
         return () => { cancelled = true; };
     }, [activeTemplate]);
@@ -367,33 +369,33 @@ export default function CapeEditorPage() {
             });
             updateLayers(newLayers);
             return;
-        } 
-        
+        }
+
         if ((tool === "brush" || tool === "eraser") && layer.type === "drawing") {
-             isDrawing.current = true;
-             const pos = e.target.getStage()?.getRelativePointerPosition();
-             if (!pos) return;
- 
-             const newLine: LineData = {
-                 tool: tool === "brush" ? "brush" : "eraser",
-                 points: [pos.x, pos.y, pos.x, pos.y], 
-                 color: tool === "brush" ? color : "#000000",
-                 strokeWidth: brushSize
-             };
- 
-             const newLayers = layers.map(l => {
-                 if (l.id === activeLayerId) {
-                     return { ...l, lines: [...(l.lines || []), newLine] };
-                 }
-                 return l;
-             });
-             setLayers(newLayers); 
+            isDrawing.current = true;
+            const pos = e.target.getStage()?.getRelativePointerPosition();
+            if (!pos) return;
+
+            const newLine: LineData = {
+                tool: tool === "brush" ? "brush" : "eraser",
+                points: [pos.x, pos.y, pos.x, pos.y],
+                color: tool === "brush" ? color : "#000000",
+                strokeWidth: brushSize
+            };
+
+            const newLayers = layers.map(l => {
+                if (l.id === activeLayerId) {
+                    return { ...l, lines: [...(l.lines || []), newLine] };
+                }
+                return l;
+            });
+            setLayers(newLayers);
         }
     };
 
     const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
         if (!isDrawing.current || !activeLayerId) return;
-        
+
         const stage = e.target.getStage();
         const point = stage?.getRelativePointerPosition();
         if (!point) return;
@@ -425,40 +427,40 @@ export default function CapeEditorPage() {
             const src = event.target?.result as string;
             const img = new Image();
             img.onload = () => {
-                 const id = `layer-img-${Date.now()}`;
-                 
-                 let newW = img.width;
-                 let newH = img.height;
-                 
-                 const logicW = layers.find(l => l.type === "template")?.width || 64;
-                 const logicH = layers.find(l => l.type === "template")?.height || 32;
+                const id = `layer-img-${Date.now()}`;
 
-                 if (newW > logicW || newH > logicH) {
-                     const ratio = Math.min((logicW * 0.8) / newW, (logicH * 0.8) / newH);
-                     newW *= ratio;
-                     newH *= ratio;
-                 }
+                let newW = img.width;
+                let newH = img.height;
 
-                 const newLayer: EditorLayer = {
-                     id,
-                     type: "image",
-                     name: "Bild",
-                     visible: true,
-                     locked: false,
-                     opacity: 1,
-                     imageSrc: src,
-                     width: newW,
-                     height: newH,
-                     x: (logicW - newW) / 2,
-                     y: (logicH - newH) / 2,
-                     rotation: 0
-                 };
-                 
-                 const newLayers = [...layers, newLayer];
-                 updateLayers(newLayers);
-                 setActiveLayerId(id);
-                 setSelectedId(id);
-                 setTool("move");
+                const logicW = layers.find(l => l.type === "template")?.width || 64;
+                const logicH = layers.find(l => l.type === "template")?.height || 32;
+
+                if (newW > logicW || newH > logicH) {
+                    const ratio = Math.min((logicW * 0.8) / newW, (logicH * 0.8) / newH);
+                    newW *= ratio;
+                    newH *= ratio;
+                }
+
+                const newLayer: EditorLayer = {
+                    id,
+                    type: "image",
+                    name: "Bild",
+                    visible: true,
+                    locked: false,
+                    opacity: 1,
+                    imageSrc: src,
+                    width: newW,
+                    height: newH,
+                    x: (logicW - newW) / 2,
+                    y: (logicH - newH) / 2,
+                    rotation: 0
+                };
+
+                const newLayers = [...layers, newLayer];
+                updateLayers(newLayers);
+                setActiveLayerId(id);
+                setSelectedId(id);
+                setTool("move");
             };
             img.src = src;
         };
@@ -468,16 +470,16 @@ export default function CapeEditorPage() {
     const downloadCape = async () => {
         const stage = stageRef.current;
         if (!stage) return;
-        
+
         const templateLayer = layers.find(l => l.type === "template");
         const templateNode = stage.findOne(`#${templateLayer?.id}`);
         if (templateNode) templateNode.hide();
-        
+
         const transformers = stage.find("Transformer");
         transformers.forEach(t => t.hide());
 
         const dataURL = stage.toDataURL({ pixelRatio: 1 / zoom });
-        
+
         if (templateNode && templateLayer?.visible) templateNode.show();
         transformers.forEach(t => t.show());
 
@@ -486,50 +488,51 @@ export default function CapeEditorPage() {
         link.href = dataURL;
         link.click();
     };
-    
-    const stageWidth = layers.find(l => l.type === "template")?.width || 64; 
+
+    const stageWidth = layers.find(l => l.type === "template")?.width || 64;
     const stageHeight = layers.find(l => l.type === "template")?.height || 32;
 
     return (
         <div className="flex flex-col h-screen bg-[#050505] text-white overflow-hidden">
-             {templateError && <p role="alert" className="bg-red-950 p-3 text-red-200">{templateError}</p>}
-             <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0a0a]">
+            {templateError && <p role="alert" className="bg-red-950 p-3 text-red-200">{templateError}</p>}
+            <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#0a0a0a]">
                 <div className="flex items-center gap-4">
-                    <Link href="/cookiecapes/tutorial" className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                        <ArrowLeft className="w-5 h-5 text-zinc-400" />
-                    </Link>
+                    <Button asChild variant="ghost" size="icon" className="rounded-full">
+                        <Link href="/cookiecapes/tutorial" aria-label="Zurück zum Tutorial"><ArrowLeft className="size-5 text-zinc-400" /></Link>
+                    </Button>
                     <h1 className="font-bold text-lg bg-clip-text text-orange-400">
                         Cape Editor <span className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded ml-2">BETA</span>
                     </h1>
                 </div>
 
                 <div className="flex items-center gap-2">
-                     <button onClick={undo} disabled={historyStep <= 0} className="p-2 text-zinc-400 hover:text-white disabled:opacity-30">
-                        <RotateCcw size={20} />
-                     </button>
-                     <button onClick={redo} disabled={historyStep >= history.length - 1} className="p-2 text-zinc-400 hover:text-white disabled:opacity-30">
-                        <RotateCw size={20} />
-                     </button>
+                    <Button type="button" variant="ghost" size="icon" onClick={undo} disabled={historyStep <= 0} aria-label="Rückgängig" className="text-zinc-400 hover:text-white disabled:opacity-30">
+                        <RotateCcw className="size-5" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="icon" onClick={redo} disabled={historyStep >= history.length - 1} aria-label="Wiederholen" className="text-zinc-400 hover:text-white disabled:opacity-30">
+                        <RotateCw className="size-5" />
+                    </Button>
                 </div>
 
-                <button 
+                <Button type="button" size="sm"
                     onClick={downloadCape}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-bold shadow-lg shadow-orange-500/20"
+                    className="px-4 shadow-lg shadow-orange-500/20"
                 >
                     <Download className="w-4 h-4" />
                     Export
-                </button>
+                </Button>
             </div>
 
             <div className="flex-1 flex overflow-hidden">
                 <div className="w-16 border-r border-white/10 bg-[#0c0c0c] flex flex-col items-center py-4 gap-4 z-10">
-                    <button onClick={() => { setTool("move"); setSelectedId(null); }} className={`p-3 rounded-xl ${tool === 'move' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:bg-white/5'}`} title="Auswählen / Bewegen"><Move size={20} /></button>
-                    <button onClick={() => { setTool("brush"); setSelectedId(null); }} className={`p-3 rounded-xl ${tool === 'brush' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:bg-white/5'}`} title="Stift"><Pencil size={20} /></button>
-                    <button onClick={() => { setTool("eraser"); setSelectedId(null); }} className={`p-3 rounded-xl ${tool === 'eraser' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:bg-white/5'}`} title="Radierer"><Eraser size={20} /></button>
-                    <button onClick={() => { setTool("fill"); setSelectedId(null); }} className={`p-3 rounded-xl ${tool === 'fill' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:bg-white/5'}`} title="Fülleimer"><PaintBucket size={20} /></button>
-                    <button onClick={() => { setTool("picker"); setSelectedId(null); }} className={`p-3 rounded-xl ${tool === 'picker' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:bg-white/5'}`} title="Farbe"><MousePointer2 size={20} /></button>
+                    <Button type="button" variant={tool === "move" ? "default" : "ghost"} size="icon-lg" onClick={() => { setTool("move"); setSelectedId(null); }} className="rounded-xl" aria-pressed={tool === "move"} aria-label="Auswählen / Bewegen" title="Auswählen / Bewegen"><Move className="size-5" /></Button>
+                    <Button type="button" variant={tool === "brush" ? "default" : "ghost"} size="icon-lg" onClick={() => { setTool("brush"); setSelectedId(null); }} className="rounded-xl" aria-pressed={tool === "brush"} aria-label="Stift" title="Stift"><Pencil className="size-5" /></Button>
+                    <Button type="button" variant={tool === "eraser" ? "default" : "ghost"} size="icon-lg" onClick={() => { setTool("eraser"); setSelectedId(null); }} className="rounded-xl" aria-pressed={tool === "eraser"} aria-label="Radierer" title="Radierer"><Eraser className="size-5" /></Button>
+                    <Button type="button" variant={tool === "fill" ? "default" : "ghost"} size="icon-lg" onClick={() => { setTool("fill"); setSelectedId(null); }} className="rounded-xl" aria-pressed={tool === "fill"} aria-label="Fülleimer" title="Fülleimer"><PaintBucket className="size-5" /></Button>
+                    <Button type="button" variant={tool === "picker" ? "default" : "ghost"} size="icon-lg" onClick={() => { setTool("picker"); setSelectedId(null); }} className="rounded-xl" aria-pressed={tool === "picker"} aria-label="Farbe" title="Farbe"><MousePointer2 className="size-5" /></Button>
                     <div className="h-px w-8 bg-white/10 my-2" />
-                    <label className="p-3 rounded-xl text-zinc-500 hover:text-zinc-300 hover:bg-white/5 cursor-pointer"><input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} /><ImageIcon size={20} /></label>
+                    <Button type="button" variant="ghost" size="icon-lg" className="rounded-xl" onClick={() => imageInputRef.current?.click()} aria-label="Bild importieren" title="Bild importieren"><ImageIcon className="size-5" /></Button>
+                    <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </div>
 
                 <div className="flex-1 bg-[#111] relative overflow-auto flex items-center justify-center pattern-grid p-8" ref={containerRef}>
@@ -550,11 +553,11 @@ export default function CapeEditorPage() {
                             {layers.map((layer) => {
                                 if (!layer.visible) return null;
                                 return (
-                                    <Layer key={layer.id} id={layer.id} opacity={layer.opacity}>    
+                                    <Layer key={layer.id} id={layer.id} opacity={layer.opacity}>
                                         {layer.type === "template" && layer.imageSrc && (
-                                           <URLImage src={layer.imageSrc} layerProps={layer} isSelected={false} />
+                                            <URLImage src={layer.imageSrc} layerProps={layer} isSelected={false} />
                                         )}
-                                        
+
                                         {layer.type === "drawing" && layer.fillCanvasDataURL && (
                                             <URLImage
                                                 src={layer.fillCanvasDataURL}
@@ -579,8 +582,8 @@ export default function CapeEditorPage() {
                                         ))}
 
                                         {layer.type === "image" && layer.imageSrc && (
-                                            <URLImage 
-                                                src={layer.imageSrc} 
+                                            <URLImage
+                                                src={layer.imageSrc}
                                                 layerProps={layer}
                                                 isSelected={selectedId === layer.id}
                                                 onSelect={() => {
@@ -602,33 +605,33 @@ export default function CapeEditorPage() {
                 </div>
 
                 <div className="w-80 border-l border-white/10 bg-[#0a0a0a] flex flex-col z-10">
-                     <div className="p-5 border-b border-white/10 space-y-4">
-                         <div className="flex items-center justify-between">
-                             <span className="text-xs font-bold text-zinc-500 uppercase">Eigenschaften</span>
-                             <span className="text-xs text-orange-400">{tool.toUpperCase()}</span>
-                         </div>
-                         
-                         <div>
-                             <div className="flex justify-between text-xs text-zinc-400 mb-1">
+                    <div className="p-5 border-b border-white/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-zinc-500 uppercase">Eigenschaften</span>
+                            <span className="text-xs text-orange-400">{tool.toUpperCase()}</span>
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between text-xs text-zinc-400 mb-1">
                                 <span>Zoom</span>
                                 <span>{zoom}x</span>
-                             </div>
-                             <input 
-                                type="range" 
-                                min="1" 
-                                max="5" 
+                            </div>
+                            <input
+                                type="range"
+                                min="1"
+                                max="5"
                                 step="0.5"
-                                value={zoom} 
+                                value={zoom}
                                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                                 className="w-full accent-orange-500 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
-                             />
-                         </div>
+                            />
+                        </div>
 
-                         {(tool === "brush" || tool === "picker" || tool === "fill") && (
-                             <>
+                        {(tool === "brush" || tool === "picker" || tool === "fill") && (
+                            <>
                                 <div className="grid grid-cols-5 gap-1">
                                     {COMMON_COLORS.map(c => (
-                                        <button key={c} onClick={() => setColor(c)} className={`w-full h-8 rounded border ${color === c ? 'border-white' : 'border-white/10'}`} style={{ backgroundColor: c }} />
+                                        <Button type="button" variant="outline" size="icon-sm" key={c} onClick={() => setColor(c)} aria-label={`Farbe ${c}`} aria-pressed={color === c} className={`w-full rounded ${color === c ? 'border-white' : 'border-white/10'}`} style={{ backgroundColor: c }} />
                                     ))}
                                 </div>
                                 <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
@@ -638,59 +641,58 @@ export default function CapeEditorPage() {
                                         <input type="range" min="1" max="10" value={brushSize} onChange={(e) => setBrushSize(parseInt(e.target.value))} className="w-full accent-orange-500" />
                                     </div>
                                 )}
-                             </>
-                         )}
-                         
-                         {tool === "move" && selectedId && (
-                             <div className="text-sm text-zinc-400">
-                                 Objekt ausgewählt.<br/>Ziehe an den Ecken zum Skalieren.
-                             </div>
-                         )}
+                            </>
+                        )}
 
-                         {!activeLayerId?.includes("drawing") && (tool === "brush" || tool === "eraser" || tool === "fill") && (
-                             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-xs">
-                                 Wähle eine <strong>Zeichnungsebene</strong> um zu {tool === "fill" ? "füllen" : "malen"}!
-                             </div>
-                         )}
-                     </div>
+                        {tool === "move" && selectedId && (
+                            <div className="text-sm text-zinc-400">
+                                Objekt ausgewählt.<br />Ziehe an den Ecken zum Skalieren.
+                            </div>
+                        )}
 
-                     <div className="flex-1 flex flex-col overflow-hidden">
+                        {!activeLayerId?.includes("drawing") && (tool === "brush" || tool === "eraser" || tool === "fill") && (
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-400 text-xs">
+                                Wähle eine <strong>Zeichnungsebene</strong> um zu {tool === "fill" ? "füllen" : "malen"}!
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-white/10 flex items-center justify-between bg-zinc-900/50">
                             <span className="text-xs font-bold text-zinc-500 uppercase">Ebenen</span>
                             <div className="flex gap-1">
-                                <button onClick={() => {
+                                <Button type="button" variant="ghost" size="icon-xs" aria-label="Zeichnungsebene hinzufügen" onClick={() => {
                                     const id = `layer-drawing-${Date.now()}`;
                                     const newLayer: EditorLayer = { id, type: "drawing", name: `Zeichnung ${layers.length}`, visible: true, locked: false, opacity: 1, lines: [] };
                                     updateLayers([...layers, newLayer]);
                                     setActiveLayerId(id);
-                                }} className="p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white"><Plus size={16}/></button>
+                                }} className="text-zinc-400 hover:text-white"><Plus className="size-4" /></Button>
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-1">
                             {[...layers].reverse().map((layer) => (
-                                <div 
+                                <div
                                     key={layer.id}
-                                    onClick={() => { setActiveLayerId(layer.id); if (layer.type === "image") setSelectedId(layer.id); else setSelectedId(null); }}
-                                    className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer border ${activeLayerId === layer.id ? 'bg-zinc-800 border-orange-500/50' : 'border-transparent hover:bg-zinc-900'}`}
+                                    className={`flex items-center gap-3 p-2 rounded-lg border ${activeLayerId === layer.id ? 'bg-zinc-800 border-orange-500/50' : 'border-transparent hover:bg-zinc-900'}`}
                                 >
-                                    <button onClick={(e) => { e.stopPropagation(); updateLayers(layers.map(l => l.id === layer.id ? { ...l, visible: !l.visible } : l)); }}>
-                                        {layer.visible ? <Eye size={14} className="text-zinc-400"/> : <EyeOff size={14} className="text-zinc-600"/>}
-                                    </button>
-                                    <span className="flex-1 text-sm truncate">{layer.name}</span>
+                                    <Button type="button" variant="ghost" size="icon-xs" aria-label={`Ebene ${layer.name} ${layer.visible ? "ausblenden" : "einblenden"}`} aria-pressed={layer.visible} onClick={(e) => { e.stopPropagation(); updateLayers(layers.map(l => l.id === layer.id ? { ...l, visible: !l.visible } : l)); }}>
+                                        {layer.visible ? <Eye className="size-3.5 text-zinc-400" /> : <EyeOff className="size-3.5 text-zinc-600" />}
+                                    </Button>
+                                    <Button type="button" variant="ghost" size="sm" aria-pressed={activeLayerId === layer.id} onClick={() => { setActiveLayerId(layer.id); if (layer.type === "image") setSelectedId(layer.id); else setSelectedId(null); }} className="min-w-0 flex-1 justify-start px-0 font-normal hover:bg-transparent"><span className="truncate">{layer.name}</span></Button>
                                     {!layer.locked && (
-                                        <button onClick={(e) => { e.stopPropagation(); updateLayers(layers.filter(l => l.id !== layer.id)); }} className="text-zinc-600 hover:text-red-500">
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <Button type="button" variant="ghost" size="icon-xs" aria-label={`Ebene ${layer.name} löschen`} onClick={(e) => { e.stopPropagation(); updateLayers(layers.filter(l => l.id !== layer.id)); }} className="text-zinc-600 hover:text-red-500">
+                                            <Trash2 className="size-3.5" />
+                                        </Button>
                                     )}
                                 </div>
                             ))}
                         </div>
-                     </div>
-                     
-                     <div className="p-4 border-t border-white/10 bg-zinc-900 grid grid-cols-2 gap-2">
-                        <button onClick={() => setActiveTemplate("standard")} className={`text-xs p-2 rounded border ${activeTemplate === 'standard' ? 'bg-orange-500 text-black border-orange-400' : 'border-zinc-700 text-zinc-400'}`}>Standard</button>
-                        <button onClick={() => setActiveTemplate("elytra")} className={`text-xs p-2 rounded border ${activeTemplate === 'elytra' ? 'bg-orange-500 text-black border-orange-400' : 'border-zinc-700 text-zinc-400'}`}>Elytra</button>
-                     </div>
+                    </div>
+
+                    <div className="p-4 border-t border-white/10 bg-zinc-900 grid grid-cols-2 gap-2">
+                        <Button type="button" variant={activeTemplate === "standard" ? "default" : "outline"} size="sm" aria-pressed={activeTemplate === "standard"} onClick={() => setActiveTemplate("standard")}>Standard</Button>
+                        <Button type="button" variant={activeTemplate === "elytra" ? "default" : "outline"} size="sm" aria-pressed={activeTemplate === "elytra"} onClick={() => setActiveTemplate("elytra")}>Elytra</Button>
+                    </div>
                 </div>
             </div>
 

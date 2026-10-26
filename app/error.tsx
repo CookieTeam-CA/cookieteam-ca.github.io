@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 import { useEffect } from "react";
 import Link from "next/link";
 
@@ -29,19 +31,15 @@ export default function Error({
       </p>
       
       <div className="flex gap-4 flex-wrap justify-center">
-        <button
+        <Button size="lg"
           onClick={reset}
-          className="px-8 py-3.5 rounded-full border border-orange-500 bg-orange-500/10 text-orange-500 font-bold hover:bg-orange-500 hover:text-white transition-all hover:scale-105 active:scale-95"
         >
           Erneut versuchen
-        </button>
+        </Button>
 
-        <Link 
-            href="/"
-            className="px-8 py-3.5 rounded-full border border-white/20 bg-white/5 text-white font-bold hover:bg-white/10 transition-all hover:scale-105 active:scale-95"
-        >
+        <Button asChild variant="outline" size="lg"><Link href="/">
             Zurück zur Startseite
-        </Link>
+        </Link></Button>
       </div>
     </div>
   );

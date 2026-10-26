@@ -15,10 +15,10 @@ const getHeaders = () => {
 
 export async function checkRegistration() {
   const session = await auth();
-  if (!session?.user?.id) return { registered: false, error: "Not logged in" };
+  if (!session?.user?.discordId) return { registered: false, error: "Not logged in" };
 
   try {
-    const res = await fetch(`${API_URL}/users/get/${session.user.id}`, {
+    const res = await fetch(`${API_URL}/users/get/${session.user.discordId}`, {
       headers: getHeaders(),
       cache: "no-store",
     });
@@ -36,14 +36,14 @@ export async function checkRegistration() {
 
 export async function registerUser(minecraft_uuid: string) {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Not logged in" };
+  if (!session?.user?.discordId) return { success: false, error: "Not logged in" };
 
   try {
     const res = await fetch(`${API_URL}/users/add`, {
       method: "POST",
       headers: getHeaders(),
       body: JSON.stringify({
-        discord_id: session.user.id,
+        discord_id: session.user.discordId,
         minecraft_uuid: minecraft_uuid
       }),
       cache: "no-store",
@@ -63,10 +63,10 @@ export async function registerUser(minecraft_uuid: string) {
 
 export async function unregisterUser() {
   const session = await auth();
-  if (!session?.user?.id) return { success: false, error: "Not logged in" };
+  if (!session?.user?.discordId) return { success: false, error: "Not logged in" };
 
   try {
-    const res = await fetch(`${API_URL}/users/delete/${session.user.id}`, {
+    const res = await fetch(`${API_URL}/users/delete/${session.user.discordId}`, {
       method: "DELETE",
       headers: getHeaders(),
       cache: "no-store",

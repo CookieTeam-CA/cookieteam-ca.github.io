@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function WipPage() {
   return (
@@ -25,12 +26,9 @@ export default function WipPage() {
           Diese Seite wurde schon geplannt aber noch nicht umgesetzt, schau gerne später wieder vorbei!
         </p>
         <div className="pt-4">
-           <Link
-            href="/"
-            className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-black transition-all duration-200 bg-white rounded-lg hover:bg-gray-200 hover:scale-105"
-          >
+           <Button asChild size="lg" variant="secondary"><Link href="/">
             Zurück zur Startseite
-          </Link>
+          </Link></Button>
         </div>
       </div>
     </div>

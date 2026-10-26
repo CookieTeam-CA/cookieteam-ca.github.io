@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -12,9 +13,9 @@ interface PaginationProps {
 export default function Pagination({ currentPage, totalCount, limit }: PaginationProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    
+
     const totalPages = Math.ceil(totalCount / limit);
-    
+
     if (totalPages <= 1) return null;
 
     const createPageURL = (pageNumber: number) => {
@@ -58,41 +59,38 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
 
     return (
         <div className="flex items-center justify-center gap-2 mt-12 mb-20">
-            <button
+            <Button
+                variant="outline" size="icon" aria-label="Vorherige Seite"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-white/15 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
                 <ChevronLeft size={20} className="text-white" />
-            </button>
+            </Button>
 
             <div className="flex items-center gap-2 px-2 select-none">
                 {getPageNumbers().map((page, index) => (
                     page === '...' ? (
                         <span key={`dots-${index}`} className="text-zinc-600 px-2">...</span>
                     ) : (
-                        <button
+                        <Button
+                            variant={currentPage === page ? "default" : "outline"} size="icon"
+                            aria-label={`Seite ${page}`} aria-current={currentPage === page ? "page" : undefined}
                             key={index}
                             onClick={() => handlePageChange(Number(page))}
-                            className={`min-w-[40px] h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                                currentPage === page 
-                                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20" 
-                                    : "bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white hover:border-white/15 cursor-pointer"
-                            }`}
                         >
                             {page}
-                        </button>
+                        </Button>
                     )
                 ))}
             </div>
 
-            <button
+            <Button
+                variant="outline" size="icon" aria-label="Nächste Seite"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="p-2 rounded-lg bg-zinc-900 border border-white/10 hover:border-white/15 hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
                 <ChevronRight size={20} className="text-white" />
-            </button>
+            </Button>
         </div>
     );
 }

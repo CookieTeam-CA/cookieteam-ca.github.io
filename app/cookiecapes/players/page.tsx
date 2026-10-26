@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Footer from "../../components/Footer"
 
 export const metadata: Metadata = {
-  title: "Spieler - CookieCapes",
+    title: "Spieler - CookieCapes",
 };
 
 import { getPlayersSorted, Order } from "../lib/api";
@@ -32,8 +32,8 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-             
-             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+
+            <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
                 <div className="text-center mb-16">
                     <h1 className="font-nexa text-4xl md:text-6xl mb-4">
                         Unsere <span className="text-orange-500">Spieler</span>
@@ -52,10 +52,10 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
                                 <PlayerCard key={player.minecraft_uuid} player={player} />
                             ))}
                         </div>
-                        <Pagination 
-                            currentPage={page} 
-                            totalCount={totalCount} 
-                            limit={limit} 
+                        <Pagination
+                            currentPage={page}
+                            totalCount={totalCount}
+                            limit={limit}
                         />
                     </>
                 ) : (
@@ -64,8 +64,8 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
                         <p className="text-zinc-600 text-sm mt-2">Versuche es mit einem anderen Namen.</p>
                     </div>
                 )}
-                
-                 <Footer/>
+
+                <Footer />
             </div>
         </main>
     );

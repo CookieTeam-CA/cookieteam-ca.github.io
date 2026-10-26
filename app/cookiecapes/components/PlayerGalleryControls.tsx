@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldAlert, ArrowUpDown } from "lucide-react";
 
@@ -33,28 +34,30 @@ export default function PlayerGalleryControls() {
             <GallerySearch placeholder="Suche nach Spielern..." />
 
             <div className="flex gap-2">
-                <button
+                <Button
+                    variant="outline" size="icon-lg"
                     onClick={toggleOrder}
-                    className="bg-zinc-900 border border-white/10 rounded-lg px-4 flex items-center justify-center hover:bg-zinc-800 hover:border-orange-500/50 transition-colors group"
+                    className="group h-12 hover:border-orange-500/50"
                     title={searchParams.get("order") === "desc" ? "Absteigend" : "Aufsteigend"}
                 >
-                    <ArrowUpDown 
-                        size={20} 
-                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "desc" ? "rotate-180" : ""}`} 
+                    <ArrowUpDown
+                        size={20}
+                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "desc" ? "rotate-180" : ""}`}
                     />
-                </button>
+                </Button>
 
-                <button
+                <Button
+                    variant="outline" size="icon-lg"
                     onClick={toggleBanned}
-                    className={`px-4 py-3 rounded-lg border transition-all flex items-center gap-2 font-medium ${
-                        searchParams.get("banned") === "true" 
-                            ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30" 
-                            : "bg-zinc-900 border-white/10 text-zinc-400 hover:bg-zinc-800 hover:border-white/20"
-                    }`}
+                    aria-pressed={searchParams.get("banned") === "true"}
+                    className={`h-12 ${searchParams.get("banned") === "true"
+                            ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                            : "text-zinc-400"
+                        }`}
                     title={searchParams.get("banned") === "true" ? "Gesperrte Spieler ausblenden" : "Gesperrte Spieler anzeigen"}
                 >
                     <ShieldAlert size={18} />
-                </button>
+                </Button>
             </div>
         </div>
     );

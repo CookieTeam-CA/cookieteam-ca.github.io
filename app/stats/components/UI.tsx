@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 import AnimatedNumber from "./AnimatedNumber";
 import { queryParams } from "../lib/collections";
@@ -23,6 +24,6 @@ export function Metrics({ items }: { items: { label: string; value: ReactNode }[
 export function Pagination({ page, total, query, size = 50, prefix = "", totalPages }: { page: number; total: number; query: Query; size?: number; prefix?: string; totalPages?: number }) {
   const pages = Math.max(1, totalPages ?? Math.ceil(total / size));
   const href = (value: number) => { const params = queryParams(query); params.set(`${prefix}page`, String(value)); return `?${params}`; };
-  return <div className="stats-pagination"><span>{number(total)} Einträge · Seite {page} von {pages}</span><div>{page > 1 && <Link className="stats-button secondary" href={href(page - 1)}>← Zurück</Link>}{page < pages && <Link className="stats-button secondary" href={href(page + 1)}>Weiter →</Link>}</div></div>;
+  return <div className="stats-pagination"><span>{number(total)} Einträge · Seite {page} von {pages}</span><div>{page > 1 && <Button asChild variant="outline" size="sm"><Link href={href(page - 1)}>← Zurück</Link></Button>}{page < pages && <Button asChild variant="outline" size="sm"><Link href={href(page + 1)}>Weiter →</Link></Button>}</div></div>;
 }
 export function Empty({ children = "Keine Einträge gefunden." }: { children?: ReactNode }) { return <div className="stats-empty">{children}</div>; }

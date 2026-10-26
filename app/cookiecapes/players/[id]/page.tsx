@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { API_BASE_URL, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, User, ShieldAlert, Layers, Globe, MessageCircle, History, Palette, BadgeCheck, Flag, Info } from "lucide-react";
+import { ArrowLeft, User, Layers, Globe, MessageCircle, History, BadgeCheck, Info } from "lucide-react";
 import Footer from "../../../components/Footer";
 import CapeCard from "../../components/CapeCard";
 
@@ -52,9 +52,9 @@ export default async function PlayerProfilePage({ params }: PageProps) {
             <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
                 <h1 className="text-3xl font-bold mb-4">Spieler nicht gefunden</h1>
                 <p className="text-zinc-400 mb-8">Dieser Spieler existiert nicht.</p>
-                <Link href="/cookiecapes/players" className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg transition-all">
+                <Button asChild size="lg"><Link href="/cookiecapes/players">
                     Zurück zur Liste
-                </Link>
+                </Link></Button>
             </div>
         );
     }
@@ -70,7 +70,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
-                
+
                 <Link href="/cookiecapes/players" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     Zurück zur Spielerliste
@@ -78,7 +78,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
                     <div className="lg:col-span-1">
-                        <ProfileSkinDisplay 
+                        <ProfileSkinDisplay
                             currentCapeUrl={currentCapeUrl}
                             displayName={displayName}
                             player={player}
@@ -176,7 +176,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                                                     {entry.username}
                                                 </span>
                                                 <span className="text-xs text-zinc-500">
-                                                    {entry.changed_at 
+                                                    {entry.changed_at
                                                         ? new Date(entry.changed_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
                                                         : 'Originalname'
                                                     }
@@ -199,7 +199,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                                 {createdCapes.length}
                             </span>
                         </h2>
-                        
+
                         {createdCapes.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {createdCapes.map((cape) => (

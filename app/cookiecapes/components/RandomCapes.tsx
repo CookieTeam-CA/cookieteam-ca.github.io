@@ -1,6 +1,6 @@
 "use client";
+import VerificationBadge from "./VerificationBadge";
 
-import { useEffect, useRef } from "react";
 import { Cape } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 
@@ -16,19 +16,19 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
       <h2 className="font-nexa text-3xl md:text-5xl text-white text-center mb-12">
         Entdecke <span className="text-orange-500">Community</span> Capes
       </h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {capes.map((cape) => (
           <div key={cape.cape_id} className="cape-card flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm gap-4 transition-transform">
-            <div className="w-full h-[300px] relative flex items-center justify-center">
-              <CapeViewer 
-                capeUrl={cape.cape_image_url} 
+            <div className="w-full h-75 relative flex items-center justify-center">
+              <CapeViewer
+                capeUrl={cape.cape_image_url}
                 skinUrl={`https://minotar.net/skin/${cape.minecraft_uuid}`}
                 animation="walk"
               />
             </div>
             <div className="text-center">
-              <h3 className="font-bold text-xl text-white">{cape.cape_name}</h3>
+              <h3 className="font-bold text-xl text-white">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h3>
               <p className="text-zinc-500 text-sm">von {cape.minecraft_name}</p>
               <div className="mt-2 text-xs text-orange-400 font-mono bg-orange-500/10 px-2 py-1 rounded">
                 ID: {cape.cape_id}
