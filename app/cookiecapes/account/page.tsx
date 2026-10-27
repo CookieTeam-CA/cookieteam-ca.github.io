@@ -7,6 +7,8 @@ import AccountPanel from "./AccountPanel";
 import AccountCapePreview from "./AccountCapePreview";
 import { getRandomCapes } from "../lib/api";
 import { ToastMessage } from "../components/ToastMessage";
+import Link from "next/link";
+import { isCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +65,7 @@ export default async function AccountPage() {
       <div><h1 className="font-nexa text-3xl sm:text-4xl">Hey, {account.user.name ?? session.user.name}!</h1><p className="mt-2 text-sm text-zinc-400">Deine Accounts, deine Sammlung, dein nächstes Cape.</p></div>
       <form action={async () => { "use server"; await signOut({ redirectTo: "/cookiecapes/account" }); }}><Button type="submit" variant="destructive" className="hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-300"><LogOut size={16} aria-hidden="true" />Abmelden</Button></form>
     </header>
+    {isCookieCapesAdmin(session.user) && <Link prefetch={false} href="/cookiecapes/admin/stats" className="mb-6 inline-block text-sm text-orange-300 underline underline-offset-4">Admin-Statistik öffnen</Link>}
     <AccountPanel account={account} />
   </main>;
 }
