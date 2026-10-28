@@ -3,7 +3,7 @@
 import { auth } from "../../auth";
 import { API_BASE_URL } from "../cookiecapes/lib/api";
 
-const API_URL = "http://api.cookieattack.de:8100";
+const API_URL = "https://capi.cookieattack.de";
 
 const getHeaders = () => {
   const token = process.env.COOKIEATTACK_BACKEND_KEY || "";

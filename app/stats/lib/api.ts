@@ -9,7 +9,7 @@ import type { Query } from "../components/UI";
 
 const ttl = Number(process.env.STATS_API_TTL ?? process.env.STATS_SNAPSHOT_TTL ?? 300);
 if (!Number.isFinite(ttl) || ttl <= 0 || ttl > 300) throw new Error("Stats API TTL must be in (0, 300] seconds");
-const client = createPreparedClient(process.env.STATS_API_URL ?? "http://api.cookieattack.de:8100", ttl * 1000);
+const client = createPreparedClient(process.env.STATS_API_URL ?? "https://capi.cookieattack.de", ttl * 1000);
 // Primitive arguments let React deduplicate metadata and page reads per render,
 // even when callers created separate URLSearchParams or Query objects.
 const request = cache(async (resource: string, query: string) => {

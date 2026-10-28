@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldAlert, ArrowUpDown } from "lucide-react";
@@ -7,6 +8,7 @@ import { ShieldAlert, ArrowUpDown } from "lucide-react";
 import GallerySearch from "./GallerySearch";
 
 export default function PlayerGalleryControls() {
+  const { t } = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
     const toggleOrder = () => {
@@ -31,14 +33,14 @@ export default function PlayerGalleryControls() {
 
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <GallerySearch placeholder="Suche nach Spielern..." />
+            <GallerySearch placeholder={t("Search players...")} />
 
             <div className="flex gap-2">
                 <Button
                     variant="outline" size="icon-lg"
                     onClick={toggleOrder}
                     className="group h-12 hover:border-orange-500/50"
-                    title={searchParams.get("order") === "desc" ? "Absteigend" : "Aufsteigend"}
+                    title={searchParams.get("order") === "desc" ? t("Descending") : t("Ascending")}
                 >
                     <ArrowUpDown
                         size={20}
@@ -54,7 +56,7 @@ export default function PlayerGalleryControls() {
                             ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
                             : "text-zinc-400"
                         }`}
-                    title={searchParams.get("banned") === "true" ? "Gesperrte Spieler ausblenden" : "Gesperrte Spieler anzeigen"}
+                    title={searchParams.get("banned") === "true" ? t("Hide banned players") : t("Show banned players")}
                 >
                     <ShieldAlert size={18} />
                 </Button>

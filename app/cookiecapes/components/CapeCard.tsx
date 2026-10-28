@@ -1,3 +1,4 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import VerificationBadge from "./VerificationBadge";
 import { Cape } from "../lib/api";
 import CapeViewer from "./CapeViewer";
@@ -12,6 +13,7 @@ interface CapeCardProps {
 }
 
 export default async function CapeCard({ cape }: CapeCardProps) {
+  const { t, number } = await getTranslations();
     const session = await auth();
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
     const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
@@ -58,7 +60,7 @@ export default async function CapeCard({ cape }: CapeCardProps) {
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
                     <div className="flex items-center gap-1.5 text-xs text-zinc-600 group-hover:text-zinc-400 transition-colors">
                         <Users size={14} />
-                        <span>{cape.active_user_count || 0} Nutzer</span>
+                        <span>{number(cape.active_user_count || 0)} {t("Users")}</span>
                     </div>
                 </div>
             </div>

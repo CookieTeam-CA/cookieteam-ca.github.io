@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { Trash2, AlertCircle, X, Check } from "lucide-react";
 import { deleteCape } from "../../actions/cape-actions";
@@ -12,6 +13,7 @@ interface DeleteCapeButtonProps {
 }
 
 export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonProps) {
+  const { t } = useTranslations();
     const [isDeleting, setIsDeleting] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const router = useRouter();
@@ -32,11 +34,11 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
             if (result.success) {
                 router.refresh();
             } else {
-                alert(`Fehler: ${result.error}`);
+                alert(t("Error: {message}", { message: result.error ?? "" }));
                 setShowConfirm(false);
             }
         } catch {
-            alert("Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es später erneut.");
+            alert(t("The request could not be completed. Please try again later."));
         } finally {
             pending.current = false;
             setIsDeleting(false);
@@ -51,14 +53,14 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
             >
                 <div className="flex items-center gap-2 px-2 py-1">
                     <AlertCircle size={14} className="text-white" />
-                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">Löschen?</span>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t("Delete?")}</span>
                 </div>
                 <div className="flex gap-1">
                     <Button
                         variant="ghost" size="icon-xs"
                         onClick={() => setShowConfirm(false)}
                         className="text-white/70"
-                        title="Abbrechen"
+                        title={t("Cancel")}
                     >
                         <X size={14} />
                     </Button>
@@ -67,7 +69,7 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
                         onClick={handleDelete}
                         disabled={isDeleting}
                         className="bg-white text-red-600 hover:bg-zinc-100"
-                        title="Bestätigen"
+                        title={t("Confirm")}
                     >
                         {isDeleting ? <div className="w-3.5 h-3.5 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" /> : <Check size={14} />}
                     </Button>
@@ -85,7 +87,7 @@ export default function DeleteCapeButton({ capeId, isAdmin }: DeleteCapeButtonPr
                 setShowConfirm(true);
             }}
             className="absolute top-2 left-2 z-20 bg-red-500/80 shadow-lg backdrop-blur-sm"
-            title="Cape löschen (Admin)"
+            title={t("Delete cape (admin)")}
         >
             <Trash2 size={16} />
         </Button>

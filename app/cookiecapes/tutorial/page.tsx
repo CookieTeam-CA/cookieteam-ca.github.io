@@ -1,14 +1,18 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Download, Edit3, Image as ImageIcon, Save, CheckCircle } from "lucide-react";
 import { Metadata } from "next";
 import Footer from "../../components/Footer";
 
-export const metadata: Metadata = {
-    title: "Tutorial - CookieCapes",
-};
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Tutorial",
+    };
+}
 
-export default function TutorialPage() {
+export default async function TutorialPage() {
+    const { t, locale } = await getTranslations();
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-hidden relative">
             <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 blur-[120px] -z-10 pointer-events-none" />
@@ -16,10 +20,10 @@ export default function TutorialPage() {
             <div className="max-w-4xl mx-auto px-6 py-32">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                        Cape Erstellen <span className="text-orange-500">Tutorial</span>
+                        {t("Create a cape")} <span className="text-orange-500">Tutorial</span>
                     </h1>
                     <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-                        Lerne Schritt für Schritt, wie du dein eigenes Minecraft Cape designst.
+                        {t("Learn how to design your own Minecraft cape, step by step.")}
                     </p>
                 </div>
 
@@ -27,25 +31,25 @@ export default function TutorialPage() {
                     <section className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 backdrop-blur-sm">
                         <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                             <Download className="text-orange-500" />
-                            Was du brauchst
+                            {t("What you need")}
                         </h2>
 
                         <div className="mb-8 bg-linear-to-r from-orange-500/10 to-orange-600/10 border border-orange-500/20 rounded-xl p-6">
                             <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
                                 <div>
                                     <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                                        <span className="bg-orange-500 text-black text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider">Neu</span>
-                                        Web Editor
+                                        <span className="bg-orange-500 text-black text-xs px-2 py-0.5 rounded font-bold uppercase tracking-wider">{t("New")}</span>
+                                        {t("Web editor")}
                                     </h3>
                                     <p className="text-zinc-300">
-                                        Nutze unseren experimentellen Web-Editor, um Capes direkt im Browser zu erstellen.
+                                        {t("Use our experimental web editor to create capes directly in your browser.")}
                                     </p>
                                 </div>
                                 <Button asChild size="lg"><Link
                                     href="/cookiecapes/editor"
                                 >
                                     <Edit3 size={18} />
-                                    Editor öffnen
+                                    {t("Open editor")}
                                 </Link></Button>
                             </div>
                         </div>
@@ -54,31 +58,30 @@ export default function TutorialPage() {
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                                     <Edit3 size={18} className="text-blue-400" />
-                                    Bildbearbeitungsprogramm
+                                    {t("Image editor")}
                                 </h3>
                                 <p className="text-zinc-400 mb-4">
-                                    Wir empfehlen <a href="https://www.getpaint.net/download.html" target="_blank" className="text-orange-400 hover:text-orange-300">Paint.NET</a>.
-                                    Es ist kostenlos, einfach und perfekt für Pixel-Art.
+                                    {t("We recommend")} <a href="https://www.getpaint.net/download.html" target="_blank" className="text-orange-400 hover:text-orange-300">Paint.NET</a>{t(". It is free, simple, and perfect for pixel art.")}
                                 </p>
                             </div>
 
                             <div>
                                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                                     <ImageIcon size={18} className="text-purple-400" />
-                                    Cape Template
+                                    {t("Cape template")}
                                 </h3>
                                 <p className="text-zinc-400 mb-6">
-                                    Falls du ein externes Programm nutzt, lade dir eines unserer Templates herunter:
+                                    {t("If you use an external editor, download one of our templates:")}
                                 </p>
                                 <div className="flex flex-wrap gap-3">
-                                    <Button asChild size="lg" variant="outline"><a
+                                    <Button asChild size="lg" variant="outline" className="w-40"><a
                                         href="/template/cape_template.png"
                                         download="cape_template.png"
                                     >
                                         <Download size={16} />
-                                        Standard
+                                        {t("Standard")}
                                     </a></Button>
-                                    <Button asChild size="lg" variant="outline"><a
+                                    <Button asChild size="lg" variant="outline" className="w-40"><a
                                         href="/template/cape_template_elytra.png"
                                         download="cape_template_elytra.png"
                                     >
@@ -91,17 +94,15 @@ export default function TutorialPage() {
                     </section>
 
                     <section className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] pointer-events-none" />
-
-                        <h2 className="text-2xl font-bold mb-8">Schritt-für-Schritt Anleitung</h2>
+                        <h2 className="text-2xl font-bold mb-8">{t("Step-by-step guide")}</h2>
 
                         <div className="space-y-8">
                             <div className="flex gap-4">
                                 <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center font-bold text-black shrink-0">1</div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white mb-2">Öffnen & Laden</h3>
+                                    <h3 className="text-lg font-bold text-white mb-2">{t("Open and load")}</h3>
                                     <p className="text-zinc-400">
-                                        Starte dein Bildbearbeitungsprogramm (z.B. Paint.NET) und öffne das heruntergeladene Template-Bild.
+                                        {t("Start your image editor (such as Paint.NET) and open the downloaded template.")}
                                     </p>
                                 </div>
                             </div>
@@ -109,9 +110,9 @@ export default function TutorialPage() {
                             <div className="flex gap-4">
                                 <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center font-bold text-black shrink-0">2</div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white mb-2">Designen</h3>
+                                    <h3 className="text-lg font-bold text-white mb-2">{t("Design")}</h3>
                                     <p className="text-zinc-400">
-                                        Male dein Design auf das Template. Du kannst auch andere Bilder über das Template legen, achte nur darauf, dass du das Format nicht veränderst.
+                                        {t("Draw your design on the template. You can also place other images on it; just keep the original dimensions.")}
                                     </p>
                                 </div>
                             </div>
@@ -119,15 +120,15 @@ export default function TutorialPage() {
                             <div className="flex gap-4">
                                 <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center font-bold text-black shrink-0">3</div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white mb-2">Speichern</h3>
+                                    <h3 className="text-lg font-bold text-white mb-2">{t("Save")}</h3>
                                     <p className="text-zinc-400 mb-3">
-                                        Gehe auf <code className="bg-black/30 px-1.5 py-0.5 rounded text-orange-200">Datei {'>'} Speichern unter...</code>
+                                        {t("Go to")} <code className="bg-black/30 px-1.5 py-0.5 rounded text-orange-200">{t("File")} {'>'} {t("Save as...")}</code>
                                     </p>
                                     <ul className="list-disc list-inside text-zinc-400 ml-2 space-y-1">
-                                        <li>Wähle unbedingt <strong>PNG (*.png)</strong> als Dateityp.</li>
-                                        <li>Maximal 3 MiB und 4096 × 4096 Pixel; nur ein einzelnes Bild, keine Animation.</li>
-                                        <li>Gib dem Cape einen Namen.</li>
-                                        <li>Speichere es ab.</li>
+                                        <li>{t("Always choose")} <strong>PNG (*.png)</strong> {t("as the file type.")}</li>
+                                        <li>{t("Maximum 3 MiB and 4096 × 4096 pixels; a single image only, no animation.")}</li>
+                                        <li>{t("Give the cape a name.")}</li>
+                                        <li>{t("Save your file.")}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -136,12 +137,11 @@ export default function TutorialPage() {
 
                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6 text-orange-200">
                         <h3 className="font-bold flex items-center gap-2 mb-2">
-                            <CheckCircle size={20} />
-                            Wichtig
+                            {t("Important")}
                         </h3>
                         <ul className="list-disc list-inside space-y-1 text-sm opacity-90">
-                            <li>Du kannst <strong>Transparenz</strong> für coole Effekte nutzen, aber mache das Cape nicht unsichtbar.</li>
-                            <li>Halte dich an unsere <Link href="/cookiecapes/rules" className="underline hover:text-white">Regeln</Link>.</li>
+                            <li>{t("You can use")} <strong>{t("transparency")}</strong> {t("for cool effects, but do not make the cape invisible.")}</li>
+                            <li>{t("Follow our")} <Link href="/cookiecapes/rules" className="underline hover:text-white">{t("Rules")}</Link>.</li>
                         </ul>
                     </div>
 
@@ -149,12 +149,12 @@ export default function TutorialPage() {
                         <Button asChild size="lg" variant="secondary" className="rounded-full"><Link
                             href="/cookiecapes"
                         >
-                            Zum Upload-Status
+                            {t("Go to upload status")}
                         </Link></Button>
                     </div>
                 </div>
             </div>
-            <Footer />
+            <Footer locale={locale} />
         </main>
     );
 }

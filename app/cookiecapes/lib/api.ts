@@ -1,19 +1,23 @@
+import { translations, type MessageKey } from "../i18n/messages";
+import type { Locale } from "../i18n/locale";
+
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_COOKIECAPES_API_URL || "https://api.cookieattack.de").replace(/\/+$/, "");
 
 export class CapeApiError extends Error {
   constructor(readonly status: number, message: string, readonly retryAfter: string | null = null) { super(message); }
 }
 
-export async function capeApiError(response: Response): Promise<CapeApiError> {
-  const messages: Record<number, string> = {
-    401: "Die Anmeldung fehlt, ist abgelaufen oder ungültig.",
-    403: "Diese Aktion ist nicht erlaubt.",
-    400: "Bitte prüfe deine Eingaben.",
-    422: "Bitte prüfe deine Eingaben.",
-    413: "Die Anfrage ist zu groß.",
-    429: "Zu viele Anfragen. Probiere es später erneut.",
-    469: "Das Cape wurde von der Moderation abgelehnt.",
-    503: "Ein externer Dienst ist vorübergehend nicht verfügbar.",
+export async function capeApiError(response: Response, locale: Locale = "en"): Promise<CapeApiError> {
+  const { t } = translations(locale);
+  const messages: Record<number, MessageKey> = {
+    401: "Sign-in is missing, expired, or invalid.",
+    403: "This action is not allowed.",
+    400: "Please check your input.",
+    422: "Please check your input.",
+    413: "The request is too large.",
+    429: "Too many requests. Please try again later.",
+    469: "The cape was rejected by moderation.",
+    503: "An external service is temporarily unavailable.",
   };
   let detail = await response.text();
   try {
@@ -21,11 +25,11 @@ export async function capeApiError(response: Response): Promise<CapeApiError> {
     detail = typeof data?.detail === "string" ? data.detail : "";
   } catch { /* The API may also return plain text. */ }
   const retryAfter = response.headers.get("Retry-After");
-  let message = messages[response.status] ?? `Die API-Anfrage ist fehlgeschlagen (HTTP ${response.status}).`;
+  let message = messages[response.status] ? t(messages[response.status]) : t("The API request failed (HTTP {status}).", { status: response.status });
   if (detail && !detail.trimStart().startsWith("<")) message += ` ${detail.slice(0, 400)}`;
   if (response.status === 429 && retryAfter) {
     const seconds = /^\d+$/.test(retryAfter) ? Number(retryAfter) : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
-    if (Number.isFinite(seconds) && seconds > 0) message += ` Bitte frühestens in ${seconds} Sekunden erneut versuchen.`;
+    if (Number.isFinite(seconds) && seconds > 0) message += ` ${t("Please wait at least {seconds} seconds before trying again.", { seconds })}`;
   }
   return new CapeApiError(response.status, message, retryAfter);
 }
@@ -37,7 +41,7 @@ async function request<T>(url: string, options: RequestInit & { next?: { revalid
     return await response.json();
   } catch (error) {
     if (error instanceof CapeApiError) throw error;
-    throw new CapeApiError(0, "Die API ist vorübergehend nicht erreichbar oder hat eine ungültige Antwort geliefert.");
+    throw new CapeApiError(0, translations("en").t("The API is temporarily unavailable or returned an invalid response."));
   }
 }
 

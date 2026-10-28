@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { revalidatePath } from "next/cache";
 import { accountFetch, accountJson } from "@/lib/cookieapi-account";
 import { CapeApiError } from "@/app/cookiecapes/lib/api";
@@ -7,9 +8,10 @@ import type { AccountActionResult } from "@/app/cookiecapes/lib/account-types";
 import type { AccountInfo, OwnedCapes, MinecraftProfile } from "@/app/cookiecapes/lib/account-types";
 
 async function result<T>(operation: () => Promise<T>): Promise<AccountActionResult<T>> {
+  const { t } = await getTranslations();
   try { return { value: await operation() }; }
   catch (error) {
-    return { error: error instanceof CapeApiError ? error.message : "Die Anfrage konnte nicht abgeschlossen werden. Bitte melde dich erneut an oder versuche es später noch einmal." };
+    return { error: error instanceof CapeApiError ? error.message : t("The request could not be completed. Please sign in again or try again later.") };
   }
 }
 
@@ -36,16 +38,18 @@ export async function reviewLegacyCapes(reviewId: string, keepIds: number[]) {
   });
 }
 export async function claimCape(capeId: number, restore = false) {
+  const { t } = await getTranslations();
   return result(async () => {
-    if (!Number.isSafeInteger(capeId) || capeId < 1) throw new Error("Ungültige Cape-ID.");
+    if (!Number.isSafeInteger(capeId) || capeId < 1) throw new Error(t("Invalid cape ID."));
     await accountJson(`/account/capes/${capeId}/${restore ? "restore" : "claim"}`, {});
     revalidatePath("/cookiecapes", "layout");
   });
 }
 export async function uploadWebsiteCape(form: FormData) {
+  const { t } = await getTranslations();
   return result(async () => {
     const file = form.get("cape");
-    if (!(file instanceof File) || file.size === 0 || file.size > 3 * 1024 * 1024) throw new Error("Bitte wähle eine PNG-Datei mit maximal 3 MB.");
+    if (!(file instanceof File) || file.size === 0 || file.size > 3 * 1024 * 1024) throw new Error(t("Please choose a PNG file no larger than 3 MB."));
     // Never forward client-supplied verification, owner IDs, or credentials.
     const body = new FormData();
     body.set("cape", file);

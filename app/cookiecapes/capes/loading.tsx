@@ -1,6 +1,8 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import Footer from "../../components/Footer";
 
-export default function CapesLoading() {
+export default async function CapesLoading() {
+  const { locale } = await getTranslations();
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 animate-pulse">
@@ -34,7 +36,7 @@ export default function CapesLoading() {
                     ))}
                 </div>
             </div>
-            <Footer/>
+            <Footer locale={locale} />
         </main>
     );
 }

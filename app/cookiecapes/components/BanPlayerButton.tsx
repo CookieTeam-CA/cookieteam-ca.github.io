@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { Gavel } from "lucide-react";
 import { banPlayer } from "../../actions/player-actions";
@@ -13,9 +14,10 @@ interface BanPlayerButtonProps {
 }
 
 export default function BanPlayerButton({ minecraftName, isAdmin, className = "" }: BanPlayerButtonProps) {
+  const { t } = useTranslations();
     const [isBanning, setIsBanning] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [reason, setReason] = useState("Regelverstoß");
+    const [reason, setReason] = useState(t("Rule violation"));
     const router = useRouter();
     const pending = useRef(false);
 
@@ -35,11 +37,11 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
                 router.refresh();
                 setShowConfirm(false);
             } else {
-                alert(`Fehler: ${result.error}`);
+                alert(t("Error: {message}", { message: result.error ?? "" }));
                 setShowConfirm(false);
             }
         } catch {
-            alert("Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es später erneut.");
+            alert(t("The request could not be completed. Please try again later."));
         } finally {
             pending.current = false;
             setIsBanning(false);
@@ -55,7 +57,7 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
                         <Gavel size={14} className="text-white" />
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Bannen?</span>
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">{t("Ban player?")}</span>
                     </div>
                 </div>
 
@@ -64,7 +66,7 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
                         type="text"
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
-                        placeholder="Grund..."
+                        placeholder={t("Reason...")}
                         className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
                         autoFocus
                     />
@@ -74,18 +76,18 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
                             variant="ghost" size="xs"
                             onClick={() => setShowConfirm(false)}
                             className="text-white/70"
-                            title="Abbrechen"
+                            title={t("Cancel")}
                         >
-                            Abbrechen
+                            {t("Cancel")}
                         </Button>
                         <Button
                             variant="secondary" size="xs"
                             onClick={handleBan}
                             disabled={isBanning}
                             className="bg-white text-red-700 hover:bg-zinc-100"
-                            title="Bestätigen"
+                            title={t("Confirm")}
                         >
-                            {isBanning ? <div className="w-3 h-3 border-2 border-red-700/30 border-t-red-700 rounded-full animate-spin mx-auto" /> : "Bestätigen"}
+                            {isBanning ? <div className="w-3 h-3 border-2 border-red-700/30 border-t-red-700 rounded-full animate-spin mx-auto" /> : t("Confirm")}
                         </Button>
                     </div>
                 </div>
@@ -102,7 +104,7 @@ export default function BanPlayerButton({ minecraftName, isAdmin, className = ""
                 setShowConfirm(true);
             }}
             className={`absolute top-2 left-2 z-20 bg-red-500/80 shadow-lg backdrop-blur-sm ${className}`}
-            title="Spieler bannen (Admin)"
+            title={t("Ban player (admin)")}
         >
             <Gavel size={16} />
         </Button>

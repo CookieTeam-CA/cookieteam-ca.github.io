@@ -1,9 +1,13 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Metadata } from "next";
 import Footer from "../../components/Footer"
 
-export const metadata: Metadata = {
-    title: "Spieler - CookieCapes",
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getTranslations();
+  return {
+    title: t("Players"),
 };
+}
 
 import { getPlayersSorted, Order } from "../lib/api";
 import PlayerCard from "../components/PlayerCard";
@@ -17,6 +21,7 @@ interface PageProps {
 }
 
 export default async function CookiePlayerPage({ searchParams }: PageProps) {
+  const { t, locale } = await getTranslations();
     const params = await searchParams;
     const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
     const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -36,10 +41,10 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
                 <div className="text-center mb-16">
                     <h1 className="font-nexa text-4xl md:text-6xl mb-4">
-                        Unsere <span className="text-orange-500">Spieler</span>
+                        {t("Our")} <span className="text-orange-500">{t("Players")}</span>
                     </h1>
                     <p className="text-zinc-400 max-w-2xl mx-auto">
-                        Finde andere Spieler, sieh dir ihre Capes an oder durchsuche die Liste.
+                        {t("Find other players, view their capes, or browse the list.")}
                     </p>
                 </div>
 
@@ -60,12 +65,12 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
                     </>
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
-                        <p className="text-zinc-400 text-lg">Keine Spieler gefunden.</p>
-                        <p className="text-zinc-600 text-sm mt-2">Versuche es mit einem anderen Namen.</p>
+                        <p className="text-zinc-400 text-lg">{t("No players found.")}</p>
+                        <p className="text-zinc-600 text-sm mt-2">{t("Try another name.")}</p>
                     </div>
                 )}
 
-                <Footer />
+                <Footer locale={locale} />
             </div>
         </main>
     );

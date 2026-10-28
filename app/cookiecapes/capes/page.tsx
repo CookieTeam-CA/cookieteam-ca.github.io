@@ -1,3 +1,4 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { getCapesSorted, SortBy, Order } from "../lib/api";
 import CapeCard from "../components/CapeCard";
 import Pagination from "../components/Pagination";
@@ -5,9 +6,11 @@ import GalleryControls from "../components/GalleryControls";
 import { Metadata } from "next";
 import Footer from "../../components/Footer";
 
-export const metadata: Metadata = {
-    title: "Capes - CookieCapes",
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Capes",
 };
+}
 
 export const revalidate = 0;
 
@@ -16,6 +19,7 @@ interface PageProps {
 }
 
 export default async function CapesGalleryPage({ searchParams }: PageProps) {
+  const { t, locale } = await getTranslations();
     const params = await searchParams;
     const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
     const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -32,10 +36,10 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
                 <div className="text-center mb-16">
                     <h1 className="font-nexa text-4xl md:text-6xl mb-4">
-                        Entdecke <span className="text-orange-500">Capes</span>
+                        {t("Discover")} <span className="text-orange-500">Capes</span>
                     </h1>
                     <p className="text-zinc-400 max-w-2xl mx-auto">
-                        Durchsuche die Community-Galerie. Finde dein Lieblings-Cape oder lass dich inspirieren.
+                        {t("Browse the community gallery. Find your favourite cape or get inspired.")}
                     </p>
                 </div>
 
@@ -56,12 +60,12 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
                     </>
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
-                        <p className="text-zinc-400 text-lg">Keine Capes gefunden.</p>
-                        <p className="text-zinc-600 text-sm mt-2">Versuche es mit einem anderen Suchbegriff.</p>
+                        <p className="text-zinc-400 text-lg">{t("No capes found.")}</p>
+                        <p className="text-zinc-600 text-sm mt-2">{t("Try another search term.")}</p>
                     </div>
                 )}   
             </div>
-            <Footer/>
+            <Footer locale={locale} />
         </main>
     );
 }

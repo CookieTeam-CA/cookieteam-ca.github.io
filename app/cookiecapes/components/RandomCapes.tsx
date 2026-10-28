@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import VerificationBadge from "./VerificationBadge";
 
 import { Cape } from "../lib/api";
@@ -9,12 +10,13 @@ interface RandomCapesProps {
 }
 
 export default function RandomCapes({ capes }: RandomCapesProps) {
+  const { t } = useTranslations();
   if (capes.length === 0) return null;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-20">
       <h2 className="font-nexa text-3xl md:text-5xl text-white text-center mb-12">
-        Entdecke <span className="text-orange-500">Community</span> Capes
+        {t("Discover")} <span className="text-orange-500">Community</span> Capes
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -29,7 +31,7 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
             </div>
             <div className="text-center">
               <h3 className="font-bold text-xl text-white">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h3>
-              <p className="text-zinc-500 text-sm">von {cape.minecraft_name}</p>
+              <p className="text-zinc-500 text-sm">{t("by")} {cape.minecraft_name}</p>
               <div className="mt-2 text-xs text-orange-400 font-mono bg-orange-500/10 px-2 py-1 rounded">
                 ID: {cape.cape_id}
               </div>

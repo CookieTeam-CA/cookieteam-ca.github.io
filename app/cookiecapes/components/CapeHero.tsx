@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRef } from "react";
@@ -10,6 +11,7 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 gsap.registerPlugin(ScrollToPlugin);
 
 export default function CapeHero() {
+  const { t } = useTranslations();
   const containerRef = useRef<HTMLDivElement>(null);
   const titleStartRef = useRef<HTMLSpanElement>(null);
   const titleEndRef = useRef<HTMLSpanElement>(null);
@@ -83,7 +85,7 @@ export default function CapeHero() {
       </h1>
 
       <div ref={tagsRef} className="flex flex-wrap justify-center gap-4 md:gap-8">
-        {["Schnell", "Performant", "Kostenlos"].map((tag, i) => (
+        {[t("Fast"), t("Efficient"), t("Free")].map((tag, i) => (
           <div
             key={i}
             className="px-6 py-2 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 font-bold backdrop-blur-sm shadow-[0_0_15px_rgba(249,115,22,0.2)]"
@@ -94,9 +96,9 @@ export default function CapeHero() {
       </div>
 
       <p ref={descriptionRef} className="max-w-xl text-zinc-400 mt-4 text-sm md:text-base">
-        Entdecke Capes aus der Community und gestalte dein eigenes im Editor.
+        {t("Discover community capes and design your own in the editor.")}
         <br />
-        Lade Capes über deinen bestätigten Minecraft-Account hoch.
+        {t("Upload capes through your verified Minecraft account.")}
       </p>
 
       <div ref={buttonsRef} className="flex flex-wrap justify-center gap-4 mt-4">
@@ -104,14 +106,14 @@ export default function CapeHero() {
             onClick={scrollToSetup}
             className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-white transition-all hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
           >
-              <span className="relative z-10">Cape Upload</span>
+              <span className="relative z-10">{t("Upload a cape")}</span>
           </button>
           
           <button 
             onClick={() => window.location.href = 'cookiecapes/capes'}
             className="group relative overflow-hidden rounded-full border border-white/10 bg-white/10 px-8 py-3 font-bold text-white transition-all hover:bg-white/10 hover:scale-105 active:scale-95 cursor-pointer select-none"
           >
-              <span className="relative z-10">Browse Capes</span>
+              <span className="relative z-10">{t("Browse capes")}</span>
           </button>
       </div>
     </div>

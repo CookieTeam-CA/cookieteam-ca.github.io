@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
@@ -7,6 +8,7 @@ import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import GallerySearch from "./GallerySearch";
 
 export default function GalleryControls() {
+  const { t } = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
     const handleSortChange = (sort: string) => {
@@ -26,17 +28,18 @@ export default function GalleryControls() {
 
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <GallerySearch placeholder="Suche nach Capes..." />
+            <GallerySearch placeholder={t("Search capes...")} />
 
             <div className="flex gap-2">
                 <div className="relative">
                     <select
+                        aria-label={t("Popularity")}
                         value={searchParams.get("sort") || "active_user_count"}
                         onChange={(e) => handleSortChange(e.target.value)}
                         className="appearance-none bg-zinc-900 border border-white/10 rounded-lg pl-10 pr-8 py-3 text-white focus:border-orange-500 focus:outline-none cursor-pointer hover:bg-zinc-800 transition-colors"
                     >
-                        <option value="active_user_count">Beliebtheit</option>
-                        <option value="last_edited">Datum</option>
+                        <option value="active_user_count">{t("Popularity")}</option>
+                        <option value="last_edited">{t("Date")}</option>
                         <option value="cape_name">Name</option>
                         <option value="cape_id">ID</option>
                     </select>
@@ -47,7 +50,7 @@ export default function GalleryControls() {
                     variant="outline" size="icon-lg"
                     onClick={toggleOrder}
                     className="group h-auto self-stretch hover:border-orange-500/50"
-                    title={searchParams.get("order") === "asc" ? "Aufsteigend" : "Absteigend"}
+                    title={searchParams.get("order") === "asc" ? t("Ascending") : t("Descending")}
                 >
                     <ArrowUpDown
                         size={20}

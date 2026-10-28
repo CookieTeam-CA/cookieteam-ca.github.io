@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import type { SkinViewer } from "skinview3d";
@@ -79,6 +80,7 @@ export default function CapeViewer({
     height,
     animation = "idle"
 }: CapeViewerProps) {
+  const { t } = useTranslations();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
@@ -264,8 +266,8 @@ export default function CapeViewer({
                     <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <p className="text-white font-bold">3D Vorschau nicht verfügbar</p>
-                    <p className="text-sm text-zinc-400">Dein Browser unterstützt kein WebGL.</p>
+                    <p className="text-white font-bold">{t("3D preview unavailable")}</p>
+                    <p className="text-sm text-zinc-400">{t("Your browser does not support WebGL.")}</p>
                 </div>
             </div>
         );
@@ -277,8 +279,8 @@ export default function CapeViewer({
                 <>
                     <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading || textureError ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
                     {textureError && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-                        <p className="text-sm text-zinc-400">3D-Vorschau konnte nicht geladen werden.</p>
-                        <Button onClick={() => setRetry(value => value + 1)} size="sm">Erneut versuchen</Button>
+                        <p className="text-sm text-zinc-400">{t("The 3D preview could not be loaded.")}</p>
+                        <Button onClick={() => setRetry(value => value + 1)} size="sm">{t("Try again")}</Button>
                     </div>}
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">

@@ -1,28 +1,30 @@
 "use server";
 
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { auth } from "../../auth";
 import { revalidatePath } from "next/cache";
 import { API_BASE_URL, CapeApiError, capeApiError } from "../cookiecapes/lib/api";
 
 export async function deleteCape(capeId: number) {
+  const { t, locale } = await getTranslations();
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
-        return { success: false, error: "Bitte melde dich an." };
+        return { success: false, error: t("Please sign in.") };
     }
 
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
     if (!adminIds.includes(session.user.discordId ?? "")) {
-        return { success: false, error: "Diese Aktion ist nur für Administratoren erlaubt." };
+        return { success: false, error: t("This action is only available to administrators.") };
     }
 
-    if (!Number.isSafeInteger(capeId) || capeId < 1) return { success: false, error: "Ungültige Cape-ID." };
+    if (!Number.isSafeInteger(capeId) || capeId < 1) return { success: false, error: t("Invalid cape ID.") };
 
     try {
         const token = process.env.COOKIECAPES_API_TOKEN;
         if (!token) {
             console.error("COOKIECAPES_API_TOKEN is missing");
-            return { success: false, error: "Die Admin-Funktion ist derzeit nicht konfiguriert." };
+            return { success: false, error: t("The admin feature is not configured.") };
         }
 
         const res = await fetch(`${API_BASE_URL}/delete_cape?cape_id=${capeId}`, {
@@ -34,7 +36,7 @@ export async function deleteCape(capeId: number) {
         });
 
         if (!res.ok) {
-            throw await capeApiError(res);
+            throw await capeApiError(res, locale);
         }
         
         revalidatePath("/cookiecapes/capes");
@@ -44,6 +46,6 @@ export async function deleteCape(capeId: number) {
 
     } catch (error) {
         console.error("Exception in deleteCape:", error);
-        return { success: false, error: error instanceof CapeApiError ? error.message : "Die API ist vorübergehend nicht erreichbar." };
+        return { success: false, error: error instanceof CapeApiError ? error.message : t("The API is temporarily unavailable.") };
     }
 }

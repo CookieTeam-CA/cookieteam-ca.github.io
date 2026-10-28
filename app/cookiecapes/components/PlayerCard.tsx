@@ -1,3 +1,4 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { API_BASE_URL, Player } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 import { User, ShieldAlert } from "lucide-react";
@@ -10,6 +11,7 @@ interface PlayerCardProps {
 }
 
 export default async function PlayerCard({ player }: PlayerCardProps) {
+  const { t } = await getTranslations();
     const session = await auth();
     const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
     const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
@@ -36,7 +38,7 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
                 {player.banned && (
                     <div className="absolute top-2 right-2 bg-red-500/90 backdrop-blur-sm px-2 py-1 rounded text-xs text-white font-bold border border-red-400/50 flex items-center gap-1">
                         <ShieldAlert size={12} />
-                        BANNED
+                        {t("BANNED")}
                     </div>
                 )}
             </div>
@@ -50,18 +52,18 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
 
                 {player.cape_name ? (
                     <Link href={`/cookiecapes/capes/${player.current_cape_id}`} className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-400 text-sm hover:text-orange-400 transition-colors">
-                        <span className="truncate">Cape: {player.cape_name}</span>
+                        <span className="truncate">{t("Cape:")} {player.cape_name}</span>
                     </Link>
                 ) : (
                     <div className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-600 text-sm">
-                        <span>Kein Cape</span>
+                        <span>{t("No cape")}</span>
                     </div>
                 )}
 
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
                     <Link href={`/cookiecapes/players/${player.minecraft_name}`} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-500 transition-colors">
                         <User size={14} />
-                        <span>Profile View</span>
+                        <span>{t("View profile")}</span>
                     </Link>
                 </div>
             </div>

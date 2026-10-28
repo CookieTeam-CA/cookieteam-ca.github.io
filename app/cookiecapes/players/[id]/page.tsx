@@ -1,3 +1,4 @@
+import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
 import { API_BASE_URL, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
@@ -13,10 +14,11 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps) {
+  const { t } = await getTranslations();
     const { id } = await params;
     return {
-        title: `${id} - Spielerprofil - CookieCapes`,
-        description: `Sieh dir das Profil von ${id} auf CookieCapes an.`,
+        title: `${id} - ${t("Player profile")}`,
+        description: t("View {name}'s profile on CookieCapes.", { name: id }),
     };
 }
 
@@ -24,9 +26,9 @@ function countryCodeToFlag(code: string): string {
     return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65)).join('');
 }
 
-function countryName(code: string): string {
+function countryName(code: string, locale: string): string {
     try {
-        const names = new Intl.DisplayNames(['de'], { type: 'region' });
+        const names = new Intl.DisplayNames([locale], { type: 'region' });
         return names.of(code.toUpperCase()) || code;
     } catch {
         return code;
@@ -43,6 +45,7 @@ function socialIcon(type: string) {
 }
 
 export default async function PlayerProfilePage({ params }: PageProps) {
+  const { t, locale } = await getTranslations();
     const { id } = await params;
     const player = await getPlayer(id);
     const history = await getPlayerHistory(player?.minecraft_name ?? id);
@@ -50,10 +53,10 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     if (!player && !history) {
         return (
             <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
-                <h1 className="text-3xl font-bold mb-4">Spieler nicht gefunden</h1>
-                <p className="text-zinc-400 mb-8">Dieser Spieler existiert nicht.</p>
+                <h1 className="text-3xl font-bold mb-4">{t("Player not found")}</h1>
+                <p className="text-zinc-400 mb-8">{t("This player does not exist.")}</p>
                 <Button asChild size="lg"><Link href="/cookiecapes/players">
-                    Zurück zur Liste
+                    {t("Back to list")}
                 </Link></Button>
             </div>
         );
@@ -73,7 +76,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
                 <Link href="/cookiecapes/players" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    Zurück zur Spielerliste
+                    {t("Back to player list")}
                 </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
@@ -92,7 +95,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-start gap-3">
                                 <Info size={20} className="text-blue-400 mt-0.5 shrink-0" />
                                 <div>
-                                    <p className="text-blue-300 font-medium">Dieser Spieler nutzt CookieCapes nicht</p>
+                                    <p className="text-blue-300 font-medium">{t("This player does not use CookieCapes")}</p>
                                 </div>
                             </div>
                         )}
@@ -100,7 +103,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                         <div className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                                 <User className="text-orange-500" />
-                                Profil Details
+                                {t("Profile details")}
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
@@ -112,7 +115,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
                                 {isCookieCapesUser && (
                                     <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                                        <div className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Erstellte Capes</div>
+                                        <div className="text-zinc-400 text-xs uppercase tracking-wider mb-1">{t("Created capes")}</div>
                                         <div className="font-mono text-xl font-bold text-white">{createdCapes.length}</div>
                                     </div>
                                 )}
@@ -120,11 +123,11 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                                 {history?.country && (
                                     <div className="bg-black/20 p-4 rounded-xl border border-white/5">
                                         <div className="text-zinc-400 text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                            Land
+                                            {t("Country")}
                                         </div>
                                         <div className="text-lg text-white flex items-center gap-2">
                                             <span className="text-2xl">{countryCodeToFlag(history.country)}</span>
-                                            {countryName(history.country)}
+                                            {countryName(history.country, locale)}
                                         </div>
                                     </div>
                                 )}
@@ -160,7 +163,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                             <div className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6">
                                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                                     <History className="text-orange-500" />
-                                    Namensverlauf
+                                    {t("Name history")}
                                 </h2>
                                 <div className="space-y-1">
                                     {history.username_history.map((entry, i) => (
@@ -177,8 +180,8 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                                                 </span>
                                                 <span className="text-xs text-zinc-500">
                                                     {entry.changed_at
-                                                        ? new Date(entry.changed_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                                                        : 'Originalname'
+                                                        ? new Date(entry.changed_at).toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' })
+                                                        : t("Original name")
                                                     }
                                                 </span>
                                             </div>
@@ -194,7 +197,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                     <div className="space-y-6">
                         <h2 className="text-2xl font-bold flex items-center gap-2">
                             <Layers className="text-orange-500" />
-                            Erstellte Capes
+                            {t("Created capes")}
                             <span className="bg-zinc-800 text-zinc-400 text-sm px-2 py-0.5 rounded-full ml-2">
                                 {createdCapes.length}
                             </span>
@@ -209,14 +212,14 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                         ) : (
                             <div className="py-20 bg-zinc-900/30 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center text-zinc-500">
                                 <Layers size={48} className="opacity-20 mb-4" />
-                                <p>Dieser Spieler hat noch keine Capes erstellt.</p>
+                                <p>{t("This player has not created any capes yet.")}</p>
                             </div>
                         )}
                     </div>
                 )}
 
             </div>
-            <Footer />
+            <Footer locale={locale} />
         </main>
     );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useLayoutEffect } from "react";
 import CapeViewer from "./CapeViewer";
@@ -28,6 +29,7 @@ export default function ProfileSkinDisplay({
     isCookieCapesUser,
     skinHistory = []
 }: ProfileSkinDisplayProps) {
+  const { t, number } = useTranslations();
     const [activeSkinUrl, setActiveSkinUrl] = useState<string | undefined>(undefined);
     const [isExpanded, setIsExpanded] = useState(false);
     const gridRef = useRef<HTMLDivElement>(null);
@@ -69,7 +71,7 @@ export default function ProfileSkinDisplay({
                 {player?.banned && (
                     <div className="absolute top-4 right-4 z-20 bg-red-500/90 backdrop-blur-sm px-3 py-1.5 rounded-lg text-white font-bold border border-red-400/50 flex items-center gap-2 shadow-lg shadow-red-900/20">
                         <ShieldAlert size={16} />
-                        BANNED
+                        {t("BANNED")}
                     </div>
                 )}
 
@@ -79,18 +81,18 @@ export default function ProfileSkinDisplay({
                         currentCapeUrl ? (
                             <div className="text-zinc-300 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                Trägt Cape #{player?.current_cape_id}
+                                {t("Wearing cape #")}{player?.current_cape_id}
                             </div>
                         ) : (
                             <div className="text-zinc-500 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-zinc-600"></span>
-                                Kein Cape ausgerüstet
+                                {t("No cape equipped")}
                             </div>
                         )
                     ) : (
                         <div className="text-zinc-500 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-zinc-600"></span>
-                            Kein CookieCapes Nutzer
+                            {t("Not a CookieCapes user")}
                         </div>
                     )}
                 </div>
@@ -110,7 +112,7 @@ export default function ProfileSkinDisplay({
                             <Button type="button" variant="ghost" size="icon-lg"
                                 key={i}
                                 className="group relative h-13 w-13 shrink-0 overflow-hidden border border-white/5 bg-black/20 hover:border-orange-500/50"
-                                aria-label={`Skin ${i + 1} anzeigen`}
+                                aria-label={t("Show skin {number}", { number: i + 1 })}
                                 onMouseEnter={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
                                 onClick={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
                             >
@@ -135,12 +137,12 @@ export default function ProfileSkinDisplay({
                         >
                             {isExpanded ? (
                                 <>
-                                    Weniger anzeigen
+                                    {t("Show less")}
                                     <ChevronUp size={14} />
                                 </>
                             ) : (
                                 <>
-                                    Mehr anzeigen ({reversedHistory.length - 7} weitere)
+                                    {t("Show more ({count} more)", { count: number(reversedHistory.length - 6) })}
                                     <ChevronDown size={14} />
                                 </>
                             )}

@@ -1,19 +1,21 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 
 export default function DownloadSection() {
+  const { t } = useTranslations();
     return (
         <section className="w-full py-20 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="text-center mb-12">
                     <h2 className="font-nexa text-4xl md:text-5xl text-white mb-4">
-                        Lade die <span className="text-orange-500">Mod</span> herunter
+                        {t("Download the")} <span className="text-orange-500">Mod</span> {t("to get started")}
                     </h2>
                     <p className="text-zinc-400 max-w-2xl mx-auto">
-                        Um die Capes im Spiel zu sehen und auszuwählen, benötigst du unsere Mod.
+                        {t("You need our mod to see and select capes in the game.")}
                         <br />
-                        Diese ist für alle gänigen Modloader über Modrinth & CurseForge verfügbar.
+                        {t("It is available for all common mod loaders on Modrinth and CurseForge.")}
                     </p>
                 </div>
 
@@ -28,7 +30,7 @@ export default function DownloadSection() {
                         </div>
                         <div>
                             <h3 className="text-[#1bd96a] font-bold text-xl">Modrinth</h3>
-                            <p className="text-zinc-400 text-sm">Download via Modrinth</p>
+                            <p className="text-zinc-400 text-sm">{t("Download via Modrinth")}</p>
                         </div>
                         <div className="absolute inset-0 border-2 border-[#1bd96a] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none" />
                     </a></Button>
@@ -43,7 +45,7 @@ export default function DownloadSection() {
                         </div>
                         <div>
                             <h3 className="text-[#f16436] font-bold text-xl">CurseForge</h3>
-                            <p className="text-zinc-400 text-sm">Download via CurseForge</p>
+                            <p className="text-zinc-400 text-sm">{t("Download via CurseForge")}</p>
                         </div>
                         <div className="absolute inset-0 border-2 border-[#f16436] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none" />
                     </a></Button>

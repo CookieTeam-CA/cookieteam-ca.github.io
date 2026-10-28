@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +12,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalCount, limit }: PaginationProps) {
+  const { t } = useTranslations();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -60,7 +62,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
     return (
         <div className="flex items-center justify-center gap-2 mt-12 mb-20">
             <Button
-                variant="outline" size="icon" aria-label="Vorherige Seite"
+                variant="outline" size="icon" aria-label={t("Previous page")}
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
             >
@@ -74,7 +76,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
                     ) : (
                         <Button
                             variant={currentPage === page ? "default" : "outline"} size="icon"
-                            aria-label={`Seite ${page}`} aria-current={currentPage === page ? "page" : undefined}
+                            aria-label={t("Page {page}", { page })} aria-current={currentPage === page ? "page" : undefined}
                             key={index}
                             onClick={() => handlePageChange(Number(page))}
                         >
@@ -85,7 +87,7 @@ export default function Pagination({ currentPage, totalCount, limit }: Paginatio
             </div>
 
             <Button
-                variant="outline" size="icon" aria-label="Nächste Seite"
+                variant="outline" size="icon" aria-label={t("Next page")}
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
             >
