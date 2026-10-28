@@ -216,7 +216,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, onUploaded,
           {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !capeName.trim()) || (step === 2 && (!file || !preview || checking))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" disabled={locked || !player || !file || !preview || !capeName.trim()} onClick={() => void upload()}><Upload size={16} aria-hidden="true" />{busy ? t("Uploading…") : t("Upload cape")}</Button>}
         </div>
       </div>
-      <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? capeName })} className="h-96 w-full"><CapeViewer capeUrl={preview || null} minecraftName={player?.minecraft_name} animation="idle" /></div>
+      <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? capeName })} className="h-96 w-full"><CapeViewer allowElytraSwitch capeUrl={preview || null} minecraftName={player?.minecraft_name} animation="idle" /></div>
     </div>
   </section>;
 }

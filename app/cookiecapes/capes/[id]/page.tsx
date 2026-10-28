@@ -68,12 +68,13 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                             <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
                             <div className="w-full h-full flex items-center justify-center">
                                 <CapeViewer
+                                    allowElytraSwitch
                                     capeUrl={capeUrl}
                                     minecraftName={cape.minecraft_name}
                                     animation="walk"
                                 />
                             </div>
-                            <div className="absolute bottom-0 left-0 p-6 z-20 w-full">
+                            <div className="absolute bottom-0 left-0 p-6 pr-36 z-20 w-full pointer-events-none">
                                 <h1 className="text-3xl md:text-5xl font-nexa text-white mb-2">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h1>
                                 <div className="flex items-center gap-3">
                                     <img

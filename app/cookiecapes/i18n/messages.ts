@@ -1,6 +1,9 @@
 import type { Locale } from "./locale";
 
 export const de = {
+  "Elytra view": "Elytra-Ansicht",
+  "Show cape": "Cape anzeigen",
+  "Show elytra": "Elytra anzeigen",
   "Upload steps": "Upload-Schritte",
   "Cape file": "Cape-Datei",
   "Reason...": "Grund...",

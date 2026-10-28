@@ -3,11 +3,13 @@
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
+import { hasElytraPixels } from "../lib/elytra";
 import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 
 interface CapeViewerProps {
     capeUrl?: string | null;
+    allowElytraSwitch?: boolean;
     skinUrl?: string;
     minecraftName?: string;
     width?: number;
@@ -78,7 +80,8 @@ export default function CapeViewer({
     minecraftName,
     width,
     height,
-    animation = "idle"
+    animation = "idle",
+    allowElytraSwitch = false
 }: CapeViewerProps) {
   const { t } = useTranslations();
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -93,6 +96,7 @@ export default function CapeViewer({
     const [viewerReady, setViewerReady] = useState(false);
     const [textureError, setTextureError] = useState(false);
     const [retry, setRetry] = useState(0);
+    const [equipment, setEquipment] = useState({ url: capeUrl, available: false, elytra: false });
 
     useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation }; }, [capeUrl, skinUrl, minecraftName, width, height, animation]);
 
@@ -227,6 +231,15 @@ export default function CapeViewer({
             setTextureError(false);
             void loadTextures(viewer, capeUrl, skinUrl, minecraftName, () => !cancelled && !viewer.disposed).then(() => {
                 if (cancelled || viewer.disposed) return;
+                let available = false;
+                if (allowElytraSwitch && capeUrl && viewer.playerObject.cape.map) {
+                    try {
+                        const canvas = viewer.capeCanvas;
+                        const pixels = canvas.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height);
+                        available = !!pixels && hasElytraPixels(pixels);
+                    } catch { /* Keep cape view if the texture cannot be inspected. */ }
+                }
+                setEquipment({ url: capeUrl, available, elytra: false });
                 texturesReadyRef.current = true;
                 viewer.renderPaused = !visibleRef.current || document.hidden;
             }).catch(() => {
@@ -237,7 +250,7 @@ export default function CapeViewer({
             });
         }
         return () => { cancelled = true; };
-    }, [viewerReady, capeUrl, skinUrl, minecraftName, retry]);
+    }, [viewerReady, capeUrl, skinUrl, minecraftName, retry, allowElytraSwitch]);
 
     useEffect(() => {
         if (viewerRef.current && width && height) {
@@ -278,6 +291,23 @@ export default function CapeViewer({
             {hasLoaded ? (
                 <>
                     <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading || textureError ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
+                    {allowElytraSwitch && equipment.url === capeUrl && equipment.available && !isLoading && !textureError && (
+                        <button type="button" role="switch" className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-zinc-950/90 px-3 py-2 text-sm font-medium text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
+                            aria-checked={equipment.elytra}
+                            aria-label={t("Elytra view")}
+                            onClick={() => {
+                                const viewer = viewerRef.current;
+                                if (!viewer || viewer.disposed) return;
+                                const elytra = !equipment.elytra;
+                                viewer.playerObject.backEquipment = elytra ? "elytra" : "cape";
+                                setEquipment({ ...equipment, elytra });
+                            }}>
+                            <span>Elytra</span>
+                            <span aria-hidden="true" className={`relative h-5 w-9 rounded-full transition-colors ${equipment.elytra ? "bg-orange-500" : "bg-zinc-600"}`}>
+                                <span className={`absolute top-0.5 left-0.5 size-4 rounded-full bg-white transition-transform ${equipment.elytra ? "translate-x-4" : "translate-x-0"}`} />
+                            </span>
+                        </button>
+                    )}
                     {textureError && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
                         <p className="text-sm text-zinc-400">{t("The 3D preview could not be loaded.")}</p>
                         <Button onClick={() => setRetry(value => value + 1)} size="sm">{t("Try again")}</Button>
