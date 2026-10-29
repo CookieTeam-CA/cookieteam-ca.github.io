@@ -48,7 +48,10 @@ export default async function PlayerProfilePage({ params }: PageProps) {
   const { t, locale } = await getTranslations();
     const { id } = await params;
     const player = await getPlayer(id);
-    const history = await getPlayerHistory(player?.minecraft_name ?? id);
+    const history = await getPlayerHistory(player?.minecraft_name ?? id).catch(error => {
+        if (!player) throw error;
+        return undefined;
+    });
 
     if (!player && !history) {
         return (
@@ -91,6 +94,9 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
+                        {history === undefined && (
+                            <p role="status" className="text-zinc-400">{t("Player history is temporarily unavailable.")}</p>
+                        )}
                         {!isCookieCapesUser && (
                             <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-start gap-3">
                                 <Info size={20} className="text-blue-400 mt-0.5 shrink-0" />

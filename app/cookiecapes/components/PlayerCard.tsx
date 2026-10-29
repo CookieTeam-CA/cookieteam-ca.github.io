@@ -2,7 +2,7 @@ import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { API_BASE_URL, Player } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 import { User, ShieldAlert } from "lucide-react";
-import { auth } from "../../../auth";
+import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import BanPlayerButton from "./BanPlayerButton";
 import Link from "next/link";
 
@@ -12,9 +12,7 @@ interface PlayerCardProps {
 
 export default async function PlayerCard({ player }: PlayerCardProps) {
   const { t } = await getTranslations();
-    const session = await auth();
-    const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
+    const isAdmin = await getCookieCapesAdmin();
 
     const capeUrl = player.current_cape_id != null
         ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png`

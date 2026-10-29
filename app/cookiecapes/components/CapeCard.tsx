@@ -3,7 +3,7 @@ import VerificationBadge from "./VerificationBadge";
 import { Cape } from "../lib/api";
 import CapeViewer from "./CapeViewer";
 import { Users } from "lucide-react";
-import { auth } from "../../../auth";
+import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import DeleteCapeButton from "./DeleteCapeButton";
 import BanPlayerButton from "./BanPlayerButton";
 import Link from "next/link";
@@ -14,9 +14,7 @@ interface CapeCardProps {
 
 export default async function CapeCard({ cape }: CapeCardProps) {
   const { t, number } = await getTranslations();
-    const session = await auth();
-    const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    const isAdmin = session?.user?.id && adminIds.includes(session.user.discordId ?? "") ? true : false;
+    const isAdmin = await getCookieCapesAdmin();
 
     const capeUrl = cape.cape_image_url;
 

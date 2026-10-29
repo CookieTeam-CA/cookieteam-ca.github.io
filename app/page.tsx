@@ -5,7 +5,7 @@ import { auth } from "../auth";
 
 export default async function Home() {
   const assets = getHomeGalleryAssets();
-  const session = await auth();
+  const session = await auth().catch(() => null);
   return (
     <main>
       <HomeClient initialAssets={assets} session={session} />

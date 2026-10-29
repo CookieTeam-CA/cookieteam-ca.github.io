@@ -1,8 +1,10 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
 import VerificationBadge from "../../components/VerificationBadge";
-import { getCape, getPlayersByCape } from "../../lib/api";
+import { getCapeForDetails as getCape } from "../../lib/cape-details";
+import { getPlayersByCape } from "../../lib/api";
 import CapeViewer from "../../components/CapeViewer";
+import Pagination from "../../components/Pagination";
 import Link from "next/link";
 import { ArrowLeft, User, Calendar, Hash, Users } from "lucide-react";
 import Footer from "../../../components/Footer";
@@ -11,6 +13,7 @@ export const revalidate = 0;
 
 interface PageProps {
     params: Promise<{ id: string }>;
+    searchParams: Promise<{ page?: string | string[] }>;
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -26,11 +29,12 @@ export async function generateMetadata({ params }: PageProps) {
 
     return {
         title: cape.cape_name,
+        ...(cape.is_private ? { robots: { index: false, follow: false } } : {}),
         description: t('View the cape "{cape}" by {name}.', { cape: cape.cape_name, name: cape.minecraft_name }),
     };
 }
 
-export default async function CapeDetailsPage({ params }: PageProps) {
+export default async function CapeDetailsPage({ params, searchParams }: PageProps) {
   const { t, locale } = await getTranslations();
     const { id } = await params;
     const capeId = Number(id);
@@ -49,7 +53,10 @@ export default async function CapeDetailsPage({ params }: PageProps) {
         );
     }
 
-    const players = await getPlayersByCape(capeId);
+    const query = await searchParams;
+    const requestedPage = typeof query.page === "string" ? Number(query.page) : 1;
+    const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const { players, total_count, limit } = await getPlayersByCape(capeId, page);
     const capeUrl = cape.cape_image_url;
 
     return (
@@ -98,7 +105,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                             <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                 <Users className="text-orange-500 mb-2" size={20} />
                                 <span className="text-zinc-400 text-xs uppercase tracking-wider mb-1">{t("Users")}</span>
-                                <span className="text-xl font-bold">{players.length}</span>
+                                <span className="text-xl font-bold">{total_count}</span>
                             </div>
                             <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                 <Calendar className="text-orange-500 mb-2" size={20} />
@@ -119,7 +126,7 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                                 <Users className="text-orange-500" size={20} />
                                 {t("Active users")}
                                 <span className="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded-full ml-auto font-mono">
-                                    {players.length}
+                                    {total_count}
                                 </span>
                             </h3>
 
@@ -139,13 +146,14 @@ export default async function CapeDetailsPage({ params }: PageProps) {
                             ) : (
                                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-zinc-500">
                                     <Users size={48} className="opacity-20 mb-4" />
-                                    <p>{t("Nobody is wearing this cape right now.")}</p>
+                                    <p>{t(total_count === 0 ? "Nobody is wearing this cape right now." : "No players found.")}</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                 </div>
+                <Pagination currentPage={page} totalCount={total_count} limit={limit} />
             </div>
             <Footer locale={locale} />
         </main>

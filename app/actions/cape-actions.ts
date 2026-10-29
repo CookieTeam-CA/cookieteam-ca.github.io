@@ -2,6 +2,7 @@
 
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { auth } from "../../auth";
+import { isCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import { revalidatePath } from "next/cache";
 import { API_BASE_URL, CapeApiError, capeApiError } from "../cookiecapes/lib/api";
 
@@ -13,8 +14,7 @@ export async function deleteCape(capeId: number) {
         return { success: false, error: t("Please sign in.") };
     }
 
-    const adminIds = process.env.ADMIN_DISCORD_IDS?.split(",") || [];
-    if (!adminIds.includes(session.user.discordId ?? "")) {
+    if (!isCookieCapesAdmin(session.user)) {
         return { success: false, error: t("This action is only available to administrators.") };
     }
 

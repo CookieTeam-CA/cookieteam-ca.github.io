@@ -6,6 +6,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, FileImage, Upload } from "lucide-react";
 import { startMinecraftLink, uploadWebsiteCape } from "@/app/actions/account-actions";
+import SubmissionQuotaBar from "./SubmissionQuotaBar";
+import type { SubmissionQuota } from "../lib/account-types";
 import { actionValue, type AccountInfo } from "../lib/account-types";
 import CapeViewer from "./CapeViewer";
 import MinecraftAccountSelect from "./MinecraftAccountSelect";
@@ -16,22 +18,26 @@ import { cn } from "@/lib/utils";
 
 interface SetupWizardProps {
   account: AccountInfo;
+  quota?: SubmissionQuota;
+  replacementId?: number;
+  initialName?: string;
   uuid?: string;
   onUploaded?: () => void;
   disabled?: boolean;
   onBusyChange?: (busy: boolean) => void;
 }
 
-export default function SetupWizard({ account, uuid: controlledUuid, onUploaded, disabled = false, onBusyChange }: SetupWizardProps) {
+export default function SetupWizard({ account, uuid: controlledUuid, onUploaded, disabled = false, onBusyChange, replacementId, initialName = "", quota }: SetupWizardProps) {
   const { t } = useTranslations();
   const id = useId();
   const [selectedUuid, setSelectedUuid] = useState(account.links[0]?.minecraft_uuid ?? "");
   const uuid = controlledUuid ?? (account.links.length === 1 ? account.links[0].minecraft_uuid : selectedUuid);
   const player = account.links.find(link => link.minecraft_uuid === uuid);
-  const firstStep = account.links.length === 1 && player ? 1 : 0;
+  const firstStep = replacementId !== undefined ? 2 : account.links.length === 1 && player ? 1 : 0;
   const [currentStep, setStep] = useState(0);
   const step = Math.max(firstStep, currentStep);
-  const [capeName, setCapeName] = useState("");
+  const [capeName, setCapeName] = useState(initialName);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [checking, setChecking] = useState(false);
@@ -127,9 +133,10 @@ export default function SetupWizard({ account, uuid: controlledUuid, onUploaded,
     const data = new FormData();
     data.set("minecraft_uuid", uuid);
     data.set("cape_name", capeName.trim());
+    data.set("is_private", String(isPrivate));
     data.set("cape", file);
     try {
-      actionValue(await uploadWebsiteCape(data));
+      actionValue(await uploadWebsiteCape(data, replacementId));
       if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
       previewUrl.current = null;
       setFile(null);
@@ -137,7 +144,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, onUploaded,
       setCapeName("");
       setStep(0);
       if (fileInput.current) fileInput.current.value = "";
-      toast.add({ title: t("Your cape was uploaded and verified with a blue badge."), type: "success" });
+      toast.add({ title: replacementId !== undefined ? t("Cape image replaced.") : t("Your cape was uploaded and verified with a blue badge."), type: "success" });
       onUploaded?.();
     } catch (error) { toast.add({ title: error instanceof Error ? error.message : t("The upload failed. Please try again."), type: "error" }); }
     finally { setBusy(false); onBusyChange?.(false); }
@@ -146,9 +153,13 @@ export default function SetupWizard({ account, uuid: controlledUuid, onUploaded,
   return <section aria-labelledby={`${id}-heading`} className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#101010]">
     <div className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
     <div className="relative border-b border-white/10 p-6 sm:p-8">
-      <h2 id={`${id}-heading`} className="font-nexa text-3xl text-white">{t("Upload your own cape!")}</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">{firstStep === 1 ? t("Name your cape, upload your design, and check the 3D preview.") : t("Choose your account, upload your cape, and check the 3D preview.")} {t("One upload per account per day.")}</p>
-      <ol aria-label={t("Upload steps")} className={cn("mt-7 grid gap-2 sm:gap-4", firstStep === 1 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}>
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="min-w-0"><h2 id={`${id}-heading`} className="font-nexa text-3xl text-white">{replacementId ? t("Replace cape image") : t("Upload your own cape!")}</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">{replacementId !== undefined ? t("Choose a new image and check the 3D preview.") : firstStep === 1 ? t("Name your cape, upload your design, and check the 3D preview.") : t("Choose your account, upload your cape, and check the 3D preview.")}</p>
+        </div>
+        {quota && <SubmissionQuotaBar quota={quota} />}
+      </div>
+      <ol aria-label={t("Upload steps")} className={cn("mt-7 grid gap-2 sm:gap-4", firstStep === 2 ? "grid-cols-2" : firstStep === 1 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4")}>
         {["Account", "Name", "Design", t("Upload")].slice(firstStep).map((label, index) => {
           const stepIndex = index + firstStep;
           return <li key={label} aria-current={step === stepIndex ? "step" : undefined} className={cn("flex items-center gap-2 rounded-xl px-2 py-3 text-xs font-medium transition-colors duration-200 motion-reduce:transition-none sm:px-4 sm:text-sm", step === stepIndex ? "bg-orange-500/10 text-orange-300" : "text-zinc-500")}>
@@ -213,6 +224,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, onUploaded,
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
           {step > firstStep ? <Button size="lg" type="button" disabled={locked} onClick={() => setStep(step - 1)} variant="outline"><ArrowLeft size={16} aria-hidden="true" />{t("Back")}</Button> : <span aria-hidden="true" />}
+          {step === 3 && replacementId === undefined && <label><input type="checkbox" checked={isPrivate} disabled={locked} onChange={event => setIsPrivate(event.target.checked)} /> {t("Publish privately")}</label>}
           {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !capeName.trim()) || (step === 2 && (!file || !preview || checking))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" disabled={locked || !player || !file || !preview || !capeName.trim()} onClick={() => void upload()}><Upload size={16} aria-hidden="true" />{busy ? t("Uploading…") : t("Upload cape")}</Button>}
         </div>
       </div>

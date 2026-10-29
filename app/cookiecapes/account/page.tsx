@@ -63,7 +63,8 @@ export default async function AccountPage() {
   try { account = await loadAccount(); }
   catch { return <AccountRecovery message={t("Your account could not be loaded. Please try again.")} />; }
 
-  return <main className="mx-auto max-w-6xl px-5 pb-10 pt-32 text-white sm:px-8">
+  // Proton Pass adds data-protonpass-form to this container before hydration.
+  return <main suppressHydrationWarning className="mx-auto max-w-6xl px-5 pb-10 pt-32 text-white sm:px-8">
     <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
       <div><h1 className="font-nexa text-3xl sm:text-4xl">{t("Hey,")} {account.user.name ?? session.user.name}!</h1><p className="mt-2 text-sm text-zinc-400">{t("Your accounts, your collection, your next cape.")}</p></div>
       <form action={async () => { "use server"; await signOut({ redirectTo: "/cookiecapes/account" }); }}><Button type="submit" variant="destructive" className="hover:border-red-400/30 hover:bg-red-400/10 hover:text-red-300"><LogOut size={16} aria-hidden="true" />{t("Sign out")}</Button></form>

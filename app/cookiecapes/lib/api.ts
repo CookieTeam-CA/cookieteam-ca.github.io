@@ -123,11 +123,18 @@ export async function getCapesSorted(
 export async function getPlayersSorted(
   page = 1, limit = 24, sortBy = "minecraft_name", order: Order = "asc", search = "", banned = false, capeId?: number,
 ): Promise<PlayersResponse> {
-  return await request(`${API_BASE_URL}/list_players_sorted`, {
+  const data = await request<PlayersResponse>(`${API_BASE_URL}/list_players_sorted`, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, banned, query: search || undefined, cape_id: capeId }),
     next: { revalidate: 0 },
   });
+  return { ...data, players: data.players.map(normalizePlayer) };
+}
+
+function normalizePlayer(player: Player): Player {
+  return player.current_cape_id === -1
+    ? { ...player, current_cape_id: null, cape_image_url: null, cape_name: null, last_edited: null }
+    : player;
 }
 
 export async function getRandomCapes(count = 3): Promise<Cape[]> {
@@ -146,21 +153,14 @@ export async function getCape(id: number): Promise<Cape | null> {
   }
 }
 
-export async function getPlayersByCape(capeId: number): Promise<Player[]> {
-  const players: Player[] = [];
-  for (let page = 1; ; page++) {
-    const data = await getPlayersSorted(page, 1000, "minecraft_name", "asc", "", false, capeId);
-    if (data.offset !== (page - 1) * 1000 || !Number.isSafeInteger(data.total_count) || data.total_count < 0) throw new Error("Incomplete player API result");
-    players.push(...data.players);
-    if (data.offset + data.players.length >= data.total_count) return players;
-    if (data.players.length !== 1000) throw new Error("Incomplete player API result");
-  }
+export async function getPlayersByCape(capeId: number, page = 1): Promise<PlayersResponse> {
+  return getPlayersSorted(page, 24, "minecraft_name", "asc", "", false, capeId);
 }
 
 export async function getPlayer(identifier: string): Promise<Player | null> {
   try {
     const data = await request<Player & { cape_id: number | null }>(`${API_BASE_URL}/get_player?identifier=${encodeURIComponent(identifier)}`, { next: { revalidate: 0 } });
-    return { ...data, current_cape_id: data.cape_id };
+    return normalizePlayer({ ...data, current_cape_id: data.cape_id });
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;
@@ -208,7 +208,15 @@ export interface PlayerHistory {
 
 export async function getPlayerHistory(username: string): Promise<PlayerHistory | null> {
   try {
-    return await request(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, { next: { revalidate: 0 } });
+    const data = await request<PlayerHistory>(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, { next: { revalidate: 0 } });
+    if (!data || typeof data.uuid !== "string" || typeof data.current_username !== "string"
+      || !(data.country === null || (typeof data.country === "string" && /^[A-Za-z]{2}$/.test(data.country)))
+      || !Array.isArray(data.username_history) || !data.username_history.every(entry => entry && typeof entry.username === "string" && (entry.changed_at === null || typeof entry.changed_at === "string"))
+      || !Array.isArray(data.skin_history) || !data.skin_history.every(entry => entry && typeof entry.hash === "string" && typeof entry.changed_at === "string" && typeof entry.slim === "boolean")
+      || !Array.isArray(data.socials) || !data.socials.every(entry => entry && typeof entry.type === "string" && typeof entry.name === "string" && typeof entry.verified === "boolean")) {
+      throw new CapeApiError(0, translations("en").t("The API is temporarily unavailable or returned an invalid response."));
+    }
+    return data;
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;

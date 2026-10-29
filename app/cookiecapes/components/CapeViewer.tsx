@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { hasElytraPixels } from "../lib/elytra";
 import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
+import { useElementActive } from "../../lib/visibility";
 
 interface CapeViewerProps {
     capeUrl?: string | null;
@@ -87,11 +88,9 @@ export default function CapeViewer({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
-    const visibleRef = useRef(false);
-    const texturesReadyRef = useRef(false);
+    const active = useElementActive(containerRef);
     const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
     const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
-    const [hasLoaded, setHasLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [viewerReady, setViewerReady] = useState(false);
     const [textureError, setTextureError] = useState(false);
@@ -101,34 +100,13 @@ export default function CapeViewer({
     useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation }; }, [capeUrl, skinUrl, minecraftName, width, height, animation]);
 
     useEffect(() => {
-        const sync = () => {
-            const active = visibleRef.current && !document.hidden;
-            if (active && !hasLoaded) { setHasLoaded(true); setIsLoading(true); }
-            if (viewerRef.current) viewerRef.current.renderPaused = !active || !texturesReadyRef.current;
-        };
-        const observer = new IntersectionObserver(
-            (entries) => {
-                visibleRef.current = entries[0].isIntersecting;
-                sync();
-            },
-            { rootMargin: "50px" }
-        );
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        document.addEventListener("visibilitychange", sync);
-        return () => { observer.disconnect(); document.removeEventListener("visibilitychange", sync); };
-    }, [hasLoaded]);
-
-    useEffect(() => {
-        if (!hasLoaded) return;
+        if (!active) return;
 
         const canvas = canvasRef.current;
         const container = containerRef.current;
         if (!canvas || !container) return;
         let cancelled = false;
+        setIsLoading(true);
 
         let viewer: SkinViewer | null = null;
         let resizeObserver: ResizeObserver | null = null;
@@ -216,16 +194,15 @@ export default function CapeViewer({
                 } catch { }
             }
             viewerRef.current = null;
-            texturesReadyRef.current = false;
+            setViewerReady(false);
             if (resizeObserver) resizeObserver.disconnect();
         };
-    }, [hasLoaded]);
+    }, [active]);
 
     useEffect(() => {
         const viewer = viewerRef.current;
         let cancelled = false;
         if (viewer) {
-            texturesReadyRef.current = false;
             viewer.renderPaused = true;
             setIsLoading(true);
             setTextureError(false);
@@ -240,17 +217,15 @@ export default function CapeViewer({
                     } catch { /* Keep cape view if the texture cannot be inspected. */ }
                 }
                 setEquipment({ url: capeUrl, available, elytra: false });
-                texturesReadyRef.current = true;
-                viewer.renderPaused = !visibleRef.current || document.hidden;
+                viewer.renderPaused = !active;
             }).catch(() => {
                 if (!cancelled && !viewer.disposed) setTextureError(true);
             }).finally(() => {
-                if (viewer.disposed) { viewer.resetSkin(); viewer.resetCape(); }
                 if (!cancelled) setIsLoading(false);
             });
         }
         return () => { cancelled = true; };
-    }, [viewerReady, capeUrl, skinUrl, minecraftName, retry, allowElytraSwitch]);
+    }, [viewerReady, active, capeUrl, skinUrl, minecraftName, retry, allowElytraSwitch]);
 
     useEffect(() => {
         if (viewerRef.current && width && height) {
@@ -288,7 +263,7 @@ export default function CapeViewer({
 
     return (
         <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center cursor-grab" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
-            {hasLoaded ? (
+            {active ? (
                 <>
                     <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading || textureError ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
                     {allowElytraSwitch && equipment.url === capeUrl && equipment.available && !isLoading && !textureError && (

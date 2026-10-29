@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CookieCapes account workflows · v0</title>
+<style>
+@font-face { font-family: Nexa; src: url('../../public/fonts/Nexa-Heavy.woff2') format('woff2'); font-display: swap; }
+:root { color-scheme: dark; --cookie-orange: #ff7b00; --radius: 16px; --background: #09090b; --foreground: #fafafa; --card: #18181b; --secondary: #27272a; --muted-foreground: #a1a1aa; --border: #ffffff1a; --destructive: #fca5a5; --font-sans: "Geist", Arial, sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { color: var(--foreground); font: 16px/1.5 var(--font-sans); }
+button, input, select { font: inherit; }
+button, label, select { cursor: pointer; }
+button, select { min-height: 44px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; background: var(--secondary); color: var(--foreground); }
+button:hover { border-color: var(--cookie-orange); }
+button:active { transform: translateY(1px); }
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--cookie-orange); outline-offset: 4px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: var(--cookie-orange); color: #09090b; border-color: transparent; font-weight: 700; }
+button.quiet { background: transparent; }
+h1, h2, h3, p { margin: 0; text-wrap: pretty; }
+h1 { font-family: Nexa, var(--font-sans); font-size: clamp(26px, 5vw, 36px); line-height: 1.15; letter-spacing: -.035em; font-weight: 900; }
+h2 { font-size: 22px; line-height: 1.3; letter-spacing: -.025em; }
+h3 { font-size: 16px; }
+p { color: var(--muted-foreground); }
+small, .small { font-size: 13px; }
+[hidden] { display: none !important; }
+.shell { display: grid; gap: 24px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+.brand img { width: 28px; height: 28px; object-fit: contain; }
+.brand span:last-child { margin-left: auto; color: var(--muted-foreground); font-size: 12px; font-weight: 400; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.tabs [aria-pressed="true"] { border-color: var(--cookie-orange); color: var(--cookie-orange); }
+.intro { display: grid; gap: 12px; }
+.eyebrow { color: var(--cookie-orange); text-transform: uppercase; font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+.stack { display: grid; gap: 24px; }
+.row { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.notice { border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-size: 14px; }
+.notice strong { color: var(--foreground); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.cape { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.cape:has(input:checked) { border-color: color-mix(in srgb, var(--cookie-orange) 55%, transparent); }
+.preview { min-height: 156px; display: grid; align-content: center; justify-items: center; gap: 4px; background: var(--secondary); color: var(--muted-foreground); font-size: 13px; }
+.preview small { font-size: 11px; }
+.cape-body { display: grid; gap: 16px; padding: 16px; }
+.cape label { display: flex; gap: 10px; align-items: center; min-height: 44px; font-size: 14px; }
+input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cookie-orange); flex: 0 0 auto; }
+.state { font-size: 12px; color: var(--muted-foreground); }
+.state.hide { color: var(--destructive); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary { border: 1px solid var(--border); background: var(--card); border-radius: 16px; padding: 16px; box-shadow: 0 8px 24px #0003; }
+.summary strong { display: block; }
+.summary small { color: var(--muted-foreground); }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.steps li { display: grid; gap: 8px; font-size: 14px; }
+.step-number { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); font-size: 12px; color: var(--cookie-orange); }
+.mcid { display: inline-flex; justify-content: center; align-items: center; gap: 12px; }
+.mcid img { width: 24px; height: 24px; }
+.profile { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; min-height: 88px; }
+.avatar { width: 44px; height: 44px; border: 1px dashed var(--border); display: grid; place-items: center; color: var(--muted-foreground); font-size: 10px; }
+.profile-copy { flex: 1; }
+.profile-copy small { color: var(--muted-foreground); display: block; }
+.note { font-size: 12px; color: var(--muted-foreground); }
+dialog { width: min(480px, calc(100% - 32px)); padding: 24px; border: 1px solid var(--border); border-radius: 16px; color: var(--foreground); background: var(--card); }
+dialog::backdrop { background: #000a; }
+.dialog-content { display: grid; gap: 20px; }
+.tweaks { justify-self: end; z-index: 3; }
+.tweaks-panel { padding: 16px; display: grid; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 24px #0003; margin-bottom: 8px; }
+.tweaks-panel label { display: grid; gap: 8px; font-size: 13px; }
+.list .grid { grid-template-columns: 1fr; }
+.list .cape { display: grid; grid-template-columns: 120px 1fr; }
+.list .preview { min-height: 100px; }
+.compact .preview { min-height: 80px; }
+.compact .cape-body { padding: 12px; gap: 4px; }
+@media (max-width: 520px) { .grid { grid-template-columns: 1fr; } .cape { display: grid; grid-template-columns: 96px 1fr; } .preview { min-height: 120px; } .panel { padding: 16px; } .steps { gap: 12px; } .steps li { font-size: 12px; } .summary button { width: 100%; } .tweaks { position: static; justify-self: end; } }
+@media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+</style>
+</head>
+<body>
+<main class="shell" id="prototype">
+  <div class="brand"><img src="../../public/minilogo.png" alt="CookieTeam"><span>CookieCapes</span><span>Account / v0</span></div>
+  <nav class="tabs" aria-label="Workflow preview">
+    <button type="button" data-view="review" aria-pressed="true">Previous uploads</button>
+    <button type="button" data-view="linking" aria-pressed="false">Minecraft linking</button>
+  </nav>
+  <section id="review" class="stack" aria-labelledby="review-title">
+    <header class="intro"><span class="eyebrow">Your collection · Previous uploads</span><h1 id="review-title">Choose what stays.</h1><p>Keep the capes you want to claim and verify. Everything starts selected.</p></header>
+    <div class="notice"><strong>Your selection is a draft.</strong> Nothing changes until you confirm. Capes you hide can be restored for 30 days before permanent deletion.</div>
+    <div class="row"><h2>Review previous uploads</h2><button type="button" class="quiet" id="keep-all">Keep all</button></div>
+    <p class="note">Layout placeholders below represent eligible capes, not your account data. Production uses your existing interactive 3D previews.</p>
+    <div class="grid" id="cape-grid">
+      <article class="cape"><div class="preview">[3D preview]<small>Drag to rotate</small></div><div class="cape-body"><div><h3>[Cape name]</h3><span class="state">Will be kept</span></div><label><input type="checkbox" class="keep" checked aria-label="Keep first placeholder cape">Keep this cape</label></div></article>
+      <article class="cape"><div class="preview">[3D preview]<small>Drag to rotate</small></div><div class="cape-body"><div><h3>[Cape name]</h3><span class="state">Will be kept</span></div><label><input type="checkbox" class="keep" checked aria-label="Keep second placeholder cape">Keep this cape</label></div></article>
+      <article class="cape"><div class="preview">[3D preview]<small>Drag to rotate</small></div><div class="cape-body"><div><h3>[Cape name]</h3><span class="state">Will be kept</span></div><label><input type="checkbox" class="keep" checked aria-label="Keep third placeholder cape">Keep this cape</label></div></article>
+    </div>
+    <div class="summary row"><div aria-live="polite"><strong id="counts">3 to keep · 0 to hide</strong><small>Kept capes receive an identity verification badge.</small></div><button type="button" class="primary" id="review-selection">Review selection</button></div>
+    <p class="note">Verification confirms your Minecraft identity. It does not verify copyright ownership of a design.</p>
+  </section>
+  <section id="linking" class="stack" aria-labelledby="link-title" hidden>
+    <header class="intro"><span class="eyebrow">Your Minecraft identity</span><h1 id="link-title">Connect your player.</h1><p>Link Minecraft with MC-ID to manage that player’s cape collection.</p></header>
+    <div class="panel stack" id="handoff">
+      <h2>A short trip to MC-ID.</h2>
+      <ol class="steps"><li><span class="step-number">1</span><strong>Verify at MC-ID</strong><p>Continue to the external service.</p></li><li><span class="step-number">2</span><strong>Choose accounts</strong><p>Select which verified players to link.</p></li><li><span class="step-number">3</span><strong>Back to your capes</strong><p>Return here to manage your collection.</p></li></ol>
+      <div><button type="button" class="mcid" id="mcid-continue"><img src="../../public/mc-id.svg" alt="">Link with MC-ID <span aria-hidden="true">↗</span></button><p class="small" style="margin-top:12px">You’ll leave CookieCapes and return to choose your accounts.</p></div>
+    </div>
+    <div class="panel stack" id="profiles" hidden>
+      <div class="intro"><span class="eyebrow">Step 2 of 3 · Back from MC-ID</span><h2>Select Minecraft accounts</h2><p>Choose which verified accounts to link to CookieCapes.</p></div>
+      <p class="note">Profile placeholders — production shows the names and avatars returned by MC-ID.</p>
+      <label class="profile"><span class="avatar" aria-hidden="true">[avatar]</span><span class="profile-copy"><strong>[Minecraft name]</strong><small>Verified by MC-ID</small></span><input type="checkbox" class="profile-check" aria-label="Link first placeholder account"></label>
+      <label class="profile"><span class="avatar" aria-hidden="true">[avatar]</span><span class="profile-copy"><strong>[Minecraft name]</strong><small>Verified by MC-ID</small></span><input type="checkbox" class="profile-check" aria-label="Link second placeholder account"></label>
+      <div class="row"><span class="small" id="profile-count" aria-live="polite">No accounts selected</span><button type="button" class="primary" id="link-selected" disabled>Link selected accounts</button></div>
+      <button type="button" class="quiet" id="back-to-handoff">Back to account</button>
+    </div>
+    <div class="panel stack" id="no-profiles" hidden><h2>No verified accounts returned</h2><p>MC-ID did not return any verified Minecraft accounts. Try linking again, or return to your account.</p><div class="toolbar"><button type="button" class="primary" id="retry">Try again</button><button type="button" class="quiet" id="empty-back">Back to account</button></div></div>
+    <p class="note">Prototype only. No external sign-in or account changes occur.</p>
+  </section>
+  <aside class="tweaks" aria-label="Prototype controls"><div class="tweaks-panel" id="tweaks-panel" hidden><strong>Tweaks</strong><label>Review layout<select id="layout"><option value="cards">Preview cards</option><option value="list">Compact rows</option><option value="compact">Small previews</option></select></label><label>MC-ID result<select id="result"><option value="profiles">Verified accounts</option><option value="empty">No accounts returned</option></select></label></div><button type="button" id="toggle-tweaks" aria-expanded="false" aria-controls="tweaks-panel">Tweaks</button></aside>
+</main>
+<dialog id="confirmation" aria-labelledby="confirm-title" aria-describedby="confirm-description"><div class="dialog-content"><h2 id="confirm-title">Confirm your selection</h2><p id="confirm-description"></p><div class="notice">Hidden capes can be restored for 30 days. After that, they are permanently deleted.</div><div class="toolbar"><button type="button" class="quiet" id="edit-selection" autofocus>Back to selection</button><button type="button" class="primary" id="confirm">Confirm selection</button></div><p class="note">v0 preview: confirming closes this dialog without saving.</p></div></dialog>
+<script>
+const byId = id => document.getElementById(id);
+const keepInputs = [...document.querySelectorAll('.keep')];
+function updateSelection() {
+  const kept = keepInputs.filter(input => input.checked).length;
+  byId('counts').textContent = `${kept} to keep · ${keepInputs.length - kept} to hide`;
+  keepInputs.forEach(input => {
+    const status = input.closest('.cape').querySelector('.state');
+    status.textContent = input.checked ? 'Will be kept' : 'Will be hidden · restorable for 30 days';
+    status.classList.toggle('hide', !input.checked);
+  });
+}
+keepInputs.forEach(input => input.addEventListener('change', updateSelection));
+byId('keep-all').onclick = () => { keepInputs.forEach(input => input.checked = true); updateSelection(); };
+document.querySelectorAll('[data-view]').forEach(button => button.onclick = () => {
+  document.querySelectorAll('[data-view]').forEach(tab => { const active = tab === button; tab.setAttribute('aria-pressed', String(active)); byId(tab.dataset.view).hidden = !active; });
+});
+byId('review-selection').onclick = () => {
+  const kept = keepInputs.filter(input => input.checked).length;
+  byId('confirm-description').textContent = `Keep ${kept} capes and hide ${keepInputs.length - kept}? Your changes apply only after confirmation.`;
+  byId('confirmation').showModal();
+};
+byId('edit-selection').onclick = byId('confirm').onclick = () => byId('confirmation').close();
+function showHandoff() { byId('handoff').hidden = false; byId('profiles').hidden = true; byId('no-profiles').hidden = true; }
+byId('mcid-continue').onclick = () => { byId('handoff').hidden = true; byId('profiles').hidden = byId('result').value === 'empty'; byId('no-profiles').hidden = byId('result').value !== 'empty'; };
+byId('back-to-handoff').onclick = byId('retry').onclick = byId('empty-back').onclick = showHandoff;
+document.querySelectorAll('.profile-check').forEach(input => input.onchange = () => {
+  const count = document.querySelectorAll('.profile-check:checked').length;
+  byId('profile-count').textContent = count ? `${count} selected` : 'No accounts selected';
+  byId('link-selected').disabled = !count;
+});
+byId('link-selected').onclick = showHandoff;
+byId('toggle-tweaks').onclick = () => { const panel = byId('tweaks-panel'); panel.hidden = !panel.hidden; byId('toggle-tweaks').setAttribute('aria-expanded', String(!panel.hidden)); };
+byId('layout').onchange = event => { byId('prototype').className = 'shell ' + event.target.value; };
+byId('result').onchange = showHandoff;
+</script>
+</body>
+</html>

@@ -5,8 +5,10 @@ export interface AccountInfo {
   links: { minecraft_uuid: string; minecraft_name: string }[];
   mcid_enabled: boolean;
 }
-export interface OwnedCape extends Omit<Cape, "count" | "cape_image_url"> { hidden_at: string | null; delete_after: string | null }
+export interface OwnedCape extends Omit<Cape, "count" | "cape_image_url"> { is_private: boolean; hidden_at: string | null; delete_after: string | null }
+export interface SubmissionQuota { limit: number; used: number; pending: number; remaining: number; resets_at: string }
 export interface OwnedCapes {
+  quota?: SubmissionQuota;
   capes: OwnedCape[];
   review: { id: string; snapshot: { cape_id: number; revision: number }[] } | null;
 }
