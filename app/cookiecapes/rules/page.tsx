@@ -46,7 +46,7 @@ export default async function CookieCapesRules() {
                             <li>{t("Our moderators may remove capes at any time without warning.")}</li>
                             <li>{t("Users who repeatedly break the rules may be banned temporarily or permanently.")}</li>
                             <li>{t("Broken or inappropriate capes will be removed or modified.")}</li>
-                            <li><strong>{t("Takedown request:")}</strong> {t("If you see capes that break our rules or use your artwork,")} <a href="mailto:support@cookieattack.de" className="text-orange-500 hover:underline">{t("contact us")}</a>{t(". We will respond promptly when evidence is provided.")}</li>
+                            <li><strong>{t("Takedown request:")}</strong> {t("If you see capes that break our rules or use your artwork,")} <a href="mailto:support@cookieattack.de" className="text-orange-500 underline">{t("contact us")}</a>{t(". We will respond promptly when evidence is provided.")}</li>
                         </ul>
                     </section>
 
@@ -63,7 +63,7 @@ export default async function CookieCapesRules() {
                         <h2 className="text-2xl font-bold text-white border-l-4 border-green-500 pl-4">{t("Privacy policy")}</h2>
                         <ul className="list-disc pl-6 space-y-2">
                             <li>{locale === "de" ? "Für Anmeldung, Minecraft-Verknüpfung und Cape-Verwaltung verarbeiten wir Account- und Profildaten. Externe Dienste liefern unter anderem Skins und Profilverläufe." : "We process account and profile data for sign-in, Minecraft linking, and cape management. External services provide skins and profile history."}</li>
-                            <li>{locale === "de" ? "Die Website nutzt Betterlytics für Nutzungsstatistiken und Web Vitals. Einzelheiten zu Daten, Cookies und deinen Rechten findest du in unserer " : "The website uses Betterlytics for usage statistics and web vitals. Read about data, cookies, and your rights in our "}<a className="text-orange-400 hover:underline" href="/privacy-policy">{t("Privacy policy")}</a>.</li>
+                            <li>{locale === "de" ? "Die Website nutzt Betterlytics für Nutzungsstatistiken und Web Vitals. Einzelheiten zu Daten, Cookies und deinen Rechten findest du in unserer " : "The website uses Betterlytics for usage statistics and web vitals. Read about data, cookies, and your rights in our "}<a className="text-orange-400 underline" href="/privacy-policy">{t("Privacy policy")}</a>.</li>
                         </ul>
                     </section>
                 </div>

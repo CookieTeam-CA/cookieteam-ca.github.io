@@ -50,7 +50,7 @@ export default async function AccountPage() {
               {t("Sign in with Discord")} <ArrowRight size={18} aria-hidden="true" />
             </Button>
           </form>
-          <p className="mt-4 text-xs leading-relaxed text-zinc-500">{t("Discord for sign-in. MC-ID for your Minecraft identity.")}</p>
+          <p className="mt-4 text-xs leading-relaxed text-zinc-400">{t("Discord for sign-in. MC-ID for your Minecraft identity.")}</p>
         </div>
         <div className="relative min-h-80 border-t border-white/5 bg-[radial-gradient(ellipse_at_center,#ff7b0017,transparent_70%)] lg:min-h-130 lg:border-l lg:border-t-0">
           <Suspense fallback={<AccountCapePreview capes={[]} />}><RandomCapePreview /></Suspense>

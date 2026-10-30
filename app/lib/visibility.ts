@@ -13,6 +13,17 @@ export function usePageVisible() {
   return useSyncExternalStore(subscribe, visible, serverVisible);
 }
 
+const motionQuery = "(prefers-reduced-motion: reduce)";
+const subscribeMotion = (notify: () => void) => {
+  const media = matchMedia(motionQuery);
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+};
+const reducedMotion = () => matchMedia(motionQuery).matches;
+export function useReducedMotion() {
+  return useSyncExternalStore(subscribeMotion, reducedMotion, serverVisible);
+}
+
 export function useElementActive(ref: RefObject<HTMLElement | null>, rootMargin = "0px") {
   const pageVisible = usePageVisible();
   const [inView, setInView] = useState(false);

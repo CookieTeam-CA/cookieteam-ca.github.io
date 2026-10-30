@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { hasElytraPixels } from "../lib/elytra";
 import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
-import { useElementActive } from "../../lib/visibility";
+import { useElementActive, useReducedMotion } from "../../lib/visibility";
 
 interface CapeViewerProps {
     capeUrl?: string | null;
@@ -84,11 +84,14 @@ export default function CapeViewer({
     animation = "idle",
     allowElytraSwitch = false
 }: CapeViewerProps) {
-  const { t } = useTranslations();
+    const { t } = useTranslations();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
     const active = useElementActive(containerRef);
+    const reducedMotion = useReducedMotion();
+    const [motionPaused, setMotionPaused] = useState(false);
+    const motionEnabled = !reducedMotion && !motionPaused;
     const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
     const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -119,7 +122,7 @@ export default function CapeViewer({
                 const skinview3d = await import("skinview3d");
                 if (cancelled) return;
 
-                const { width, height, animation } = optionsRef.current;
+                const { width, height } = optionsRef.current;
                 const initialWidth = width || container.clientWidth;
                 const initialHeight = height || container.clientHeight;
 
@@ -132,6 +135,7 @@ export default function CapeViewer({
                     pixelRatio: dpr,
                     renderPaused: true,
                 });
+                viewer.fxaaPass.material.fragmentShader = viewer.fxaaPass.material.fragmentShader.replaceAll("-100.0", "-16.0");
                 setWebglSupported(true);
 
                 viewerRef.current = viewer;
@@ -143,13 +147,14 @@ export default function CapeViewer({
                     viewer.controls.enableRotate = true;
                 }
 
-                setAnimation(viewer, skinview3d, animation);
+                setAnimation(viewer, skinview3d, "none");
 
                 viewer.playerObject.rotation.y = Math.PI;
-                viewer.autoRotate = true;
+                viewer.autoRotate = false;
                 viewer.autoRotateSpeed = 0.5;
 
                 stopRotation = () => {
+                    setMotionPaused(true);
                     if (viewer) {
                         viewer.autoRotate = false;
                     }
@@ -239,12 +244,13 @@ export default function CapeViewer({
         if (viewer) {
             import("skinview3d").then(skinview3d => {
                 if (!cancelled && !viewer.disposed) {
-                    setAnimation(viewer, skinview3d, animation);
+                    setAnimation(viewer, skinview3d, motionEnabled ? animation : "none");
+                    viewer.autoRotate = motionEnabled;
                 }
             });
         }
         return () => { cancelled = true; };
-    }, [animation]);
+    }, [animation, motionEnabled, viewerReady]);
 
 
     if (webglSupported === false) {

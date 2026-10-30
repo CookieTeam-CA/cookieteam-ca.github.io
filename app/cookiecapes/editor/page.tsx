@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
     ArrowLeft, Download, Eraser, Image as ImageIcon,
     Pencil, RotateCcw, RotateCw, Move, Hand, ZoomIn, ZoomOut, Maximize,
-    Trash2, Eye, EyeOff, Plus, PaintBucket
+    Trash2, Eye, EyeOff, Plus, PaintBucket, SlidersHorizontal, X
 } from "lucide-react";
 import { Stage, Layer, Image as KonvaImage, Line, Transformer } from "react-konva/lib/ReactKonvaCore";
 import "konva/lib/shapes/Image";
@@ -14,39 +14,12 @@ import "konva/lib/shapes/Line";
 import "konva/lib/shapes/Transformer";
 import useImage from "use-image";
 import type Konva from "konva";
+import { useTranslations } from "../i18n/client";
+import type { MessageKey } from "../i18n/messages";
 import { clampZoom } from "./viewport";
 
 type Tool = "brush" | "eraser" | "move" | "fill" | "hand";
-type LayerType = "template" | "drawing" | "image";
-
-interface EditorLayer {
-    id: string;
-    type: LayerType;
-    name: string;
-    visible: boolean;
-    locked: boolean;
-    opacity: number;
-
-    imageSrc?: string;
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-    rotation?: number;
-    scaleX?: number;
-    scaleY?: number;
-
-    lines?: LineData[];
-    drawingData?: ImageData | null;
-    fillCanvasDataURL?: string | null;
-}
-
-interface LineData {
-    tool: "brush" | "eraser";
-    points: number[];
-    color: string;
-    strokeWidth: number;
-}
+import { readEditorDraft, EDITOR_DRAFT_KEY, type EditorLayer, type LineData } from "./draft";
 
 interface HistoryState {
     layers: EditorLayer[];
@@ -180,13 +153,15 @@ const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: {
 };
 
 export default function CapeEditorPage() {
+    const { t } = useTranslations();
+    const layerName = (layer: EditorLayer) => layer.type === "template" ? t("Template") : layer.type === "drawing" ? t("Drawing {number}", { number: layer.name.match(/\d+$/)?.[0] ?? 1 }) : layer.name;
     const [layers, setLayers] = useState<EditorLayer[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
     const [activeTemplate, setActiveTemplate] = useState<"standard" | "elytra">("standard");
 
     const [tool, setTool] = useState<Tool>("brush");
-    const [uploadError, setUploadError] = useState("");
+    const [uploadError, setUploadError] = useState<MessageKey | "">("");
     const [color, setColor] = useState("#ffffff");
     const [brushSize, setBrushSize] = useState(1);
     const [zoom, setZoom] = useState(1);
@@ -197,14 +172,65 @@ export default function CapeEditorPage() {
 
     const [{ states: history, step: historyStep }, setHistory] = useState<{ states: HistoryState[]; step: number }>({ states: [], step: -1 });
     const initialized = useRef(false);
-    const [templateError, setTemplateError] = useState("");
+    const [draftReady, setDraftReady] = useState(false);
+    const [draftError, setDraftError] = useState<MessageKey | "">("");
+    const [draftLoadError, setDraftLoadError] = useState<MessageKey | "">("");
+    const [templateError, setTemplateError] = useState<MessageKey | "">("");
 
     const stageRef = useRef<Konva.Stage>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const isDrawing = useRef(false);
+    const propertiesDialog = useRef<HTMLDialogElement>(null);
+
+    /* eslint-disable react-hooks/set-state-in-effect -- Restore external tab storage after hydration and report storage I/O failures. */
+    useEffect(() => {
+        try {
+            const raw = sessionStorage.getItem(EDITOR_DRAFT_KEY);
+            if (raw) {
+                const draft = readEditorDraft(raw);
+                setLayers(draft.layers);
+                setActiveTemplate(draft.activeTemplate);
+                setActiveLayerId(draft.activeLayerId);
+                const activeLayer = draft.layers.find(layer => layer.id === draft.activeLayerId);
+                setTool(activeLayer?.type === "image" ? "move" : "brush");
+                setSelectedId(activeLayer?.type === "image" ? activeLayer.id : null);
+                setHistory({ states: [{ layers: draft.layers }], step: 0 });
+                initialized.current = true;
+            }
+        } catch {
+            setDraftLoadError("The saved draft could not be restored.");
+        }
+        setDraftReady(true);
+    }, []);
 
     useEffect(() => {
+        const current = history[historyStep];
+        if (!draftReady || !current) return;
+        try {
+            sessionStorage.setItem(EDITOR_DRAFT_KEY, JSON.stringify({
+                activeTemplate, activeLayerId, layers: current.layers.filter(layer => layer.type !== "template"),
+            }));
+            setDraftError("");
+        } catch {
+            setDraftError("The draft could not be saved. Export your cape as PNG before leaving.");
+        }
+    }, [draftReady, history, historyStep, activeTemplate, activeLayerId]);
+    /* eslint-enable react-hooks/set-state-in-effect */
+
+    useEffect(() => {
+        const warn = (event: BeforeUnloadEvent) => {
+            if (draftError || isDrawing.current) { event.preventDefault(); event.returnValue = ""; }
+        };
+        const desktop = matchMedia("(min-width: 640px)");
+        const closeProperties = () => { if (desktop.matches) propertiesDialog.current?.close(); };
+        window.addEventListener("beforeunload", warn);
+        desktop.addEventListener("change", closeProperties);
+        return () => { window.removeEventListener("beforeunload", warn); desktop.removeEventListener("change", closeProperties); };
+    }, [draftError]);
+
+    useEffect(() => {
+        if (!draftReady) return;
         let cancelled = false;
         const init = async () => {
             const templateSrc = TEMPLATES[activeTemplate];
@@ -212,7 +238,7 @@ export default function CapeEditorPage() {
             img.crossOrigin = "anonymous";
             await new Promise<void>((resolve, reject) => {
                 img.onload = () => resolve();
-                img.onerror = () => reject(new Error("Die Vorlage konnte nicht geladen werden."));
+                img.onerror = () => reject(new Error("The template could not be loaded."));
                 img.src = templateSrc;
             });
             if (cancelled) return;
@@ -247,7 +273,8 @@ export default function CapeEditorPage() {
             const initialLayers = [templateId, drawId]
                 .map(id => id === templateId ? newLayer : drawLayer);
 
-            setLayers(current => current.length ? current.map(layer => layer.type === "template" ? { ...newLayer, visible: layer.visible } : layer) : initialLayers);
+            const alreadyInitialized = initialized.current;
+            setLayers(current => alreadyInitialized ? [{ ...newLayer, visible: current.find(layer => layer.type === "template")?.visible ?? true }, ...current.filter(layer => layer.type !== "template")] : initialLayers);
             if (!initialized.current) {
                 initialized.current = true;
                 setActiveLayerId(drawId);
@@ -255,9 +282,9 @@ export default function CapeEditorPage() {
             }
         };
 
-        void init().catch(error => { if (!cancelled) setTemplateError(error.message); });
+        void init().catch(() => { if (!cancelled) setTemplateError("The template could not be loaded."); });
         return () => { cancelled = true; };
-    }, [activeTemplate]);
+    }, [activeTemplate, draftReady]);
 
     const addToHistory = (newLayers: EditorLayer[]) => {
         const newState = { layers: structuredClone(newLayers) };
@@ -433,16 +460,16 @@ export default function CapeEditorPage() {
         if (!file) return;
         setUploadError("");
         if (!file.type.startsWith("image/")) {
-            setUploadError("Bitte wähle eine Bilddatei aus.");
+            setUploadError("Please choose an image file.");
             return;
         }
 
         const reader = new FileReader();
-        reader.onerror = () => setUploadError("Das Bild konnte nicht gelesen werden.");
+        reader.onerror = () => setUploadError("The image could not be read.");
         reader.onload = (event) => {
             const src = event.target?.result as string;
             const img = new Image();
-            img.onerror = () => setUploadError("Dieses Bildformat konnte nicht geöffnet werden.");
+            img.onerror = () => setUploadError("This image format could not be opened.");
             img.onload = () => {
                 const id = `layer-img-${Date.now()}`;
 
@@ -523,25 +550,82 @@ export default function CapeEditorPage() {
         if (selectedLayer) updateLayers(layers.map(layer => layer.id === selectedLayer.id ? { ...layer, ...changes } : layer));
     };
 
+    useEffect(() => {
+        const viewport = containerRef.current;
+        if (!viewport) return;
+        const fit = () => {
+            setPan({ x: 0, y: 0 });
+            setZoom(clampZoom(Math.min((viewport.clientWidth - 32) / stageWidth, (viewport.clientHeight - 32) / stageHeight)));
+        };
+        const observer = new ResizeObserver(fit);
+        observer.observe(viewport);
+        return () => observer.disconnect();
+    }, [stageWidth, stageHeight]);
+
+    useEffect(() => {
+        const viewport = containerRef.current;
+        if (!viewport) return;
+        const onWheel = (event: WheelEvent) => {
+            event.preventDefault();
+            setZoom(current => clampZoom(current * Math.exp(-event.deltaY * 0.002)));
+        };
+        viewport.addEventListener("wheel", onWheel, { passive: false });
+        return () => viewport.removeEventListener("wheel", onWheel);
+    }, []);
+
+    const properties = <>
+                        <section className="flex flex-col gap-3 rounded-xl border border-white/10 p-3" aria-label={t("View")}>
+                            <div className="flex flex-wrap gap-2">
+                                <Button type="button" variant="outline" size="icon" aria-label={t("Zoom out")} title={t("Zoom out")} onClick={() => changeZoom(zoom / 1.25)}><ZoomOut /></Button>
+                                <Button type="button" variant="outline" size="icon" aria-label={t("Zoom in")} title={t("Zoom in")} onClick={() => changeZoom(zoom * 1.25)}><ZoomIn /></Button>
+                            </div>
+                            <label className="flex flex-col gap-2 text-xs text-zinc-400">Zoom: {Math.round(zoom * 100)} %<input aria-label="Zoom" type="range" min="0.25" max="5" step="0.01" value={zoom} onChange={e => changeZoom(Number(e.target.value))} className="w-full accent-orange-500" /></label>
+                            <Button type="button" variant="outline" onClick={() => { setPan({ x: 0, y: 0 }); const viewport = containerRef.current; if (viewport) changeZoom(Math.min((viewport.clientWidth - 48) / stageWidth, (viewport.clientHeight - 48) / stageHeight)); }}><Maximize /> {t("Fit to view")}</Button>
+                        </section>
+                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4">
+                            <h2 className="mb-4 text-sm font-semibold">{tool === "move" ? t("Image position") : t("Drawing tool")}</h2>
+                            {tool !== "move" ? <div className="flex flex-col gap-4">
+                                <div><span className="mb-2 block text-xs text-zinc-400">{t("Color")}</span><div className="grid grid-cols-4 gap-2">{COMMON_COLORS.map(c => <Button type="button" variant="outline" size="icon-sm" key={c} onClick={() => setColor(c)} aria-label={t("Color {color}", { color: c })} aria-pressed={color === c} className={`h-12 w-full ${color === c ? "ring-2 ring-white" : ""}`} style={{ backgroundColor: c }} />)}</div></div>
+                                <label className="flex items-center justify-between gap-3 text-sm text-zinc-400">{t("Custom color")} <input type="color" value={color} onChange={e => setColor(e.target.value)} className="h-9 w-16 cursor-pointer rounded" /></label>
+                                <label className="flex flex-col gap-2 text-sm text-zinc-400">{t("Size")}: {brushSize} px<input type="range" min="1" max="10" value={brushSize} onChange={e => setBrushSize(Number(e.target.value))} className="accent-orange-500" /></label>
+                                {!layers.some(l => l.id === activeLayerId && l.type === "drawing" && l.visible) && <p className="text-xs text-amber-300">{t("Select a visible drawing layer to paint.")}</p>}
+                            </div> : selectedLayer ? <div className="flex flex-col gap-3">
+                                <p className="truncate text-sm text-zinc-400">{layerName(selectedLayer)}</p>
+                                <div className="grid grid-cols-2 gap-3">{([['x', 'X'], ['y', 'Y'], ['width', t("Width")], ['rotation', t("Rotation")]] as const).map(([key, label]) => <label key={key} className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">{label}<input type="number" value={Math.round((selectedLayer[key] ?? 0) * 100) / 100} onChange={e => { const value = e.target.valueAsNumber; if (!Number.isFinite(value) || (key === 'width' && value <= 0)) return; changeImage(key === 'width' ? { width: value, height: value * (selectedLayer.height ?? 1) / (selectedLayer.width ?? 1) } : { [key]: value }); }} className="w-full rounded-md border border-white/10 bg-black px-2 py-2 text-sm text-white" /></label>)}</div>
+                                <p className="text-xs text-zinc-400">{t("Width preserves the aspect ratio. Drag the corners to resize.")}</p>
+                            </div> : <p className="text-sm text-zinc-400">{t("Upload an image or select an image layer.")}</p>}
+                        </section>
+                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4">
+                            <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold">{t("Layers")}</h2><Button type="button" variant="outline" size="icon-sm" aria-label={t("Add drawing layer")} title={t("Add drawing layer")} onClick={() => { const id = `layer-drawing-${Date.now()}`; updateLayers([...layers, { id, type: "drawing", name: `Zeichnung ${layers.filter(l => l.type === "drawing").length + 1}`, visible: true, locked: false, opacity: 1, lines: [] }]); setTool("brush"); setSelectedId(null); setActiveLayerId(id); }}><Plus /></Button></div>
+                            <div className="flex max-h-64 flex-col gap-1 overflow-auto">{[...layers].reverse().map(layer => <div key={layer.id} className={`flex items-center gap-1 rounded-lg border p-1 ${activeLayerId === layer.id ? "border-orange-500/50 bg-zinc-800" : "border-transparent"}`}>
+                                <Button type="button" variant="ghost" size="icon-sm" aria-label={t(layer.visible ? "Hide layer {name}" : "Show layer {name}", { name: layerName(layer) })} aria-pressed={layer.visible} onClick={() => { updateLayers(layers.map(l => l.id === layer.id ? { ...l, visible: !l.visible } : l)); if (layer.visible && selectedId === layer.id) setSelectedId(null); }}>{layer.visible ? <Eye /> : <EyeOff />}</Button>
+                                <Button type="button" variant="ghost" size="sm" aria-pressed={activeLayerId === layer.id} onClick={() => { setActiveLayerId(layer.id); if (layer.type === "image") { setTool("move"); setSelectedId(layer.visible ? layer.id : null); } else if (layer.type === "drawing") { setTool("brush"); setSelectedId(null); } }} className="min-w-0 flex-1 justify-start"><span className="truncate">{layerName(layer)}</span></Button>
+                                {!layer.locked && <Button type="button" variant="ghost" size="icon-sm" aria-label={`Ebene ${layerName(layer)} löschen`} onClick={() => { updateLayers(layers.filter(l => l.id !== layer.id)); if (selectedId === layer.id) setSelectedId(null); if (activeLayerId === layer.id) setActiveLayerId(null); }}><Trash2 /></Button>}
+                            </div>)}</div>
+                        </section>
+                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4"><h2 className="mb-3 text-sm font-semibold">{t("Template")}</h2><div role="group" aria-label={t("Template")} className="grid grid-cols-2 gap-2"><Button type="button" variant={activeTemplate === "standard" ? "default" : "outline"} aria-pressed={activeTemplate === "standard"} onClick={() => setActiveTemplate("standard")}>Standard</Button><Button type="button" variant={activeTemplate === "elytra" ? "default" : "outline"} aria-pressed={activeTemplate === "elytra"} onClick={() => setActiveTemplate("elytra")}>Elytra</Button></div><p className="mt-3 text-xs text-zinc-400">{t("The template is a guide and is not exported.")}</p></section>
+    </>;
+
     return (
         <main className="fixed inset-0 z-100 overflow-hidden bg-[#090909] text-white">
             <div className="flex h-full min-h-0 flex-col">
                 <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                     <div className="flex items-center gap-3">
-                        <Button asChild variant="outline" size="icon" aria-label="Zurück zum Tutorial"><Link href="/cookiecapes/tutorial"><ArrowLeft /></Link></Button>
+                        <Button asChild variant="outline" size="icon" aria-label={t("Back to tutorial")}><Link href="/cookiecapes/tutorial" onClick={event => { if (draftError && !window.confirm(t("The draft is not saved. Continue to the tutorial?"))) event.preventDefault(); }}><ArrowLeft /></Link></Button>
                         <h1 className="text-2xl font-bold tracking-tight">Cape Editor</h1>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button type="button" variant="outline" size="icon" onClick={undo} disabled={historyStep <= 0} aria-label="Rückgängig"><RotateCcw /></Button>
-                        <Button type="button" variant="outline" size="icon" onClick={redo} disabled={historyStep >= history.length - 1} aria-label="Wiederholen"><RotateCw /></Button>
-                        <Button type="button" onClick={downloadCape} disabled={!!templateError || !layers.length}><Download data-icon="inline-start" /> PNG exportieren</Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button type="button" variant="outline" className="min-h-12 sm:hidden" onClick={() => propertiesDialog.current?.showModal()}><SlidersHorizontal data-icon="inline-start" /> {t("Properties")}</Button>
+                        <Button type="button" variant="outline" size="icon" onClick={undo} disabled={historyStep <= 0} aria-label={t("Undo")}><RotateCcw /></Button>
+                        <Button type="button" variant="outline" size="icon" onClick={redo} disabled={historyStep >= history.length - 1} aria-label={t("Redo")}><RotateCw /></Button>
+                        <Button type="button" onClick={downloadCape} disabled={!!templateError || !layers.length}><Download data-icon="inline-start" /> {t("Export PNG")}</Button>
                     </div>
                 </header>
-                {(templateError || uploadError) && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-950 p-3 text-sm text-red-200">{templateError || uploadError}</p>}
+                {(draftLoadError || draftError) && <p role="alert" className="bg-amber-950 p-3 text-sm text-amber-200">{t((draftError || draftLoadError) as MessageKey)}</p>}
+                {(templateError || uploadError) && <p role="alert" className="mb-4 rounded-lg border border-red-500/30 bg-red-950 p-3 text-sm text-red-200">{t((templateError || uploadError) as MessageKey)}</p>}
                 <div className="flex min-h-0 flex-1">
-                    <section className="order-2 flex min-h-0 min-w-0 flex-1 flex-col bg-[#111]" aria-label="Arbeitsfläche">
+                    <section className="order-2 flex min-h-0 min-w-0 flex-1 flex-col bg-[#111]" aria-label={t("Canvas")}>
                         <div ref={containerRef} className="pattern-grid relative min-h-0 flex-1 overflow-hidden"
-                            onWheel={e => { e.preventDefault(); changeZoom(zoom * Math.exp(-e.deltaY * 0.002)); }}
                             onPointerDownCapture={e => {
                                 if (!panMode && e.button !== 1) return;
                                 e.preventDefault(); e.stopPropagation();
@@ -567,54 +651,26 @@ export default function CapeEditorPage() {
                                 </Stage>
                             </div>
                         </div>
-                        <p className="shrink-0 border-t border-white/10 px-4 py-2 text-xs text-zinc-400">Mausrad: Zoom ? Hand / mittlere Maustaste: Arbeitsfläche verschieben</p>
+                        <p className="shrink-0 border-t border-white/10 px-4 py-2 text-xs text-zinc-400">{t("Mouse wheel: zoom · Hand / middle mouse button: pan canvas")}</p>
                     </section>
-                    <aside aria-label="Werkzeuge" className="order-1 flex w-14 shrink-0 flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#0c0c0c] p-2 ">
-                        <div role="toolbar" aria-label="Werkzeuge" className="flex flex-col gap-2">
-                            <Button type="button" variant={tool === "hand" ? "default" : "ghost"} aria-pressed={tool === "hand"} aria-label="Hand" title="Hand" onClick={() => selectTool("hand")} size="icon"><Hand /></Button>
-                            <Button type="button" variant={tool === "brush" ? "default" : "ghost"} aria-pressed={tool === "brush"} aria-label="Stift" title="Stift" onClick={() => selectTool("brush")} size="icon"><Pencil /></Button>
-                            <Button type="button" variant={tool === "eraser" ? "default" : "ghost"} aria-pressed={tool === "eraser"} aria-label="Radierer" title="Radierer" onClick={() => selectTool("eraser")} size="icon"><Eraser /></Button>
-                            <Button type="button" variant={tool === "fill" ? "default" : "ghost"} aria-pressed={tool === "fill"} aria-label="Füllen" title="Füllen" onClick={() => selectTool("fill")} size="icon"><PaintBucket /></Button>
-                            <Button type="button" variant={tool === "move" ? "default" : "ghost"} aria-pressed={tool === "move"} aria-label="Bild bewegen" title="Bild bewegen" onClick={() => selectTool("move")} size="icon"><Move /></Button>
-                            <Button type="button" variant="ghost" aria-label="Bild hochladen" title="Bild hochladen" onClick={() => { setTool("move"); imageInputRef.current?.click(); }} size="icon"><ImageIcon /></Button>
+                    <aside aria-label={t("Tools")} className="order-1 flex w-16 shrink-0 flex-col gap-3 overflow-y-auto border-r border-white/10 bg-[#0c0c0c] p-2 ">
+                        <div role="toolbar" aria-label={t("Tools")} className="flex flex-col gap-2">
+                            <Button type="button" variant={tool === "hand" ? "default" : "ghost"} aria-pressed={tool === "hand"} aria-label="Hand" title="Hand" onClick={() => selectTool("hand")} size="icon" className="size-12"><Hand /></Button>
+                            <Button type="button" variant={tool === "brush" ? "default" : "ghost"} aria-pressed={tool === "brush"} aria-label={t("Brush")} title={t("Brush")} onClick={() => selectTool("brush")} size="icon" className="size-12"><Pencil /></Button>
+                            <Button type="button" variant={tool === "eraser" ? "default" : "ghost"} aria-pressed={tool === "eraser"} aria-label={t("Eraser")} title={t("Eraser")} onClick={() => selectTool("eraser")} size="icon" className="size-12"><Eraser /></Button>
+                            <Button type="button" variant={tool === "fill" ? "default" : "ghost"} aria-pressed={tool === "fill"} aria-label={t("Fill")} title={t("Fill")} onClick={() => selectTool("fill")} size="icon" className="size-12"><PaintBucket /></Button>
+                            <Button type="button" variant={tool === "move" ? "default" : "ghost"} aria-pressed={tool === "move"} aria-label={t("Move image")} title={t("Move image")} onClick={() => selectTool("move")} size="icon" className="size-12"><Move /></Button>
+                            <Button type="button" variant="ghost" aria-label={t("Upload image")} title={t("Upload image")} onClick={() => { setTool("move"); imageInputRef.current?.click(); }} size="icon" className="size-12"><ImageIcon /></Button>
                             <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                         </div>
                     </aside>
-                    <aside aria-label="Eigenschaften und Ebenen" className="order-3 flex w-48 shrink-0 flex-col gap-3 overflow-y-auto border-l border-white/10 bg-[#0c0c0c] p-3 sm:w-72">
-                        <section className="flex flex-col gap-3 rounded-xl border border-white/10 p-3" aria-label="Ansicht">
-                            <div className="flex flex-wrap gap-2">
-                                <Button type="button" variant="outline" size="icon" aria-label="Verkleinern" title="Verkleinern" onClick={() => changeZoom(zoom / 1.25)}><ZoomOut /></Button>
-                                <Button type="button" variant="outline" size="icon" aria-label="Vergrößern" title="Vergrößern" onClick={() => changeZoom(zoom * 1.25)}><ZoomIn /></Button>
-                            </div>
-                            <label className="flex flex-col gap-2 text-xs text-zinc-400">Zoom: {Math.round(zoom * 100)} %<input aria-label="Zoom" type="range" min="0.25" max="5" step="0.01" value={zoom} onChange={e => changeZoom(Number(e.target.value))} className="w-full accent-orange-500" /></label>
-                            <Button type="button" variant="outline" onClick={() => { setPan({ x: 0, y: 0 }); const viewport = containerRef.current; if (viewport) changeZoom(Math.min((viewport.clientWidth - 48) / stageWidth, (viewport.clientHeight - 48) / stageHeight)); }}><Maximize /> Einpassen</Button>
-                        </section>
-                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4">
-                            <h2 className="mb-4 text-sm font-semibold">{tool === "move" ? "Bildposition" : "Zeichenwerkzeug"}</h2>
-                            {tool !== "move" ? <div className="flex flex-col gap-4">
-                                <div><span className="mb-2 block text-xs text-zinc-400">Farbe</span><div className="grid grid-cols-5 gap-2">{COMMON_COLORS.map(c => <Button type="button" variant="outline" size="icon-sm" key={c} onClick={() => setColor(c)} aria-label={`Farbe ${c}`} aria-pressed={color === c} className={`w-full ${color === c ? "ring-2 ring-white" : ""}`} style={{ backgroundColor: c }} />)}</div></div>
-                                <label className="flex items-center justify-between gap-3 text-sm text-zinc-400">Eigene Farbe <input type="color" value={color} onChange={e => setColor(e.target.value)} className="h-9 w-16 cursor-pointer rounded" /></label>
-                                <label className="flex flex-col gap-2 text-sm text-zinc-400">Größe: {brushSize} px<input type="range" min="1" max="10" value={brushSize} onChange={e => setBrushSize(Number(e.target.value))} className="accent-orange-500" /></label>
-                                {!layers.some(l => l.id === activeLayerId && l.type === "drawing" && l.visible) && <p className="text-xs text-amber-300">Wähle eine sichtbare Zeichnungsebene, um zu malen.</p>}
-                            </div> : selectedLayer ? <div className="flex flex-col gap-3">
-                                <p className="truncate text-sm text-zinc-400">{selectedLayer.name}</p>
-                                <div className="grid grid-cols-2 gap-3">{([['x', 'X'], ['y', 'Y'], ['width', 'Breite'], ['rotation', 'Drehung']] as const).map(([key, label]) => <label key={key} className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">{label}<input type="number" value={Math.round((selectedLayer[key] ?? 0) * 100) / 100} onChange={e => { const value = e.target.valueAsNumber; if (!Number.isFinite(value) || (key === 'width' && value <= 0)) return; changeImage(key === 'width' ? { width: value, height: value * (selectedLayer.height ?? 1) / (selectedLayer.width ?? 1) } : { [key]: value }); }} className="w-full rounded-md border border-white/10 bg-black px-2 py-2 text-sm text-white" /></label>)}</div>
-                                <p className="text-xs text-zinc-500">Die Breite behält das Seitenverhältnis bei. Ziehe die Ecken zum Skalieren.</p>
-                            </div> : <p className="text-sm text-zinc-400">Lade ein Bild hoch oder wähle eine Bildebene aus.</p>}
-                        </section>
-                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4">
-                            <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold">Ebenen</h2><Button type="button" variant="outline" size="icon-sm" aria-label="Zeichnungsebene hinzufügen" title="Zeichnungsebene hinzufügen" onClick={() => { const id = `layer-drawing-${Date.now()}`; updateLayers([...layers, { id, type: "drawing", name: `Zeichnung ${layers.filter(l => l.type === "drawing").length + 1}`, visible: true, locked: false, opacity: 1, lines: [] }]); setTool("brush"); setSelectedId(null); setActiveLayerId(id); }}><Plus /></Button></div>
-                            <div className="flex max-h-64 flex-col gap-1 overflow-auto">{[...layers].reverse().map(layer => <div key={layer.id} className={`flex items-center gap-1 rounded-lg border p-1 ${activeLayerId === layer.id ? "border-orange-500/50 bg-zinc-800" : "border-transparent"}`}>
-                                <Button type="button" variant="ghost" size="icon-sm" aria-label={`Ebene ${layer.name} ${layer.visible ? "ausblenden" : "einblenden"}`} aria-pressed={layer.visible} onClick={() => { updateLayers(layers.map(l => l.id === layer.id ? { ...l, visible: !l.visible } : l)); if (layer.visible && selectedId === layer.id) setSelectedId(null); }}>{layer.visible ? <Eye /> : <EyeOff />}</Button>
-                                <Button type="button" variant="ghost" size="sm" aria-pressed={activeLayerId === layer.id} onClick={() => { setActiveLayerId(layer.id); if (layer.type === "image") { setTool("move"); setSelectedId(layer.visible ? layer.id : null); } else if (layer.type === "drawing") { setTool("brush"); setSelectedId(null); } }} className="min-w-0 flex-1 justify-start"><span className="truncate">{layer.name}</span></Button>
-                                {!layer.locked && <Button type="button" variant="ghost" size="icon-sm" aria-label={`Ebene ${layer.name} löschen`} onClick={() => { updateLayers(layers.filter(l => l.id !== layer.id)); if (selectedId === layer.id) setSelectedId(null); if (activeLayerId === layer.id) setActiveLayerId(null); }}><Trash2 /></Button>}
-                            </div>)}</div>
-                        </section>
-                        <section className="rounded-2xl border border-white/10 bg-[#111] p-4"><h2 className="mb-3 text-sm font-semibold">Vorlage</h2><div role="group" aria-label="Vorlage" className="grid grid-cols-2 gap-2"><Button type="button" variant={activeTemplate === "standard" ? "default" : "outline"} aria-pressed={activeTemplate === "standard"} onClick={() => setActiveTemplate("standard")}>Standard</Button><Button type="button" variant={activeTemplate === "elytra" ? "default" : "outline"} aria-pressed={activeTemplate === "elytra"} onClick={() => setActiveTemplate("elytra")}>Elytra</Button></div><p className="mt-3 text-xs text-zinc-500">Die Vorlage dient als Orientierung und wird nicht exportiert.</p></section>
-                    </aside>
+                    <aside aria-label={t("Properties and layers")} className="order-3 hidden w-72 shrink-0 flex-col gap-3 overflow-y-auto border-l border-white/10 bg-[#0c0c0c] p-3 sm:flex">{properties}</aside>
+                    <dialog ref={propertiesDialog} aria-labelledby="editor-properties-title" className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-sm overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-zinc-950 p-4 text-white backdrop:bg-black/70 sm:hidden">
+                        <div className="mb-4 flex items-center justify-between gap-3"><h2 id="editor-properties-title" className="font-semibold">{t("Properties and layers")}</h2><Button type="button" variant="ghost" size="icon" className="size-12" aria-label={t("Close properties")} onClick={() => propertiesDialog.current?.close()}><X /></Button></div>
+                        <div className="flex flex-col gap-3">{properties}</div>
+                    </dialog>
                 </div>
             </div>
-            <style jsx global>{` .pattern-grid { background-color: #181818; background-image: radial-gradient(#383838 1px, transparent 1px); background-size: 20px 20px; } `}</style>
         </main>
     );
 }

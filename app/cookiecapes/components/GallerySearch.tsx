@@ -21,7 +21,7 @@ export default function GallerySearch({ placeholder }: { placeholder: string }) 
   }
 
   return <form onSubmit={event => { event.preventDefault(); search(); }} className="flex-1 relative">
-    <input key={params.toString()} ref={input} type="text" aria-label={placeholder} placeholder={placeholder} defaultValue={params.get("q") ?? ""}
+    <input key={params.toString()} ref={input} type="text" name="q" autoComplete="off" aria-label={placeholder} placeholder={placeholder} defaultValue={params.get("q") ?? ""}
       onChange={() => { clearTimeout(timer.current); timer.current = setTimeout(search, 500); }}
       className="w-full bg-zinc-900 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:border-orange-500 focus:outline-none transition-colors" />
     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />

@@ -1,8 +1,8 @@
 "use client";
 
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useReducedMotion } from "../../lib/visibility";
 import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
 export default function CapeHero() {
   const { t } = useTranslations();
+  const reducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const titleStartRef = useRef<HTMLSpanElement>(null);
   const titleEndRef = useRef<HTMLSpanElement>(null);
@@ -20,6 +21,7 @@ export default function CapeHero() {
   const buttonsRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (reducedMotion) return;
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     const startChars = titleStartRef.current?.children;
@@ -59,7 +61,7 @@ export default function CapeHero() {
         ease: "power3.out"
       }, "-=0.4");
 
-  }, { scope: containerRef });
+  }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true });
 
   const splitText = (text: string) => {
     return text.split("").map((char, index) => (
@@ -68,6 +70,7 @@ export default function CapeHero() {
   };
 
   const scrollToSetup = () => {
+    if (reducedMotion) { document.querySelector("#setup-wizard")?.scrollIntoView(); return; }
     gsap.to(window, { duration: 1, scrollTo: "#setup-wizard", ease: "power3.inOut" });
   };
 
@@ -104,17 +107,17 @@ export default function CapeHero() {
       <div ref={buttonsRef} className="flex flex-wrap justify-center gap-4 mt-4">
           <button 
             onClick={scrollToSetup}
-            className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-white transition-all hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
+            className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-primary-foreground transition-[background-color,box-shadow,transform] hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
           >
               <span className="relative z-10">{t("Upload a cape")}</span>
           </button>
           
-          <button 
-            onClick={() => window.location.href = 'cookiecapes/capes'}
+          <Link
+            href="/cookiecapes/capes"
             className="group relative overflow-hidden rounded-full border border-white/10 bg-white/10 px-8 py-3 font-bold text-white transition-all hover:bg-white/10 hover:scale-105 active:scale-95 cursor-pointer select-none"
           >
               <span className="relative z-10">{t("Browse capes")}</span>
-          </button>
+          </Link>
       </div>
     </div>
   );

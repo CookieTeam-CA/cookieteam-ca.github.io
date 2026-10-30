@@ -29,6 +29,9 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
     const query = typeof params.q === "string" ? params.q : "";
 
     const data = await getCapesSorted(page, limit, sort, order, query);
+    const returnQuery = new URLSearchParams({ page: String(page), sort, order });
+    if (query) returnQuery.set("q", query);
+    const returnTo = "/cookiecapes/capes?" + returnQuery;
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
@@ -49,7 +52,7 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {data.capes.map((cape) => (
-                                <CapeCard key={cape.cape_id} cape={cape} />
+                                <CapeCard key={cape.cape_id} cape={cape} returnTo={returnTo} />
                             ))}
                         </div>
                         <Pagination 
@@ -61,7 +64,7 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
                         <p className="text-zinc-400 text-lg">{t("No capes found.")}</p>
-                        <p className="text-zinc-600 text-sm mt-2">{t("Try another search term.")}</p>
+                        <p className="text-zinc-400 text-sm mt-2">{t("Try another search term.")}</p>
                     </div>
                 )}   
             </div>

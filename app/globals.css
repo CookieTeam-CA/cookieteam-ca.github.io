@@ -74,7 +74,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: #ff7b00;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #171717;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -113,7 +113,7 @@
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: #ff7b00;
-  --primary-foreground: #ffffff;
+  --primary-foreground: #171717;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -156,4 +156,19 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.pattern-grid {
+  background-color: #181818;
+  background-image: radial-gradient(#383838 1px, transparent 1px);
+  background-size: 20px 20px;
 }

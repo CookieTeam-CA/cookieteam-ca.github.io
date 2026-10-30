@@ -18,7 +18,7 @@ export function LocaleProvider({ locale, children }: { locale: Locale; children:
 
 export function CookieCapesLocaleProvider({ locale, children }: { locale: Locale; children: React.ReactNode }) {
   const pathname = usePathname();
-  const excluded = pathname?.startsWith("/cookiecapes/admin") || pathname?.startsWith("/cookiecapes/editor");
+  const excluded = pathname?.startsWith("/cookiecapes/admin");
   return <LocaleProvider locale={excluded ? "de" : locale}>{children}</LocaleProvider>;
 }
 

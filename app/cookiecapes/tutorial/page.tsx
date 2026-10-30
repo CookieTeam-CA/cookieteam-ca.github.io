@@ -61,7 +61,7 @@ export default async function TutorialPage() {
                                     {t("Image editor")}
                                 </h3>
                                 <p className="text-zinc-400 mb-4">
-                                    {t("We recommend")} <a href="https://www.getpaint.net/download.html" target="_blank" className="text-orange-400 hover:text-orange-300">Paint.NET</a>{t(". It is free, simple, and perfect for pixel art.")}
+                                    {t("We recommend")} <a href="https://www.getpaint.net/download.html" target="_blank" className="text-orange-400 underline hover:text-orange-300">Paint.NET</a>{t(". It is free, simple, and perfect for pixel art.")}
                                 </p>
                             </div>
 
@@ -149,7 +149,7 @@ export default async function TutorialPage() {
                         <Button asChild size="lg" variant="secondary" className="rounded-full"><Link
                             href="/cookiecapes"
                         >
-                            {t("Go to upload status")}
+                            {t("Go to upload")}
                         </Link></Button>
                     </div>
                 </div>

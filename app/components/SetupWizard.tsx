@@ -139,7 +139,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   };
 
   return (
-    <div ref={wizardRef} className="relative w-full max-w-4xl mx-auto my-12 px-6">
+    <div id="registration" ref={wizardRef} className="relative w-full max-w-4xl mx-auto my-12 scroll-mt-8 px-6">
 
 
       <div className="relative z-10 bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl transition-all duration-500 overflow-hidden min-h-112.5 flex flex-col items-center justify-center">
@@ -208,9 +208,13 @@ export default function SetupWizard({ session }: { session: Session | null }) {
             <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col gap-2 mb-6">
-                  <label className="text-sm font-medium text-zinc-300">Minecraft Name</label>
+                  <label htmlFor="registration-minecraft-name" className="text-sm font-medium text-zinc-300">Minecraft Name</label>
                   <div className="relative">
                     <input
+                      id="registration-minecraft-name"
+                      name="minecraftName"
+                      autoComplete="off"
+                      spellCheck={false}
                       type="text"
                       value={mcName}
                       onChange={(e) => handleMcNameChange(e.target.value)}

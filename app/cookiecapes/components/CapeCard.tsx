@@ -10,9 +10,10 @@ import Link from "next/link";
 
 interface CapeCardProps {
     cape: Cape;
+    returnTo?: string;
 }
 
-export default async function CapeCard({ cape }: CapeCardProps) {
+export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
   const { t, number } = await getTranslations();
     const isAdmin = await getCookieCapesAdmin();
 
@@ -40,23 +41,24 @@ export default async function CapeCard({ cape }: CapeCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <Link href={`/cookiecapes/capes/${cape.cape_id}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
-                    <h3 className="font-bold text-white truncate w-full" title={cape.cape_name}>
+                <Link href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
+                    <h2 className="font-bold text-white truncate w-full" title={cape.cape_name}>
                         {cape.cape_name} <VerificationBadge verification={cape.verification} />
-                    </h3>
+                    </h2>
                 </Link>
 
                 <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 w-full group/player hover:text-orange-400 transition-colors">
                     <img
                         src={`https://minotar.net/helm/${cape.minecraft_name}/20`}
-                        alt={cape.minecraft_name}
+                        alt=""
+                        width={20} height={20}
                         className="w-5 h-5 rounded-sm"
                     />
                     <span className="text-sm text-zinc-400 group-hover/player:text-orange-400 transition-colors truncate max-w-37.5">{cape.minecraft_name}</span>
                 </Link>
 
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
-                    <div className="flex items-center gap-1.5 text-xs text-zinc-600 group-hover:text-zinc-400 transition-colors">
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400 group-hover:text-zinc-400 transition-colors">
                         <Users size={14} />
                         <span>{number(cape.active_user_count || 0)} {t("Users")}</span>
                     </div>

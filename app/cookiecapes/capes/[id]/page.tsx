@@ -8,12 +8,13 @@ import Pagination from "../../components/Pagination";
 import Link from "next/link";
 import { ArrowLeft, User, Calendar, Hash, Users } from "lucide-react";
 import Footer from "../../../components/Footer";
+import { galleryReturn } from "../../lib/gallery-return";
 
 export const revalidate = 0;
 
 interface PageProps {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ page?: string | string[] }>;
+    searchParams: Promise<{ page?: string | string[]; returnTo?: string | string[] }>;
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -54,6 +55,7 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
     }
 
     const query = await searchParams;
+    const returnTo = galleryReturn(query.returnTo);
     const requestedPage = typeof query.page === "string" ? Number(query.page) : 1;
     const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const { players, total_count, limit } = await getPlayersByCape(capeId, page);
@@ -63,7 +65,7 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
 
-                <Link href="/cookiecapes/capes" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
+                <Link href={returnTo} className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     {t("Back to gallery")}
                 </Link>
