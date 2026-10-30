@@ -18,7 +18,7 @@ export const getCapeForDetails = cache(async (id: number): Promise<(Cape & { is_
     for (const link of account.links) {
       const { capes } = await accountJson<{ capes: OwnedCape[] }>(`/me/capes?minecraft_uuid=${encodeURIComponent(link.minecraft_uuid)}`);
       const cape = capes.find(cape => cape.cape_id === id && !cape.hidden_at);
-      if (cape) return { ...cape, count: 0, cape_image_url: `/cookiecapes/account/images/${id}?v=${encodeURIComponent(cape.last_edited ?? "")}` };
+      if (cape) return { ...cape, animation: cape.animation ? { ...cape.animation, manifest_url: `/cookiecapes/account/animation/${id}/manifest.json` } : undefined, count: 0, cape_image_url: `/cookiecapes/account/images/${id}?v=${encodeURIComponent(cape.last_edited ?? "")}` };
     }
   } catch (error) {
     if (error instanceof CapeApiError && ![401, 403, 404].includes(error.status)) throw error;

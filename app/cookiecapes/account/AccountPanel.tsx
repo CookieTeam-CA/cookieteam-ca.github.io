@@ -104,6 +104,7 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
       </div>
     </section>
 
+    <Link className="inline-flex rounded-xl border border-orange-400/30 px-5 py-3 text-orange-300 hover:bg-orange-400/10 focus-visible:outline-2 focus-visible:outline-orange-400" href={`/cookiecapes/animate?uuid=${encodeURIComponent(uuid)}`}>Animiertes Cape erstellen</Link>
     <SetupWizard account={account} uuid={uuid} quota={owned?.quota} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} />
 
     {replacement && <div className="space-y-4"><Button variant="outline" disabled={controlsDisabled} onClick={() => setReplacement(null)}>{t("Cancel")}</Button><SetupWizard key={replacement.cape_id} account={account} uuid={uuid} initialName={replacement.cape_name} quota={owned?.quota} replacementId={replacement.cape_id} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} /></div>}
@@ -139,6 +140,7 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
                 <Button id={`rename-cape-${cape.cape_id}`} className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => { setDeleting(null); setRenaming({ id: cape.cape_id, name: cape.cape_name, error: "" }); }}><Pencil aria-hidden="true" />{t("Rename")}</Button>
                 <Button className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => run(async () => { actionValue(await editOwnedCape(cape.cape_id, "visibility", !cape.is_private)); }, t("Cape updated."))}>{cape.is_private ? <Globe aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}{cape.is_private ? t("Make public") : t("Make private")}</Button>
                 <Button className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => setReplacement(cape)}><ImageUp aria-hidden="true" />{t("Replace image")}</Button>
+                <Link className="rounded-lg border border-white/15 px-3 py-2 text-sm text-orange-300" href={`/cookiecapes/animate?uuid=${encodeURIComponent(uuid)}&replacement=${cape.cape_id}`}>Animation ersetzen</Link>
                 <Button className="min-h-11 justify-start px-3" disabled={controlsDisabled} variant="destructive" onClick={() => { setRenaming(null); setDeleting(cape.cape_id); }}><Trash2 aria-hidden="true" />{t("Delete")}</Button>
               </div>
               {renaming?.id === cape.cape_id && <form className="space-y-3 rounded-xl border border-orange-400/20 bg-black/20 p-4" onSubmit={async event => {

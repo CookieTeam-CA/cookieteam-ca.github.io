@@ -8,8 +8,11 @@ import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 import { useElementActive, useReducedMotion } from "../../lib/visibility";
 import { loadTextureImage } from "../lib/texture-cache";
+import { applyCapeCanvas, playCapeManifest, type CapeManifestPlayer } from "../lib/animation-viewer";
 
 interface CapeViewerProps {
+    capeFrame?: { canvas: HTMLCanvasElement; revision: number };
+    animationManifest?: string;
     capeUrl?: string | null;
     allowElytraSwitch?: boolean;
     skinUrl?: string;
@@ -75,6 +78,8 @@ export function loadTextures(viewer: SkinViewer, cape: string | null | undefined
 
 
 export default function CapeViewer({
+    capeFrame,
+    animationManifest,
     capeUrl,
     skinUrl,
     minecraftName,
@@ -89,6 +94,8 @@ export default function CapeViewer({
     const renderRef = useRef<(() => void) | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
+    const manifestPlayer = useRef<CapeManifestPlayer | null>(null);
+    const manifestPlaying = useRef(false);
     const active = useElementActive(containerRef);
     const reducedMotion = useReducedMotion();
     const [motionPaused, setMotionPaused] = useState(false);
@@ -278,6 +285,28 @@ export default function CapeViewer({
 
     useEffect(() => {
         const viewer = viewerRef.current;
+        if (viewer && capeFrame && !isLoading && viewerReady && active) {
+            applyCapeCanvas(viewer, capeFrame.canvas);
+            renderRef.current?.();
+        }
+    }, [capeFrame, isLoading, viewerReady, active]);
+
+    useEffect(() => {
+        const viewer = viewerRef.current;
+        if (!animationManifest || !viewer || !viewerReady || isLoading || !active) return;
+        const player = playCapeManifest(viewer, animationManifest, () => renderRef.current?.());
+        manifestPlayer.current = player;
+        player.setPlaying(manifestPlaying.current);
+        return () => { player.dispose(); manifestPlayer.current = null; };
+    }, [animationManifest, viewerReady, isLoading, active]);
+
+    useEffect(() => {
+        manifestPlaying.current = motionEnabled;
+        manifestPlayer.current?.setPlaying(motionEnabled);
+    }, [motionEnabled]);
+
+    useEffect(() => {
+        const viewer = viewerRef.current;
         let cancelled = false;
         if (viewer) {
             import("skinview3d").then(skinview3d => {
@@ -300,6 +329,7 @@ export default function CapeViewer({
             onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}
             onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
             <div ref={canvasHostRef} className={`absolute inset-0 ${!active || isLoading || textureError || viewerError ? "invisible" : ""}`} />
+            {animationManifest && active && <Button size="sm" variant="outline" className="absolute top-4 right-4 z-30" onClick={() => setMotionPaused(value => !value)}>{motionPaused ? "Abspielen" : "Pause"}</Button>}
             {(!active || isLoading || !viewerReady) && !viewerError && !textureError && (
                 <div className="absolute inset-0 flex items-center justify-center" role="status" aria-label={t("Loading capes...")}>
                     <div className={`size-6 border-2 border-zinc-700/50 border-t-zinc-700 rounded-full opacity-50 ${active ? "animate-spin" : ""}`} />

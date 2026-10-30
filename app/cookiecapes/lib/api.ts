@@ -56,6 +56,7 @@ export async function getPlayerCount(): Promise<number> {
 export type CapeVerification = "unverified" | "website" | "minecraft_session";
 
 export interface Cape {
+  animation?: { version: number; revision: string; manifest_url: string; qualities: string[] };
   verification?: CapeVerification;
   cape_id: number;
   cape_name: string;

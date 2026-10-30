@@ -79,6 +79,7 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
                                 <CapeViewer
                                     allowElytraSwitch
                                     capeUrl={capeUrl}
+                                    animationManifest={cape.animation?.manifest_url}
                                     minecraftName={cape.minecraft_name}
                                     animation="walk"
                                 />
