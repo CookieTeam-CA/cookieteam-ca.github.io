@@ -26,8 +26,9 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
             )}
 
             <div className="relative w-full aspect-3/4 bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
-                <div className="relative w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <CapeViewer
+                        animateOnHover
                         capeUrl={capeUrl}
                         minecraftName={player.minecraft_name}
                     />
@@ -42,14 +43,14 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <Link href={`/cookiecapes/players/${player.minecraft_name}`} className="w-full">
+                <Link prefetch={false} href={`/cookiecapes/players/${player.minecraft_name}`} className="w-full">
                     <h3 className="font-bold text-white group-hover:text-orange-400 transition-colors truncate w-full mb-2">
                         {player.minecraft_name}
                     </h3>
                 </Link>
 
                 {player.cape_name ? (
-                    <Link href={`/cookiecapes/capes/${player.current_cape_id}`} className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-400 text-sm hover:text-orange-400 transition-colors">
+                    <Link prefetch={false} href={`/cookiecapes/capes/${player.current_cape_id}`} className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-400 text-sm hover:text-orange-400 transition-colors">
                         <span className="truncate">{t("Cape:")} {player.cape_name}</span>
                     </Link>
                 ) : (
@@ -59,7 +60,7 @@ export default async function PlayerCard({ player }: PlayerCardProps) {
                 )}
 
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">
-                    <Link href={`/cookiecapes/players/${player.minecraft_name}`} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-500 transition-colors">
+                    <Link prefetch={false} href={`/cookiecapes/players/${player.minecraft_name}`} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-orange-500 transition-colors">
                         <User size={14} />
                         <span>{t("View profile")}</span>
                     </Link>

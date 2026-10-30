@@ -28,8 +28,9 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
             </div>
 
             <div className="relative w-full aspect-3/4 bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
-                <div className="relative w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <CapeViewer
+                        animateOnHover
                         capeUrl={capeUrl}
                         minecraftName={cape.minecraft_name}
                     />
@@ -41,13 +42,13 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <Link href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
+                <Link prefetch={false} href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
                     <h2 className="font-bold text-white truncate w-full" title={cape.cape_name}>
                         {cape.cape_name} <VerificationBadge verification={cape.verification} />
                     </h2>
                 </Link>
 
-                <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 w-full group/player hover:text-orange-400 transition-colors">
+                <Link prefetch={false} href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 w-full group/player hover:text-orange-400 transition-colors">
                     <img
                         src={`https://minotar.net/helm/${cape.minecraft_name}/20`}
                         alt=""

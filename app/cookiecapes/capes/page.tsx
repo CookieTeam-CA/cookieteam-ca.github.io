@@ -1,7 +1,7 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { getCapesSorted, SortBy, Order } from "../lib/api";
 import CapeCard from "../components/CapeCard";
-import Pagination from "../components/Pagination";
+import InfiniteGallery, { type GalleryBatch } from "../components/InfiniteGallery";
 import GalleryControls from "../components/GalleryControls";
 import { Metadata } from "next";
 import Footer from "../../components/Footer";
@@ -28,10 +28,21 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
     const order: Order = params.order === "asc" ? "asc" : "desc";
     const query = typeof params.q === "string" ? params.q : "";
 
-    const data = await getCapesSorted(page, limit, sort, order, query);
     const returnQuery = new URLSearchParams({ page: String(page), sort, order });
     if (query) returnQuery.set("q", query);
     const returnTo = "/cookiecapes/capes?" + returnQuery;
+
+    async function loadPage(nextPage: number): Promise<GalleryBatch> {
+        "use server";
+        if (!Number.isSafeInteger(nextPage) || nextPage < 1 || nextPage > Math.floor(Number.MAX_SAFE_INTEGER / limit)) throw new Error("Invalid page");
+        const data = await getCapesSorted(nextPage, limit, sort, order, query);
+        return {
+            items: data.capes.map(cape => ({ id: cape.cape_id, card: <CapeCard cape={cape} returnTo={returnTo} /> })),
+            hasMore: data.capes.length > 0 && nextPage * limit < data.total_count,
+        };
+    }
+    const initialBatch = await loadPage(page);
+    const galleryKey = crypto.randomUUID(); // Reset accumulated cards after server refreshes, including moderation.
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
@@ -48,19 +59,14 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
 
                 <GalleryControls />
 
-                {data && data.capes.length > 0 ? (
-                    <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {data.capes.map((cape) => (
-                                <CapeCard key={cape.cape_id} cape={cape} returnTo={returnTo} />
-                            ))}
-                        </div>
-                        <Pagination 
-                            currentPage={page} 
-                            totalCount={data.total_count} 
-                            limit={limit} 
-                        />
-                    </>
+                {initialBatch.items.length > 0 ? (
+                    <InfiniteGallery
+                        key={galleryKey}
+                        initialBatch={initialBatch}
+                        initialPage={page}
+                        loadPageAction={loadPage}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+                    />
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
                         <p className="text-zinc-400 text-lg">{t("No capes found.")}</p>

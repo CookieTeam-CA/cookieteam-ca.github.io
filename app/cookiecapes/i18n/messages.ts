@@ -1,6 +1,10 @@
 import type { Locale } from "./locale";
 
 export const de = {
+  "Load more": "Mehr laden",
+  "Loading more…": "Weitere Ergebnisse werden geladen…",
+  "Could not load more results.": "Weitere Ergebnisse konnten nicht geladen werden.",
+  "All results loaded.": "Alle Ergebnisse geladen.",
   "Delete layer {name}": "Ebene {name} löschen",
   "Show layer {name}": "Ebene {name} einblenden",
   "Hide layer {name}": "Ebene {name} ausblenden",

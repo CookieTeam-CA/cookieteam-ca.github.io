@@ -107,7 +107,7 @@ export default function CapeHero() {
       <div ref={buttonsRef} className="flex flex-wrap justify-center gap-4 mt-4">
           <button 
             onClick={scrollToSetup}
-            className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-primary-foreground transition-[background-color,box-shadow,transform] hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
+            className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-white transition-[background-color,box-shadow,transform] hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
           >
               <span className="relative z-10">{t("Upload a cape")}</span>
           </button>

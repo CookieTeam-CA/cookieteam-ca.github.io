@@ -23,6 +23,7 @@ export default function GalleryControls() {
         const newOrder = currentOrder === "desc" ? "asc" : "desc";
         const params = new URLSearchParams(searchParams);
         params.set("order", newOrder);
+        params.set("page", "1");
         router.push(`?${params.toString()}`);
     };
 

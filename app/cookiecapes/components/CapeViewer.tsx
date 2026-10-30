@@ -7,6 +7,7 @@ import { hasElytraPixels } from "../lib/elytra";
 import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 import { useElementActive, useReducedMotion } from "../../lib/visibility";
+import { loadTextureImage } from "../lib/texture-cache";
 
 interface CapeViewerProps {
     capeUrl?: string | null;
@@ -16,6 +17,7 @@ interface CapeViewerProps {
     width?: number;
     height?: number;
     animation?: "idle" | "walk" | "run" | "none";
+    animateOnHover?: boolean;
 }
 
 function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"), animType: string) {
@@ -43,10 +45,7 @@ function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"
 
 export function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean) {
     const load = async (url: string, apply: (image: HTMLImageElement) => void) => {
-        const image = new Image();
-        image.crossOrigin = "anonymous";
-        image.src = url;
-        await image.decode();
+        const image = await loadTextureImage(url);
         if (isCurrent()) apply(image);
     };
     const getProxiedUrl = (url: string | null | undefined) => {
@@ -82,18 +81,22 @@ export default function CapeViewer({
     width,
     height,
     animation = "idle",
-    allowElytraSwitch = false
+    allowElytraSwitch = false,
+    animateOnHover = false
 }: CapeViewerProps) {
     const { t } = useTranslations();
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const canvasHostRef = useRef<HTMLDivElement>(null);
+    const renderRef = useRef<(() => void) | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
     const active = useElementActive(containerRef);
     const reducedMotion = useReducedMotion();
     const [motionPaused, setMotionPaused] = useState(false);
-    const motionEnabled = !reducedMotion && !motionPaused;
+    const [hovered, setHovered] = useState(false);
+    const [focused, setFocused] = useState(false);
+    const motionEnabled = !reducedMotion && !motionPaused && (!animateOnHover || hovered || focused);
     const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
-    const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
+    const [viewerError, setViewerError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [viewerReady, setViewerReady] = useState(false);
     const [textureError, setTextureError] = useState(false);
@@ -105,19 +108,43 @@ export default function CapeViewer({
     useEffect(() => {
         if (!active) return;
 
-        const canvas = canvasRef.current;
+        const host = canvasHostRef.current;
         const container = containerRef.current;
-        if (!canvas || !container) return;
+        if (!host || !container) return;
+        // Each effect owns a fresh canvas; a forcibly lost context cannot be reused.
+        const canvas = document.createElement("canvas");
+        canvas.className = "absolute inset-0 outline-none";
+        host.appendChild(canvas);
         let cancelled = false;
         setIsLoading(true);
+        setViewerError(false);
+        setViewerReady(false);
 
         let viewer: SkinViewer | null = null;
         let resizeObserver: ResizeObserver | null = null;
         let stopRotation: (() => void) | null = null;
+        const contextLost = (event: Event) => {
+            event.preventDefault();
+            if (cancelled) return;
+            if (viewer) viewer.renderPaused = true;
+            setViewerError(true);
+            setIsLoading(false);
+        };
+        canvas.addEventListener("webglcontextlost", contextLost);
+        let frame: number | undefined;
+        const render = () => {
+            if (cancelled || !viewer || viewer.disposed || !viewer.renderPaused || frame !== undefined) return;
+            frame = requestAnimationFrame(() => {
+                frame = undefined;
+                if (!cancelled && viewer && !viewer.disposed && !viewer.renderer.getContext().isContextLost()) {
+                    viewer.controls.update();
+                    viewer.render();
+                }
+            });
+        };
+        renderRef.current = render;
 
         const initViewer = async () => {
-            if (!canvasRef.current || !containerRef.current) return;
-
             try {
                 const skinview3d = await import("skinview3d");
                 if (cancelled) return;
@@ -126,7 +153,7 @@ export default function CapeViewer({
                 const initialWidth = width || container.clientWidth;
                 const initialHeight = height || container.clientHeight;
 
-                const dpr = Math.min(window.devicePixelRatio, 1.5);
+                const dpr = Math.min(window.devicePixelRatio, animateOnHover ? 1 : 1.5);
 
                 viewer = new skinview3d.SkinViewer({
                     canvas,
@@ -134,11 +161,11 @@ export default function CapeViewer({
                     height: initialHeight,
                     pixelRatio: dpr,
                     renderPaused: true,
+                    preserveDrawingBuffer: true,
                 });
                 viewer.fxaaPass.material.fragmentShader = viewer.fxaaPass.material.fragmentShader.replaceAll("-100.0", "-16.0");
-                setWebglSupported(true);
-
                 viewerRef.current = viewer;
+                viewer.controls.addEventListener("change", render);
 
                 viewer.camera.position.set(0, 0, 60);
 
@@ -167,8 +194,9 @@ export default function CapeViewer({
                         if (viewer && !width && !height) {
                             const newWidth = entry.contentRect.width;
                             const newHeight = entry.contentRect.height;
-                            if (newWidth > 0 && newHeight > 0) {
+                            if (newWidth > 0 && newHeight > 0 && (viewer.width !== newWidth || viewer.height !== newHeight)) {
                                 viewer.setSize(newWidth, newHeight);
+                                render();
                             }
                         }
                     }
@@ -179,30 +207,39 @@ export default function CapeViewer({
             } catch (error) {
                 if (!cancelled) {
                     console.error("Failed to load skinview3d:", error);
-                    if (!viewer) setWebglSupported(false);
+                    setViewerError(true);
                     setIsLoading(false);
                 }
             }
         };
 
-        initViewer();
+        // Skip GPU allocation for cards passing through during a fast scroll.
+        const timer = window.setTimeout(initViewer, 120);
 
         return () => {
             cancelled = true;
+            window.clearTimeout(timer);
+            if (frame !== undefined) cancelAnimationFrame(frame);
+            canvas.removeEventListener("webglcontextlost", contextLost);
             if (stopRotation) {
                 canvas.removeEventListener("mousedown", stopRotation);
                 canvas.removeEventListener("touchstart", stopRotation);
             }
             if (viewer) {
+                viewer.controls.removeEventListener("change", render);
                 try {
                     disposeSkinViewer(viewer);
                 } catch { }
             }
             viewerRef.current = null;
+            renderRef.current = null;
+            canvas.remove();
+            canvas.width = 0;
+            canvas.height = 0;
             setViewerReady(false);
             if (resizeObserver) resizeObserver.disconnect();
         };
-    }, [active]);
+    }, [active, retry, animateOnHover]);
 
     useEffect(() => {
         const viewer = viewerRef.current;
@@ -222,7 +259,7 @@ export default function CapeViewer({
                     } catch { /* Keep cape view if the texture cannot be inspected. */ }
                 }
                 setEquipment({ url: capeUrl, available, elytra: false });
-                viewer.renderPaused = !active;
+                renderRef.current?.();
             }).catch(() => {
                 if (!cancelled && !viewer.disposed) setTextureError(true);
             }).finally(() => {
@@ -230,11 +267,12 @@ export default function CapeViewer({
             });
         }
         return () => { cancelled = true; };
-    }, [viewerReady, active, capeUrl, skinUrl, minecraftName, retry, allowElytraSwitch]);
+    }, [viewerReady, active, capeUrl, skinUrl, minecraftName, allowElytraSwitch]);
 
     useEffect(() => {
         if (viewerRef.current && width && height) {
             viewerRef.current.setSize(width, height);
+            renderRef.current?.();
         }
     }, [width, height]);
 
@@ -246,32 +284,29 @@ export default function CapeViewer({
                 if (!cancelled && !viewer.disposed) {
                     setAnimation(viewer, skinview3d, motionEnabled ? animation : "none");
                     viewer.autoRotate = motionEnabled;
+                    viewer.renderPaused = !motionEnabled || isLoading;
+                    if (!isLoading) renderRef.current?.();
                 }
             });
         }
         return () => { cancelled = true; };
-    }, [animation, motionEnabled, viewerReady]);
+    }, [animation, motionEnabled, viewerReady, isLoading]);
 
-
-    if (webglSupported === false) {
-        return (
-            <div ref={containerRef} className="relative rounded-lg overflow-hidden flex items-center justify-center p-6 text-center bg-zinc-900" style={{ width: width || '100%', height: height || '100%' }}>
-                <div className="flex flex-col items-center gap-4">
-                    <svg className="w-12 h-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <p className="text-white font-bold">{t("3D preview unavailable")}</p>
-                    <p className="text-sm text-zinc-400">{t("Your browser does not support WebGL.")}</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
-        <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center cursor-grab" style={{ width: width ? width : '100%', height: height ? height : '100%' }}>
+        <div ref={containerRef} className="relative overflow-hidden w-full h-full flex items-center justify-center cursor-grab" style={{ width: width ? width : '100%', height: height ? height : '100%' }}
+            tabIndex={animateOnHover ? 0 : undefined} role="group"
+            aria-label={t("3D preview of {name}", { name: minecraftName || "Minecraft" })}
+            onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}
+            onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
+            <div ref={canvasHostRef} className={`absolute inset-0 ${!active || isLoading || textureError || viewerError ? "invisible" : ""}`} />
+            {(!active || isLoading || !viewerReady) && !viewerError && !textureError && (
+                <div className="absolute inset-0 flex items-center justify-center" role="status" aria-label={t("Loading capes...")}>
+                    <div className={`size-6 border-2 border-zinc-700/50 border-t-zinc-700 rounded-full opacity-50 ${active ? "animate-spin" : ""}`} />
+                </div>
+            )}
             {active ? (
                 <>
-                    <canvas ref={canvasRef} className={`outline-none transition-opacity duration-300 ${isLoading || textureError ? 'opacity-0' : 'opacity-100'} w-full h-full`} />
                     {allowElytraSwitch && equipment.url === capeUrl && equipment.available && !isLoading && !textureError && (
                         <button type="button" role="switch" className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-zinc-950/90 px-3 py-2 text-sm font-medium text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
                             aria-checked={equipment.elytra}
@@ -282,6 +317,7 @@ export default function CapeViewer({
                                 const elytra = !equipment.elytra;
                                 viewer.playerObject.backEquipment = elytra ? "elytra" : "cape";
                                 setEquipment({ ...equipment, elytra });
+                                renderRef.current?.();
                             }}>
                             <span>Elytra</span>
                             <span aria-hidden="true" className={`relative h-5 w-9 rounded-full transition-colors ${equipment.elytra ? "bg-orange-500" : "bg-zinc-600"}`}>
@@ -289,21 +325,13 @@ export default function CapeViewer({
                             </span>
                         </button>
                     )}
-                    {textureError && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+                    {(textureError || viewerError) && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
                         <p className="text-sm text-zinc-400">{t("The 3D preview could not be loaded.")}</p>
                         <Button onClick={() => setRetry(value => value + 1)} size="sm">{t("Try again")}</Button>
                     </div>}
-                    {isLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-8 h-8 border-4 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
-                        </div>
-                    )}
+
                 </>
-            ) : (
-                <div className="w-full h-full bg-zinc-900/20 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-zinc-700/50 border-t-zinc-700 rounded-full animate-spin opacity-50" />
-                </div>
-            )}
+            ) : null}
         </div>
     );
 }

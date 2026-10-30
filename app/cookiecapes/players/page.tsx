@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 import { getPlayersSorted, Order } from "../lib/api";
 import PlayerCard from "../components/PlayerCard";
-import Pagination from "../components/Pagination";
+import InfiniteGallery, { type GalleryBatch } from "../components/InfiniteGallery";
 import PlayerGalleryControls from "../components/PlayerGalleryControls";
 
 export const revalidate = 0;
@@ -31,9 +31,19 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
     const query = typeof params.q === "string" ? params.q : "";
     const banned = params.banned === 'true';
 
-    const data = await getPlayersSorted(page, limit, sort, order, query || "_", banned);
-    const paginatedPlayers = data.players.filter(player => player.minecraft_name?.trim());
-    const totalCount = data.total_count;
+    async function loadPage(nextPage: number): Promise<GalleryBatch> {
+        "use server";
+        if (!Number.isSafeInteger(nextPage) || nextPage < 1 || nextPage > Math.floor(Number.MAX_SAFE_INTEGER / limit)) throw new Error("Invalid page");
+        const data = await getPlayersSorted(nextPage, limit, sort, order, query || "_", banned);
+        return {
+            items: data.players.filter(player => player.minecraft_name?.trim()).map(player => ({
+                id: player.minecraft_uuid, card: <PlayerCard player={player} />,
+            })),
+            hasMore: data.players.length > 0 && nextPage * limit < data.total_count,
+        };
+    }
+    const initialBatch = await loadPage(page);
+    const galleryKey = crypto.randomUUID(); // Reset accumulated cards after server refreshes, including moderation.
 
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
@@ -50,19 +60,14 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
 
                 <PlayerGalleryControls />
 
-                {paginatedPlayers.length > 0 ? (
-                    <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                            {paginatedPlayers.map((player) => (
-                                <PlayerCard key={player.minecraft_uuid} player={player} />
-                            ))}
-                        </div>
-                        <Pagination
-                            currentPage={page}
-                            totalCount={totalCount}
-                            limit={limit}
-                        />
-                    </>
+                {initialBatch.items.length > 0 || initialBatch.hasMore ? (
+                    <InfiniteGallery
+                        key={galleryKey}
+                        initialBatch={initialBatch}
+                        initialPage={page}
+                        loadPageAction={loadPage}
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
+                    />
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
                         <p className="text-zinc-400 text-lg">{t("No players found.")}</p>
@@ -70,8 +75,8 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
                     </div>
                 )}
 
-                <Footer locale={locale} />
             </div>
+            <Footer locale={locale} />
         </main>
     );
 }
