@@ -35,10 +35,15 @@ export function createPreparedClient(baseUrl: string, ttl = 300000, fetcher = fe
         }
         const observed = Date.parse(response.headers.get("X-Snapshot-Validated-At") ?? "");
         const version = (value as { snapshot_version?: string })?.snapshot_version;
-        if (!Number.isFinite(observed) || observed + ttl <= now() || !version) throw new Error("Stats API response has no fresh source validation");
+        const receivedAt = now();
+        // The API and website share a 300s freshness limit. Allow a small
+        // transport/clock-skew margin at that boundary, then cache from receipt
+        // time so an otherwise valid 304 is not immediately considered expired.
+        const validationGrace = 5000;
+        if (!Number.isFinite(observed) || observed + ttl + validationGrace <= receivedAt || !version) throw new Error("Stats API response has no fresh source validation");
         if (query.has("snapshot_version") && query.get("snapshot_version") !== version) throw new Error("Stats API returned a different pinned version");
         if (cached.size >= 256) cached.delete(cached.keys().next().value!);
-        cached.set(path, { value, expires: observed + ttl, etag: response.headers.get("etag"), version });
+        cached.set(path, { value, expires: Math.max(receivedAt, observed + ttl), etag: response.headers.get("etag"), version });
         return value;
       })().finally(() => pending.delete(path));
       pending.set(path, task);
