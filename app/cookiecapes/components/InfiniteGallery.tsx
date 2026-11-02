@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "../i18n/client";
 
 export interface GalleryBatch {
@@ -24,11 +25,13 @@ export default function InfiniteGallery({ initialBatch, initialPage, loadPageAct
     const [pending, startTransition] = useTransition();
     const page = useRef(initialPage);
     const loading = useRef(false);
+    const autoLoadUsed = useRef(false);
     const sentinel = useRef<HTMLDivElement>(null);
 
     const loadMore = useCallback(() => {
         if (loading.current || !hasMore) return;
         loading.current = true;
+        autoLoadUsed.current = true;
         setError(false);
         startTransition(async () => {
             try {
@@ -55,9 +58,9 @@ export default function InfiniteGallery({ initialBatch, initialPage, loadPageAct
     }, [hasMore, loadPageAction]);
 
     useEffect(() => {
-        if (!hasMore || pending || error || !sentinel.current || typeof IntersectionObserver === "undefined") return;
+        if (autoLoadUsed.current || !hasMore || pending || error || !sentinel.current || typeof IntersectionObserver === "undefined") return;
         const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) loadMore();
+            if (entry.isIntersecting && !autoLoadUsed.current) loadMore();
         }, { rootMargin: "400px" });
         observer.observe(sentinel.current);
         return () => observer.disconnect();
@@ -70,10 +73,11 @@ export default function InfiniteGallery({ initialBatch, initialPage, loadPageAct
             </div>
             <div ref={sentinel} className="flex min-h-24 flex-col items-center justify-center gap-3 py-6">
                 <p role="status" className="text-sm text-zinc-400">
-                    {error ? t("Could not load more results.") : pending ? t("Loading more…") : !hasMore ? t("All results loaded.") : ""}
+                    {error ? t("Could not load more results.") : !hasMore ? t("All results loaded.") : ""}
                 </p>
-                {hasMore && <Button variant="outline" disabled={pending} onClick={loadMore}>
-                    {error ? t("Try again") : t("Load more")}
+                {hasMore && <Button variant="outline" size="lg" className="min-w-44" disabled={pending} aria-busy={pending} onClick={loadMore}>
+                    {pending && <LoaderCircle aria-hidden="true" data-icon="inline-start" className="animate-spin motion-reduce:animate-none" />}
+                    {pending ? t("Loading more…") : error ? t("Try again") : t("Load more")}
                 </Button>}
             </div>
         </>
