@@ -31,13 +31,18 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
     const query = typeof params.q === "string" ? params.q : "";
     const banned = params.banned === 'true';
 
+    const returnQuery = new URLSearchParams({ page: String(page), sort, order });
+    if (query) returnQuery.set("q", query);
+    if (banned) returnQuery.set("banned", "true");
+    const returnTo = "/cookiecapes/players?" + returnQuery;
+
     async function loadPage(nextPage: number): Promise<GalleryBatch> {
         "use server";
         if (!Number.isSafeInteger(nextPage) || nextPage < 1 || nextPage > Math.floor(Number.MAX_SAFE_INTEGER / limit)) throw new Error("Invalid page");
         const data = await getPlayersSorted(nextPage, limit, sort, order, query || "_", banned);
         return {
             items: data.players.filter(player => player.minecraft_name?.trim()).map(player => ({
-                id: player.minecraft_uuid, card: <PlayerCard player={player} />,
+                id: player.minecraft_uuid, card: <PlayerCard player={player} returnTo={returnTo} />,
             })),
             hasMore: data.players.length > 0 && nextPage * limit < data.total_count,
         };

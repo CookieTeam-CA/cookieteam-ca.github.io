@@ -1,7 +1,8 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import VerificationBadge from "./VerificationBadge";
 import { Cape } from "../lib/api";
-import CapeViewer from "./CapeViewer";
+import StaticPreview from "./StaticPreview";
+import { animatedPreviewUrl, capePreviewUrl } from "../lib/preview-url";
 import { Users } from "lucide-react";
 import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import DeleteCapeButton from "./DeleteCapeButton";
@@ -17,10 +18,8 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
   const { t, number } = await getTranslations();
     const isAdmin = await getCookieCapesAdmin();
 
-    const capeUrl = cape.cape_image_url;
-
     return (
-        <div className="group relative bg-zinc-900 border border-white/10 rounded-xl overflow-hidden hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 flex flex-col">
+        <div className="group relative bg-zinc-900 border border-white/10 rounded-xl overflow-hidden transition-all duration-300 flex flex-col">
 
             <div className="flex gap-2">
                 <DeleteCapeButton capeId={cape.cape_id} isAdmin={isAdmin} />
@@ -29,10 +28,11 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
 
             <div className="relative w-full aspect-3/4 bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                    <CapeViewer
-                        animateOnHover
-                        capeUrl={capeUrl}
-                        minecraftName={cape.minecraft_name}
+                    <StaticPreview
+                        src={capePreviewUrl(cape.cape_id, cape.last_edited)}
+                        animatedSrc={cape.animation ? animatedPreviewUrl(capePreviewUrl(cape.cape_id, cape.last_edited)) : undefined}
+                        alt={`${cape.cape_name}, cape by ${cape.minecraft_name}`}
+                        viewerFallback={{ capeUrl: cape.cape_image_url, minecraftName: cape.minecraft_uuid }}
                     />
                 </div>
 
@@ -42,20 +42,20 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
             </div>
 
             <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
-                <Link prefetch={false} href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="w-full mb-2 group-hover:text-orange-400 transition-colors">
-                    <h2 className="font-bold text-white truncate w-full" title={cape.cape_name}>
+                <Link prefetch={false} href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="max-w-full mb-2 text-white hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
+                    <h2 className="font-bold truncate" title={cape.cape_name}>
                         {cape.cape_name} <VerificationBadge verification={cape.verification} />
                     </h2>
                 </Link>
 
-                <Link prefetch={false} href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 w-full group/player hover:text-orange-400 transition-colors">
+                <Link prefetch={false} href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 max-w-full text-zinc-400 hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
                     <img
                         src={`https://minotar.net/helm/${cape.minecraft_name}/20`}
                         alt=""
                         width={20} height={20}
                         className="w-5 h-5 rounded-sm"
                     />
-                    <span className="text-sm text-zinc-400 group-hover/player:text-orange-400 transition-colors truncate max-w-37.5">{cape.minecraft_name}</span>
+                    <span className="text-sm truncate max-w-37.5">{cape.minecraft_name}</span>
                 </Link>
 
                 <div className="border-t border-white/5 w-full pt-3 mt-auto flex justify-center">

@@ -21,6 +21,9 @@ interface CapeViewerProps {
     height?: number;
     animation?: "idle" | "walk" | "run" | "none";
     animateOnHover?: boolean;
+    fallbackSrc?: string;
+    fallbackAlt?: string;
+    terminalErrorMessage?: string;
 }
 
 function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"), animType: string) {
@@ -46,10 +49,10 @@ function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"
     }
 }
 
-export function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean) {
-    const load = async (url: string, apply: (image: HTMLImageElement) => void) => {
+export function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean, requireCape = false) {
+    const load = async (url: string, apply: (image: HTMLImageElement) => void | Promise<void>) => {
         const image = await loadTextureImage(url);
-        if (isCurrent()) apply(image);
+        if (isCurrent()) await apply(image);
     };
     const getProxiedUrl = (url: string | null | undefined) => {
         if (!url) return null;
@@ -70,8 +73,9 @@ export function loadTextures(viewer: SkinViewer, cape: string | null | undefined
     const capeLoad = (async () => {
         if (cape) await load(cape, image => viewer.loadCape(image));
         else if (isCurrent()) viewer.loadCape(null);
-    })().catch(() => {
+    })().catch(error => {
         if (isCurrent()) viewer.loadCape(null);
+        if (requireCape) throw error;
     });
     return Promise.all([finalSkinUrl ? load(finalSkinUrl, image => viewer.loadSkin(image)) : undefined, capeLoad]);
 }
@@ -87,10 +91,14 @@ export default function CapeViewer({
     height,
     animation = "idle",
     allowElytraSwitch = false,
-    animateOnHover = false
+    animateOnHover = false,
+    fallbackSrc,
+    fallbackAlt = "Minecraft preview",
+    terminalErrorMessage
 }: CapeViewerProps) {
     const { t } = useTranslations();
     const canvasHostRef = useRef<HTMLDivElement>(null);
+    const fallbackImageRef = useRef<HTMLImageElement>(null);
     const renderRef = useRef<(() => void) | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
@@ -104,6 +112,7 @@ export default function CapeViewer({
     const motionEnabled = !reducedMotion && !motionPaused && (!animateOnHover || hovered || focused);
     const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
     const [viewerError, setViewerError] = useState(false);
+    const [failedFallbackSrc, setFailedFallbackSrc] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [viewerReady, setViewerReady] = useState(false);
     const [textureError, setTextureError] = useState(false);
@@ -255,7 +264,7 @@ export default function CapeViewer({
             viewer.renderPaused = true;
             setIsLoading(true);
             setTextureError(false);
-            void loadTextures(viewer, capeUrl, skinUrl, minecraftName, () => !cancelled && !viewer.disposed).then(() => {
+            void loadTextures(viewer, capeUrl, skinUrl, minecraftName, () => !cancelled && !viewer.disposed, !!terminalErrorMessage).then(() => {
                 if (cancelled || viewer.disposed) return;
                 let available = false;
                 if (allowElytraSwitch && capeUrl && viewer.playerObject.cape.map) {
@@ -274,7 +283,7 @@ export default function CapeViewer({
             });
         }
         return () => { cancelled = true; };
-    }, [viewerReady, active, capeUrl, skinUrl, minecraftName, allowElytraSwitch]);
+    }, [viewerReady, active, capeUrl, skinUrl, minecraftName, allowElytraSwitch, terminalErrorMessage]);
 
     useEffect(() => {
         if (viewerRef.current && width && height) {
@@ -308,7 +317,7 @@ export default function CapeViewer({
     useEffect(() => {
         const viewer = viewerRef.current;
         let cancelled = false;
-        if (viewer) {
+        if (viewer && !viewerError) {
             import("skinview3d").then(skinview3d => {
                 if (!cancelled && !viewer.disposed) {
                     setAnimation(viewer, skinview3d, motionEnabled ? animation : "none");
@@ -319,7 +328,15 @@ export default function CapeViewer({
             });
         }
         return () => { cancelled = true; };
-    }, [animation, motionEnabled, viewerReady, isLoading]);
+    }, [animation, motionEnabled, viewerReady, isLoading, viewerError]);
+
+    useEffect(() => {
+        const image = fallbackImageRef.current;
+        if (fallbackSrc && image?.complete && image.naturalWidth === 0) {
+            // Handle a cached failure that completed before the handler attached.
+            setFailedFallbackSrc(fallbackSrc);
+        }
+    }, [fallbackSrc, textureError, viewerError]);
 
 
     return (
@@ -330,6 +347,11 @@ export default function CapeViewer({
             onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
             <div ref={canvasHostRef} className={`absolute inset-0 ${!active || isLoading || textureError || viewerError ? "invisible" : ""}`} />
             {animationManifest && active && <Button size="sm" variant="outline" className="absolute top-4 right-4 z-30" onClick={() => setMotionPaused(value => !value)}>{motionPaused ? "Abspielen" : "Pause"}</Button>}
+            {(textureError || viewerError) && fallbackSrc && (failedFallbackSrc === fallbackSrc
+                ? <p role="status" className="p-4 text-center text-sm text-zinc-400">{t("Cape couldn't load")}</p>
+                // Keep the final image independent of the image-to-3D card fallback.
+                // eslint-disable-next-line @next/next/no-img-element
+                : <img ref={fallbackImageRef} src={fallbackSrc} alt={fallbackAlt} width={384} height={512} loading="lazy" decoding="async" className="h-full w-full object-contain" style={{ imageRendering: "pixelated" }} onError={() => setFailedFallbackSrc(fallbackSrc)} />)}
             {(!active || isLoading || !viewerReady) && !viewerError && !textureError && (
                 <div className="absolute inset-0 flex items-center justify-center" role="status" aria-label={t("Loading capes...")}>
                     <div className={`size-6 border-2 border-zinc-700/50 border-t-zinc-700 rounded-full opacity-50 ${active ? "animate-spin" : ""}`} />
@@ -337,7 +359,7 @@ export default function CapeViewer({
             )}
             {active ? (
                 <>
-                    {allowElytraSwitch && equipment.url === capeUrl && equipment.available && !isLoading && !textureError && (
+                    {allowElytraSwitch && equipment.url === capeUrl && equipment.available && !isLoading && !textureError && !viewerError && (
                         <button type="button" role="switch" className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full bg-zinc-950/90 px-3 py-2 text-sm font-medium text-white cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500"
                             aria-checked={equipment.elytra}
                             aria-label={t("Elytra view")}
@@ -355,9 +377,9 @@ export default function CapeViewer({
                             </span>
                         </button>
                     )}
-                    {(textureError || viewerError) && <div role="alert" className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-                        <p className="text-sm text-zinc-400">{t("The 3D preview could not be loaded.")}</p>
-                        <Button onClick={() => setRetry(value => value + 1)} size="sm">{t("Try again")}</Button>
+                    {(textureError || viewerError) && <div role="alert" className={fallbackSrc ? "absolute top-3 right-3 z-30 flex flex-col items-end gap-2 rounded-lg bg-zinc-950/90 p-3 text-right" : "absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center"}>
+                        <p className="text-sm text-zinc-400">{terminalErrorMessage || t("The 3D preview could not be loaded.")}</p>
+                        {!terminalErrorMessage && <Button onClick={() => setRetry(value => value + 1)} size="sm">{t("Try again")}</Button>}
                     </div>}
 
                 </>

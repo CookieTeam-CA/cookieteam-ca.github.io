@@ -6,17 +6,21 @@ import { useState, useRef, useLayoutEffect } from "react";
 import CapeViewer from "./CapeViewer";
 import { ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import type { Player } from "../lib/api";
+import { playerPreviewUrl } from "../lib/preview-url";
 
 interface SkinHistoryEntry {
     hash: string;
     changed_at: string | Date;
+    slim?: boolean;
 }
 
 interface ProfileSkinDisplayProps {
     currentCapeUrl: string | null;
     displayName: string;
+    uuid: string;
     player: Player | null;
     isCookieCapesUser: boolean;
     skinHistory?: SkinHistoryEntry[];
@@ -25,12 +29,14 @@ interface ProfileSkinDisplayProps {
 export default function ProfileSkinDisplay({
     currentCapeUrl,
     displayName,
+    uuid,
     player,
     isCookieCapesUser,
     skinHistory = []
 }: ProfileSkinDisplayProps) {
   const { t, number } = useTranslations();
-    const [activeSkinUrl, setActiveSkinUrl] = useState<string | undefined>(undefined);
+    const [activeSkin, setActiveSkin] = useState<SkinHistoryEntry | undefined>(undefined);
+    const activeSkinUrl = activeSkin ? `https://crafthead.net/skin/${activeSkin.hash}` : undefined;
     const [isExpanded, setIsExpanded] = useState(false);
     const gridRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +70,8 @@ export default function ProfileSkinDisplay({
                         capeUrl={currentCapeUrl}
                         minecraftName={activeSkinUrl ? undefined : displayName}
                         skinUrl={activeSkinUrl}
+                        fallbackSrc={playerPreviewUrl(uuid, player?.last_edited, activeSkin)}
+                        fallbackAlt={`${displayName}, ${activeSkin ? "selected historical skin" : "current Minecraft skin"}`}
                         animation="walk"
                     />
                 </div>
@@ -81,7 +89,13 @@ export default function ProfileSkinDisplay({
                         currentCapeUrl ? (
                             <div className="text-zinc-300 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                {t("Wearing cape #")}{player?.current_cape_id}
+                                {t("Cape:")}
+                                <Link
+                                    href={`/cookiecapes/capes/${player?.current_cape_id}?returnTo=${encodeURIComponent(`/cookiecapes/players/${displayName}`)}`}
+                                    className="min-w-0 truncate font-bold hover:text-orange-400 focus-visible:text-orange-400 transition-colors"
+                                >
+                                    {player?.cape_name || t("Show cape")}
+                                </Link>
                             </div>
                         ) : (
                             <div className="text-zinc-500 flex items-center gap-2">
@@ -113,8 +127,9 @@ export default function ProfileSkinDisplay({
                                 key={i}
                                 className="group relative h-13 w-13 shrink-0 overflow-hidden border border-white/5 bg-black/20 hover:border-orange-500/50"
                                 aria-label={t("Show skin {number}", { number: i + 1 })}
-                                onMouseEnter={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
-                                onClick={() => setActiveSkinUrl(`https://crafthead.net/skin/${skin.hash}`)}
+                                onMouseEnter={() => setActiveSkin(skin)}
+                                onFocus={() => setActiveSkin(skin)}
+                                onClick={() => setActiveSkin(skin)}
                             >
                                 <Image
                                     src={`https://crafthead.net/avatar/${skin.hash}`}

@@ -1,5 +1,5 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
-import { getCapesSorted, SortBy, Order } from "../lib/api";
+import { getCapesSorted, getCapeSearchMatch, SortBy, Order } from "../lib/api";
 import CapeCard from "../components/CapeCard";
 import InfiniteGallery, { type GalleryBatch } from "../components/InfiniteGallery";
 import GalleryControls from "../components/GalleryControls";
@@ -35,9 +35,13 @@ export default async function CapesGalleryPage({ searchParams }: PageProps) {
     async function loadPage(nextPage: number): Promise<GalleryBatch> {
         "use server";
         if (!Number.isSafeInteger(nextPage) || nextPage < 1 || nextPage > Math.floor(Number.MAX_SAFE_INTEGER / limit)) throw new Error("Invalid page");
-        const data = await getCapesSorted(nextPage, limit, sort, order, query);
+        const [data, idMatch] = await Promise.all([
+            getCapesSorted(nextPage, limit, sort, order, query),
+            nextPage === page ? getCapeSearchMatch(query) : undefined,
+        ]);
+        const capes = idMatch ? [idMatch, ...data.capes.filter(cape => cape.cape_id !== idMatch.cape_id)] : data.capes;
         return {
-            items: data.capes.map(cape => ({ id: cape.cape_id, card: <CapeCard cape={cape} returnTo={returnTo} /> })),
+            items: capes.map(cape => ({ id: cape.cape_id, card: <CapeCard cape={cape} returnTo={returnTo} /> })),
             hasMore: data.capes.length > 0 && nextPage * limit < data.total_count,
         };
     }
