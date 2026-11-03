@@ -108,16 +108,23 @@ export async function getCapes(limit = 10): Promise<Cape[]> {
 }
 
 export async function getCapesSorted(
-  page = 1, limit = 24, sortBy: SortBy = "active_user_count", order: Order = "desc", search = "", owner?: string,
+  page = 1, limit = 24, sortBy: SortBy = "active_user_count", order: Order = "desc", search = "", owner?: string, ids?: number[],
 ): Promise<CapesResponse> {
   const data = await request<CapesResponse>(`${API_BASE_URL}/list_capes_sorted`, {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, query: search || undefined, owner }),
+    body: JSON.stringify({ limit, offset: (page - 1) * limit, sort_by: sortBy, order, query: search || undefined, owner, ids }),
     next: { revalidate: 0 },
   });
   return { ...data, capes: data.capes.map(cape => ({
     ...cape, cape_image_url: cape.cape_image_url || `${API_BASE_URL}/capes/${cape.cape_id}.png`,
   })) };
+}
+
+export async function getCapeSearchMatch(search: string): Promise<Cape | undefined> {
+  const query = search.trim();
+  if (!/^\d+$/.test(query) || !Number.isSafeInteger(Number(query))) return undefined;
+  const data = await getCapesSorted(1, 1, "cape_id", "asc", "", undefined, [Number(query)]);
+  return data.capes[0];
 }
 
 export async function getPlayersSorted(
@@ -132,7 +139,7 @@ export async function getPlayersSorted(
 }
 
 function normalizePlayer(player: Player): Player {
-  return player.current_cape_id === -1
+  return player.current_cape_id === -1 || player.current_cape_id === 0
     ? { ...player, current_cape_id: null, cape_image_url: null, cape_name: null, last_edited: null }
     : player;
 }
@@ -160,7 +167,13 @@ export async function getPlayersByCape(capeId: number, page = 1): Promise<Player
 export async function getPlayer(identifier: string): Promise<Player | null> {
   try {
     const data = await request<Player & { cape_id: number | null }>(`${API_BASE_URL}/get_player?identifier=${encodeURIComponent(identifier)}`, { next: { revalidate: 0 } });
-    return normalizePlayer({ ...data, current_cape_id: data.cape_id });
+    const player = normalizePlayer({ ...data, current_cape_id: data.cape_id });
+    if (player.current_cape_id != null && !player.cape_name) {
+      const { capes } = await getCapesSorted(1, 1, "cape_id", "asc", "", undefined, [player.current_cape_id]);
+      const cape = capes[0];
+      if (cape) return { ...player, cape_name: cape.cape_name, cape_image_url: cape.cape_image_url, last_edited: cape.last_edited };
+    }
+    return player;
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;
@@ -208,15 +221,16 @@ export interface PlayerHistory {
 
 export async function getPlayerHistory(username: string): Promise<PlayerHistory | null> {
   try {
-    const data = await request<PlayerHistory>(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, { next: { revalidate: 0 } });
+    const data = await request<Omit<PlayerHistory, "country"> & { country?: string | null; inferred_country?: string | null }>(`https://names.amplitudes.me/api/history/${encodeURIComponent(username)}`, { next: { revalidate: 0 } });
+    const country = data?.country ?? data?.inferred_country ?? null;
     if (!data || typeof data.uuid !== "string" || typeof data.current_username !== "string"
-      || !(data.country === null || (typeof data.country === "string" && /^[A-Za-z]{2}$/.test(data.country)))
+      || !(country === null || (typeof country === "string" && /^[A-Za-z]{2}$/.test(country)))
       || !Array.isArray(data.username_history) || !data.username_history.every(entry => entry && typeof entry.username === "string" && (entry.changed_at === null || typeof entry.changed_at === "string"))
       || !Array.isArray(data.skin_history) || !data.skin_history.every(entry => entry && typeof entry.hash === "string" && typeof entry.changed_at === "string" && typeof entry.slim === "boolean")
       || !Array.isArray(data.socials) || !data.socials.every(entry => entry && typeof entry.type === "string" && typeof entry.name === "string" && typeof entry.verified === "boolean")) {
       throw new CapeApiError(0, translations("en").t("The API is temporarily unavailable or returned an invalid response."));
     }
-    return data;
+    return { ...data, country };
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;

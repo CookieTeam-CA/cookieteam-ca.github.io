@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ArrowLeft, User, Calendar, Hash, Users } from "lucide-react";
 import Footer from "../../../components/Footer";
 import { galleryReturn } from "../../lib/gallery-return";
+import { capePreviewUrl } from "../../lib/preview-url";
 
 export const revalidate = 0;
 
@@ -39,6 +40,8 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
   const { t, locale } = await getTranslations();
     const { id } = await params;
     const capeId = Number(id);
+    const query = await searchParams;
+    const returnTo = galleryReturn(query.returnTo);
 
     const cape = await getCape(capeId);
 
@@ -47,15 +50,13 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
             <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
                 <h1 className="text-3xl font-bold mb-4">{t("Cape not found")}</h1>
                 <p className="text-zinc-400 mb-8">{t("This cape does not exist or has been deleted.")}</p>
-                <Button asChild size="lg"><Link href="/cookiecapes/capes">
+                <Button asChild size="lg"><Link href={returnTo}>
                     {t("Back to gallery")}
                 </Link></Button>
             </div>
         );
     }
 
-    const query = await searchParams;
-    const returnTo = galleryReturn(query.returnTo);
     const requestedPage = typeof query.page === "string" ? Number(query.page) : 1;
     const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const { players, total_count, limit } = await getPlayersByCape(capeId, page);
@@ -81,18 +82,22 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
                                     capeUrl={capeUrl}
                                     minecraftName={cape.minecraft_name}
                                     animation="walk"
+                                    fallbackSrc={cape.is_private ? undefined : capePreviewUrl(cape.cape_id, cape.last_edited)}
+                                    fallbackAlt={`${cape.cape_name}, cape by ${cape.minecraft_name}`}
                                 />
                             </div>
                             <div className="absolute bottom-0 left-0 p-6 pr-36 z-20 w-full pointer-events-none">
                                 <h1 className="text-3xl md:text-5xl font-nexa text-white mb-2">{cape.cape_name} <VerificationBadge verification={cape.verification} /></h1>
                                 <div className="flex items-center gap-3">
-                                    <img
-                                        src={`https://minotar.net/helm/${cape.minecraft_name}/32`}
-                                        alt={cape.minecraft_name}
-                                        className="w-8 h-8 rounded"
-                                    />
+                                    <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="pointer-events-auto shrink-0" aria-label={cape.minecraft_name}>
+                                        <img
+                                            src={`https://minotar.net/helm/${cape.minecraft_name}/32`}
+                                            alt={cape.minecraft_name}
+                                            className="w-8 h-8 rounded"
+                                        />
+                                    </Link>
                                     <div className="text-zinc-300">
-                                        {t("Uploaded by")} <span className="text-white font-bold">{cape.minecraft_name}</span>
+                                        {t("Uploaded by")} <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="pointer-events-auto text-white font-bold hover:text-orange-400 focus-visible:text-orange-400 transition-colors">{cape.minecraft_name}</Link>
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +122,7 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
                             <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                 <User className="text-orange-500 mb-2" size={20} />
                                 <span className="text-zinc-400 text-xs uppercase tracking-wider mb-1">{t("Author")}</span>
-                                <span className="text-sm font-medium truncate w-full">{cape.minecraft_name}</span>
+                                <Link href={`/cookiecapes/players/${cape.minecraft_name}`} className="text-sm font-medium truncate max-w-full hover:text-orange-400 focus-visible:text-orange-400 transition-colors">{cape.minecraft_name}</Link>
                             </div>
                         </div>
                     </div>
@@ -135,14 +140,14 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
                             {players.length > 0 ? (
                                 <div className="flex flex-col gap-3 overflow-y-auto max-h-150 pr-2 custom-scrollbar">
                                     {players.map((player) => (
-                                        <div key={player.minecraft_uuid} className="bg-black/30 border border-white/5 rounded-lg p-3 flex items-center gap-3 hover:bg-white/5 transition-colors">
+                                        <Link href={`/cookiecapes/players/${player.minecraft_name}`} key={player.minecraft_uuid} className="bg-black/30 border border-white/5 rounded-lg p-3 flex items-center gap-3 text-zinc-200 hover:text-orange-400 focus-visible:text-orange-400 hover:bg-white/5 transition-colors">
                                             <img
                                                 src={`https://minotar.net/helm/${player.minecraft_name}/32`}
                                                 alt={player.minecraft_name}
                                                 className="w-8 h-8 rounded"
                                             />
-                                            <span className="font-medium text-zinc-200">{player.minecraft_name}</span>
-                                        </div>
+                                            <span className="font-medium">{player.minecraft_name}</span>
+                                        </Link>
                                     ))}
                                 </div>
                             ) : (

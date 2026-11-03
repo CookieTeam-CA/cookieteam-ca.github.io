@@ -73,7 +73,7 @@ export default function InfiniteGallery({ initialBatch, initialPage, loadPageAct
             </div>
             <div ref={sentinel} className="flex min-h-24 flex-col items-center justify-center gap-3 py-6">
                 <p role="status" className="text-sm text-zinc-400">
-                    {error ? t("Could not load more results.") : !hasMore ? t("All results loaded.") : ""}
+                    {error ? t("Could not load more results.") : !hasMore ? t("That's all we could find.") : ""}
                 </p>
                 {hasMore && <Button variant="outline" size="lg" className="min-w-44" disabled={pending} aria-busy={pending} onClick={loadMore}>
                     {pending && <LoaderCircle aria-hidden="true" data-icon="inline-start" className="animate-spin motion-reduce:animate-none" />}

@@ -87,6 +87,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                         <ProfileSkinDisplay
                             currentCapeUrl={currentCapeUrl}
                             displayName={displayName}
+                            uuid={player?.minecraft_uuid ?? history?.uuid ?? ""}
                             player={player}
                             isCookieCapesUser={isCookieCapesUser}
                             skinHistory={history?.skin_history}
@@ -212,7 +213,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                         {createdCapes.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {createdCapes.map((cape) => (
-                                    <CapeCard key={cape.cape_id} cape={cape} />
+                                    <CapeCard key={cape.cape_id} cape={cape} returnTo={`/cookiecapes/players/${displayName}`} />
                                 ))}
                             </div>
                         ) : (

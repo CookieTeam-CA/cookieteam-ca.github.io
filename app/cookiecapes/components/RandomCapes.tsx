@@ -3,7 +3,8 @@ import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import VerificationBadge from "./VerificationBadge";
 
 import { Cape } from "../lib/api";
-import CapeViewer from "./CapeViewer";
+import StaticPreview from "./StaticPreview";
+import { capePreviewUrl } from "../lib/preview-url";
 
 interface RandomCapesProps {
   capes: Cape[];
@@ -23,10 +24,10 @@ export default function RandomCapes({ capes }: RandomCapesProps) {
         {capes.map((cape) => (
           <div key={cape.cape_id} className="cape-card flex flex-col items-center bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm gap-4 transition-transform">
             <div className="w-full h-75 relative flex items-center justify-center">
-              <CapeViewer
-                capeUrl={cape.cape_image_url}
-                skinUrl={`https://minotar.net/skin/${cape.minecraft_uuid}`}
-                animation="walk"
+              <StaticPreview
+                src={capePreviewUrl(cape.cape_id, cape.last_edited)}
+                alt={`${cape.cape_name}, cape by ${cape.minecraft_name}`}
+                viewerFallback={{ capeUrl: cape.cape_image_url, minecraftName: cape.minecraft_uuid }}
               />
             </div>
             <div className="text-center">

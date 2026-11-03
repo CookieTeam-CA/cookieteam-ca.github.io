@@ -1,10 +1,11 @@
 import type { Locale } from "./locale";
 
 export const de = {
+  "Cape couldn't load": "Cape konnte nicht geladen werden",
   "Load more": "Mehr laden",
   "Loading more…": "Weitere Ergebnisse werden geladen…",
   "Could not load more results.": "Weitere Ergebnisse konnten nicht geladen werden.",
-  "All results loaded.": "Alle Ergebnisse geladen.",
+  "That's all we could find.": "Das ist alles was wir gefunden haben.",
   "Delete layer {name}": "Ebene {name} löschen",
   "Show layer {name}": "Ebene {name} einblenden",
   "Hide layer {name}": "Ebene {name} ausblenden",
