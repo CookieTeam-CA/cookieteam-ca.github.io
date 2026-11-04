@@ -21,7 +21,7 @@ interface Version {
 
 export interface CapeManifestPlayer { setPlaying(value: boolean): void; dispose(): void }
 
-export function playCapeManifest(viewer: SkinViewer, url: string, render: () => void): CapeManifestPlayer {
+export function playCapeManifest(viewer: SkinViewer, url: string, render: () => void, onLoad: () => void = () => {}): CapeManifestPlayer {
   const controller = new AbortController(), pages: ImageBitmap[] = [];
   let request = 0, elapsed = 0, started = 0;
   let playing = false, loaded = false;
@@ -62,6 +62,8 @@ export function playCapeManifest(viewer: SkinViewer, url: string, render: () => 
       request = requestAnimationFrame(tick);
     };
     loaded = true;
+    if (controller.signal.aborted) return;
+    onLoad();
     if (!controller.signal.aborted && playing) request = requestAnimationFrame(tick);
   };
   void load().catch(() => pages.forEach(page => page.close()));

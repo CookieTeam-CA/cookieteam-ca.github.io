@@ -19,6 +19,7 @@ interface SkinHistoryEntry {
 
 interface ProfileSkinDisplayProps {
     currentCapeUrl: string | null;
+    animationManifest?: string;
     displayName: string;
     uuid: string;
     player: Player | null;
@@ -28,13 +29,14 @@ interface ProfileSkinDisplayProps {
 
 export default function ProfileSkinDisplay({
     currentCapeUrl,
+    animationManifest,
     displayName,
     uuid,
     player,
     isCookieCapesUser,
     skinHistory = []
 }: ProfileSkinDisplayProps) {
-  const { t, number } = useTranslations();
+    const { t, number } = useTranslations();
     const [activeSkin, setActiveSkin] = useState<SkinHistoryEntry | undefined>(undefined);
     const activeSkinUrl = activeSkin ? `https://crafthead.net/skin/${activeSkin.hash}` : undefined;
     const [isExpanded, setIsExpanded] = useState(false);
@@ -68,6 +70,7 @@ export default function ProfileSkinDisplay({
                 <div className="w-full h-full flex items-center justify-center">
                     <CapeViewer
                         capeUrl={currentCapeUrl}
+                        animationManifest={animationManifest}
                         minecraftName={activeSkinUrl ? undefined : displayName}
                         skinUrl={activeSkinUrl}
                         fallbackSrc={playerPreviewUrl(uuid, player?.last_edited, activeSkin)}

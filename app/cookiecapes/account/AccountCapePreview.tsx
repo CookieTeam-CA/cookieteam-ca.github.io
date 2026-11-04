@@ -21,6 +21,6 @@ export default function AccountCapePreview({ capes }: { capes: Cape[] }) {
   }, [active, reducedMotion, capes.length]);
 
   return <div ref={container} role="group" aria-label={cape ? t("3D preview of {name}", { name: cape.cape_name }) : t("Interactive Minecraft preview")} className="absolute inset-0 bottom-12">
-    <CapeViewer capeUrl={cape?.cape_image_url ?? null} skinUrl={cape ? `https://minotar.net/skin/${cape.minecraft_uuid}` : undefined} animation="idle" />
+    <CapeViewer capeUrl={cape?.cape_image_url ?? null} animationManifest={cape?.animation?.manifest_url} skinUrl={cape ? `https://minotar.net/skin/${cape.minecraft_uuid}` : undefined} animation="idle" />
   </div>;
 }

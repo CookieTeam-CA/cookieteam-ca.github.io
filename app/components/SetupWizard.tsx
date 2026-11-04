@@ -11,6 +11,8 @@ import { Session } from "next-auth";
 export default function SetupWizard({ session }: { session: Session | null }) {
   const [step, setStep] = useState(0);
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
+  const [registrationError, setRegistrationError] = useState(false);
+  const [registrationAttempt, setRegistrationAttempt] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const [mcName, setMcName] = useState("");
@@ -38,8 +40,11 @@ export default function SetupWizard({ session }: { session: Session | null }) {
   }, []);
 
   useEffect(() => {
+    let active = true;
     if (session) {
       checkRegistration().then(res => {
+        if (!active) return;
+        if (res.error) { setRegistrationError(true); return; }
         setIsRegistered(res.registered);
 
         const isReturning = typeof window !== "undefined" && sessionStorage.getItem("discord_login_scroll") === "true";
@@ -52,14 +57,15 @@ export default function SetupWizard({ session }: { session: Session | null }) {
         } else if (isReturning) {
           setStep(2);
         }
-      });
+      }).catch(() => { if (active) setRegistrationError(true); });
     } else {
       const isReturning = typeof window !== "undefined" && sessionStorage.getItem("discord_login_scroll") === "true";
       if (isReturning) {
         sessionStorage.removeItem("discord_login_scroll");
       }
     }
-  }, [session]);
+    return () => { active = false; };
+  }, [session, registrationAttempt]);
 
   const handleStart = () => {
     if (session && isRegistered === false) {
@@ -137,6 +143,17 @@ export default function SetupWizard({ session }: { session: Session | null }) {
       }
     }
   };
+
+  if (session && (registrationError || isRegistered === null)) return (
+    <div id="registration" ref={wizardRef} className="mx-auto my-12 w-full max-w-4xl scroll-mt-8 px-6">
+      <div className="rounded-3xl border border-white/10 bg-zinc-900/80 p-8 text-center">
+        {registrationError ? <>
+          <p role="alert" className="mb-4 text-zinc-300">Dein Registrierungsstatus konnte nicht geladen werden. Bitte versuche es erneut.</p>
+          <Button onClick={() => { setRegistrationError(false); setIsRegistered(null); setRegistrationAttempt(value => value + 1); }}>Erneut versuchen</Button>
+        </> : <p role="status" className="text-zinc-300">Registrierungsstatus wird geladen...</p>}
+      </div>
+    </div>
+  );
 
   return (
     <div id="registration" ref={wizardRef} className="relative w-full max-w-4xl mx-auto my-12 scroll-mt-8 px-6">

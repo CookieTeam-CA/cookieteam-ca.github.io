@@ -18,8 +18,9 @@ export default function StaticPreview({ src, alt, animatedSrc, viewerFallback }:
     const active = useElementActive(host);
     const reduced = useReducedMotion();
     const [hovered, setHovered] = useState(false);
+    const [focused, setFocused] = useState(false);
     const [failedAnimation, setFailedAnimation] = useState<string | null>(null);
-    const animate = active && hovered && !reduced && animatedSrc && failedAnimation !== animatedSrc;
+    const animate = active && !reduced && (hovered || focused) && animatedSrc && failedAnimation !== animatedSrc;
     const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
     const [failedSrc, setFailedSrc] = useState<string | null>(null);
     const [failedViewerSrc, setFailedViewerSrc] = useState<string | null>(null);
@@ -56,8 +57,9 @@ export default function StaticPreview({ src, alt, animatedSrc, viewerFallback }:
 
     return (
         <div ref={host} className="relative h-full w-full" tabIndex={animatedSrc ? 0 : undefined}
+            role="group" aria-label={alt}
             onPointerEnter={() => { setFailedAnimation(null); setHovered(true); }} onPointerLeave={() => setHovered(false)}
-            onFocus={() => { setFailedAnimation(null); setHovered(true); }} onBlur={() => setHovered(false)}>
+            onFocus={() => { setFailedAnimation(null); setFocused(true); }} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
             {/* Native loading preserves the image route's browser/CDN cache policy. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
