@@ -14,23 +14,24 @@ const getHeaders = () => {
 };
 
 export async function checkRegistration() {
-  const session = await auth();
-  if (!session?.user?.discordId) return { registered: false, error: "Not logged in" };
-
   try {
+    const session = await auth();
+    if (!session?.user?.discordId) return { registered: null, error: "Not logged in" };
     const res = await fetch(`${API_URL}/users/get/${session.user.discordId}`, {
       headers: getHeaders(),
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
     
     if (res.ok) {
       return { registered: true };
     }
     
-    return { registered: false };
+    if (res.status === 404) return { registered: false };
+    return { registered: null, error: "Registration status unavailable" };
   } catch (err) {
     console.error("checkRegistration error:", err);
-    return { registered: false, error: "Connection failed" };
+    return { registered: null, error: "Connection failed" };
   }
 }
 
@@ -47,6 +48,7 @@ export async function registerUser(minecraft_uuid: string) {
         minecraft_uuid: minecraft_uuid
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
     
     if (res.ok) {
@@ -70,6 +72,7 @@ export async function unregisterUser() {
       method: "DELETE",
       headers: getHeaders(),
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     });
     
     if (res.ok) {
@@ -85,7 +88,7 @@ export async function unregisterUser() {
 
 export async function verifyMinecraftAccount(name: string) {
   try {
-    const res = await fetch(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(name)}`);
+    const res = await fetch(`https://playerdb.co/api/player/minecraft/${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
       return { success: false, error: "Minecraft Account nicht gefunden." };
     }
@@ -99,7 +102,7 @@ export async function verifyMinecraftAccount(name: string) {
 
     let capeUrl: string | null = null;
     try {
-      const capeRes = await fetch(`${API_BASE_URL}/get_player?identifier=${uuid}`, { cache: "no-store" });
+      const capeRes = await fetch(`${API_BASE_URL}/get_player?identifier=${uuid}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
       if (capeRes.ok) {
         const capeData = await capeRes.json();
         capeUrl = capeData.cape_image_url || (capeData.cape_id != null ? `${API_BASE_URL}/capes/${capeData.cape_id}.png` : null);

@@ -1,7 +1,7 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { API_BASE_URL, Player } from "../lib/api";
 import StaticPreview from "./StaticPreview";
-import { playerPreviewUrl } from "../lib/preview-url";
+import { animatedPreviewUrl, playerPreviewUrl } from "../lib/preview-url";
 import { ShieldAlert } from "lucide-react";
 import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import BanPlayerButton from "./BanPlayerButton";
@@ -27,6 +27,7 @@ export default async function PlayerCard({ player, returnTo = "/cookiecapes/play
                 <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <StaticPreview
                         src={playerPreviewUrl(player.minecraft_uuid, player.last_edited)}
+                        animatedSrc={player.current_cape_id != null ? animatedPreviewUrl(playerPreviewUrl(player.minecraft_uuid, player.last_edited)) : undefined}
                         alt={player.cape_name ? `${player.minecraft_name} wearing ${player.cape_name}` : `${player.minecraft_name}, Minecraft skin`}
                         viewerFallback={{
                             capeUrl: player.current_cape_id != null ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png` : null,

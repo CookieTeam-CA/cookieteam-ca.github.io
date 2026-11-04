@@ -8,8 +8,11 @@ import type { SkinViewer } from "skinview3d";
 import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 import { useElementActive, useReducedMotion } from "../../lib/visibility";
 import { loadTextureImage } from "../lib/texture-cache";
+import { applyCapeCanvas, playCapeManifest, type CapeManifestPlayer } from "../lib/animation-viewer";
 
 interface CapeViewerProps {
+    capeFrame?: { canvas: HTMLCanvasElement; revision: number };
+    animationManifest?: string;
     capeUrl?: string | null;
     allowElytraSwitch?: boolean;
     skinUrl?: string;
@@ -79,6 +82,8 @@ export function loadTextures(viewer: SkinViewer, cape: string | null | undefined
 
 
 export default function CapeViewer({
+    capeFrame,
+    animationManifest,
     capeUrl,
     skinUrl,
     minecraftName,
@@ -97,9 +102,12 @@ export default function CapeViewer({
     const renderRef = useRef<(() => void) | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<SkinViewer | null>(null);
+    const manifestPlayer = useRef<CapeManifestPlayer | null>(null);
+    const manifestPlaying = useRef(false);
     const active = useElementActive(containerRef);
     const reducedMotion = useReducedMotion();
     const [motionPaused, setMotionPaused] = useState(false);
+    const [rotationPaused, setRotationPaused] = useState(false);
     const [hovered, setHovered] = useState(false);
     const [focused, setFocused] = useState(false);
     const motionEnabled = !reducedMotion && !motionPaused && (!animateOnHover || hovered || focused);
@@ -109,6 +117,7 @@ export default function CapeViewer({
     const [isLoading, setIsLoading] = useState(false);
     const [viewerReady, setViewerReady] = useState(false);
     const [textureError, setTextureError] = useState(false);
+    const [loadedManifest, setLoadedManifest] = useState<string | null>(null);
     const [retry, setRetry] = useState(0);
     const [equipment, setEquipment] = useState({ url: capeUrl, available: false, elytra: false });
 
@@ -190,9 +199,10 @@ export default function CapeViewer({
                 viewer.autoRotateSpeed = 0.5;
 
                 stopRotation = () => {
-                    setMotionPaused(true);
+                    setRotationPaused(true);
                     if (viewer) {
                         viewer.autoRotate = false;
+                        if (viewer.animation) viewer.animation.paused = true;
                     }
                 };
                 canvas.addEventListener("mousedown", stopRotation);
@@ -287,19 +297,42 @@ export default function CapeViewer({
 
     useEffect(() => {
         const viewer = viewerRef.current;
+        if (viewer && capeFrame && !isLoading && viewerReady && active) {
+            applyCapeCanvas(viewer, capeFrame.canvas);
+            renderRef.current?.();
+        }
+    }, [capeFrame, isLoading, viewerReady, active]);
+
+    useEffect(() => {
+        const viewer = viewerRef.current;
+        if (!animationManifest || !viewer || !viewerReady || isLoading || !active) return;
+        const player = playCapeManifest(viewer, animationManifest, () => renderRef.current?.(), () => setLoadedManifest(animationManifest));
+        manifestPlayer.current = player;
+        player.setPlaying(manifestPlaying.current);
+        return () => { player.dispose(); manifestPlayer.current = null; };
+    }, [animationManifest, viewerReady, isLoading, active]);
+
+    useEffect(() => {
+        manifestPlaying.current = motionEnabled;
+        manifestPlayer.current?.setPlaying(motionEnabled);
+    }, [motionEnabled]);
+
+    useEffect(() => {
+        const viewer = viewerRef.current;
         let cancelled = false;
         if (viewer && !viewerError) {
             import("skinview3d").then(skinview3d => {
                 if (!cancelled && !viewer.disposed) {
                     setAnimation(viewer, skinview3d, motionEnabled ? animation : "none");
-                    viewer.autoRotate = motionEnabled;
+                    if (viewer.animation) viewer.animation.paused = rotationPaused;
+                    viewer.autoRotate = motionEnabled && !rotationPaused;
                     viewer.renderPaused = !motionEnabled || isLoading;
                     if (!isLoading) renderRef.current?.();
                 }
             });
         }
         return () => { cancelled = true; };
-    }, [animation, motionEnabled, viewerReady, isLoading, viewerError]);
+    }, [animation, motionEnabled, rotationPaused, viewerReady, isLoading, viewerError]);
 
     useEffect(() => {
         const image = fallbackImageRef.current;
@@ -317,6 +350,7 @@ export default function CapeViewer({
             onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}
             onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
             <div ref={canvasHostRef} className={`absolute inset-0 ${!active || isLoading || textureError || viewerError ? "invisible" : ""}`} />
+            {animationManifest && loadedManifest === animationManifest && active && <Button size="sm" variant="outline" className="absolute top-4 right-4 z-30" onClick={() => setMotionPaused(value => !value)}>{motionPaused ? t("Play") : t("Pause")}</Button>}
             {(textureError || viewerError) && fallbackSrc && (failedFallbackSrc === fallbackSrc
                 ? <p role="status" className="p-4 text-center text-sm text-zinc-400">{t("Cape couldn't load")}</p>
                 // Keep the final image independent of the image-to-3D card fallback.

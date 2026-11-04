@@ -1,5 +1,6 @@
 import { renderPreview } from "@/app/cookiecapes/lib/preview-renderer";
-import { playerTextures, PreviewError, publicCapeTexture } from "@/app/cookiecapes/lib/preview-source";
+import { playerTextures, PreviewError, publicCapeTexture, publicAnimation } from "@/app/cookiecapes/lib/preview-source";
+import { renderAnimationPreview } from "@/app/cookiecapes/lib/preview-animation";
 
 export const runtime = "nodejs";
 export const maxDuration = 15;
@@ -13,28 +14,33 @@ export async function GET(request: Request, { params }: { params: Promise<{ kind
   const query = new URL(request.url).searchParams;
   const hash = query.get("skin") ?? undefined;
   const slim = query.get("slim");
+  const animated = query.get("animated");
   const capeId = Number(id);
   if (!["capes", "players"].includes(kind)
     || (kind === "capes" ? !/^(0|[1-9]\d{0,15})$/.test(id) || !Number.isSafeInteger(capeId) : !UUID.test(id))
-    || [...query.keys()].some(key => !["edited", "skin", "slim"].includes(key) || query.getAll(key).length !== 1)
+    || [...query.keys()].some(key => !["edited", "skin", "slim", "animated"].includes(key) || query.getAll(key).length !== 1)
+    || (animated !== null && animated !== "1")
     || (query.get("edited")?.length ?? 0) > 80
     || (hash !== undefined && (kind !== "players" || !HASH.test(hash)))
     || (slim !== null && (!hash || !["true", "false"].includes(slim)))) {
     return new Response("Invalid preview parameters", { status: 400, headers: NO_CACHE });
   }
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), animated ? 14000 : 8000);
   try {
     const textures = kind === "capes"
       ? { cape: await publicCapeTexture(capeId, controller.signal) }
       : await playerTextures(id.toLowerCase(), controller.signal, hash?.toLowerCase());
     controller.signal.throwIfAborted();
-    const png = await renderPreview({ ...textures, slim: slim === null ? undefined : slim === "true" });
+    const animationId = kind === "capes" ? capeId : "capeId" in textures ? textures.capeId : undefined;
+    const base = animated && animationId !== undefined ? await publicAnimation(animationId, controller.signal) : undefined;
+    const png = base ? await renderAnimationPreview(base, controller.signal, "skin" in textures ? textures.skin : undefined, slim === null ? undefined : slim === "true")
+      : await renderPreview({ ...textures, slim: slim === null ? undefined : slim === "true" });
     controller.signal.throwIfAborted();
     return new Response(new Uint8Array(png), {
       headers: {
         ...NO_CACHE,
-        "Content-Type": "image/png",
+        "Content-Type": base ? "image/webp" : "image/png",
         "Content-Length": String(png.byteLength),
         ...("cacheable" in textures && !textures.cacheable ? {} : {
           "Cache-Control": "public, max-age=0, must-revalidate",

@@ -1,6 +1,6 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
-import { API_BASE_URL, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
+import { API_BASE_URL, CapeApiError, getCape, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
 import { ArrowLeft, User, Layers, Globe, MessageCircle, History, BadgeCheck, Info } from "lucide-react";
@@ -14,7 +14,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { t } = await getTranslations();
+    const { t } = await getTranslations();
     const { id } = await params;
     return {
         title: `${id} - ${t("Player profile")}`,
@@ -45,7 +45,7 @@ function socialIcon(type: string) {
 }
 
 export default async function PlayerProfilePage({ params }: PageProps) {
-  const { t, locale } = await getTranslations();
+    const { t, locale } = await getTranslations();
     const { id } = await params;
     const player = await getPlayer(id);
     const history = await getPlayerHistory(player?.minecraft_name ?? id).catch(error => {
@@ -67,6 +67,12 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
     const displayName = player?.minecraft_name ?? history?.current_username ?? id;
     const createdCapes = player ? await getCapesByPlayer(player.minecraft_uuid) : [];
+    const currentCape = player?.current_cape_id != null
+        ? createdCapes.find(cape => cape.cape_id === player.current_cape_id) ?? await getCape(player.current_cape_id).catch(error => {
+            if (error instanceof CapeApiError && [401, 403].includes(error.status)) return null;
+            throw error;
+        })
+        : null;
     const currentCapeUrl = player?.current_cape_id != null
         ? player.cape_image_url || `${API_BASE_URL}/capes/${player.current_cape_id}.png`
         : null;
@@ -86,6 +92,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                     <div className="lg:col-span-1">
                         <ProfileSkinDisplay
                             currentCapeUrl={currentCapeUrl}
+                            animationManifest={currentCape?.animation?.manifest_url}
                             displayName={displayName}
                             uuid={player?.minecraft_uuid ?? history?.uuid ?? ""}
                             player={player}

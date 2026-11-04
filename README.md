@@ -83,8 +83,17 @@ Crafthead, matching the existing viewers. Redirects and caller-provided URLs are
 rejected. Downloads are limited to 2 MiB (metadata: 64 KiB), PNG dimensions to
 4096×4096, and the shared source deadline to eight seconds. Geometry preparation
 has a 2.5-second budget and individual native image operations a two-second timeout.
-Only static PNGs enter the renderer; CookieAPI's cape PNG endpoint selects the
-poster for animated capes. Source texture details survive projection, including
+The default route renders static PNG posters, including animated capes.
+With `animated=1`, public animation manifests/pages are projected using the same
+renderer and returned as a looping 192?256 WebP. Cards request this only on hover
+or keyboard focus while visible, and respect reduced motion. Animation failures
+keep the poster; interactive detail views retain full animation playback.
+Long timelines sample at most 48 source frames, preserving the overall loop duration;
+short timelines retain frame timing to the nearest millisecond. Each animation
+generation has a 14-second request deadline, a 10-second projection budget and
+one concurrent worker per process. Compressed results use a 24 MiB/16-entry, one-hour
+cache; pages are limited to 16 MiB and 2048?2048 pixels. Visibility is checked before
+using cached output, and animation URLs are constructed from trusted API paths. Source texture details survive projection, including
 HD textures, skin overlays, classic/slim arms and mirrored legacy limbs.
 
 Successful responses require browser revalidation and set

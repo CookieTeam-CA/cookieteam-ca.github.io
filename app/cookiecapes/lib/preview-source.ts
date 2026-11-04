@@ -9,7 +9,7 @@ const MAX_BYTES = 2 * 1024 * 1024;
 const API_ORIGIN = new URL(API_BASE_URL).origin;
 const PROVIDERS = new Set([API_ORIGIN, "https://minotar.net", "https://crafthead.net"]);
 
-async function download(url: string, signal: AbortSignal, skin = false, json = false): Promise<Buffer> {
+export async function download(url: string, signal: AbortSignal, skin = false, json = false, maximum = MAX_BYTES): Promise<Buffer> {
   const target = new URL(url);
   if (!PROVIDERS.has(target.origin) || target.username || target.password) throw new PreviewError(502);
   const controller = new AbortController();
@@ -24,7 +24,7 @@ async function download(url: string, signal: AbortSignal, skin = false, json = f
     throw new PreviewError([401, 403, 404].includes(response.status) ? response.status : 502);
   }
   const type = response.headers.get("content-type")?.split(";")[0].trim().toLowerCase();
-  const limit = json ? 64 * 1024 : MAX_BYTES;
+  const limit = json ? 64 * 1024 : maximum;
   if (type !== (json ? "application/json" : "image/png") || Number(response.headers.get("content-length")) > limit) {
     controller.abort();
     await response.body?.cancel().catch(() => {});
@@ -68,9 +68,19 @@ export async function publicCapeTexture(id: number, signal: AbortSignal): Promis
   return download(`${API_BASE_URL}/capes/${id}.png`, signal);
 }
 
-export async function playerTextures(uuid: string, signal: AbortSignal, hash?: string): Promise<{ skin: Buffer; cape?: Buffer; cacheable: boolean }> {
+export async function publicAnimation(id: number, signal: AbortSignal): Promise<string | undefined> {
+  const cape = await metadata(`/get_cape?cape_id=${id}`, signal);
+  if (cape.is_private || cape.hidden_at || cape.delete_after) throw new PreviewError(404);
+  const animation = cape.animation as { version?: number; revision?: string } | undefined;
+  if (!animation) return;
+  if (animation.version !== 1 || !/^[a-f0-9]{32}$/.test(animation.revision ?? "")) throw new PreviewError(502);
+  return `${API_BASE_URL}/capes/${id}/animation/${animation.revision}/`;
+}
+
+export async function playerTextures(uuid: string, signal: AbortSignal, hash?: string): Promise<{ skin: Buffer; cape?: Buffer; capeId?: number; cacheable: boolean }> {
   const skinUrl = hash ? `https://crafthead.net/skin/${hash}` : `https://minotar.net/skin/${uuid.replaceAll("-", "")}`;
   let cacheable = true;
+  let capeId: number | undefined;
   const cape = (async () => {
     let player: Record<string, unknown>;
     try {
@@ -84,7 +94,9 @@ export async function playerTextures(uuid: string, signal: AbortSignal, hash?: s
     if (id === null || id === -1 || id === 0) return undefined;
     if (typeof id !== "number" || !Number.isSafeInteger(id) || id < 0) throw new PreviewError(502);
     try {
-      return await publicCapeTexture(id, signal);
+      const texture = await publicCapeTexture(id, signal);
+      capeId = id;
+      return texture;
     } catch (error) {
       if (!(error instanceof PreviewError) || ![401, 403, 404].includes(error.status)) throw error;
       // Stale or private cape selections must not hide the player or cache an incomplete outfit.
@@ -93,5 +105,5 @@ export async function playerTextures(uuid: string, signal: AbortSignal, hash?: s
     }
   })();
   const [skin, capeBytes] = await Promise.all([download(skinUrl, signal, true), cape]);
-  return { skin, cape: capeBytes, cacheable };
+  return { skin, cape: capeBytes, capeId, cacheable };
 }

@@ -2,7 +2,7 @@ import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import VerificationBadge from "./VerificationBadge";
 import { Cape } from "../lib/api";
 import StaticPreview from "./StaticPreview";
-import { capePreviewUrl } from "../lib/preview-url";
+import { animatedPreviewUrl, capePreviewUrl } from "../lib/preview-url";
 import { Users } from "lucide-react";
 import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import DeleteCapeButton from "./DeleteCapeButton";
@@ -30,6 +30,7 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
                 <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                     <StaticPreview
                         src={capePreviewUrl(cape.cape_id, cape.last_edited)}
+                        animatedSrc={cape.animation ? animatedPreviewUrl(capePreviewUrl(cape.cape_id, cape.last_edited)) : undefined}
                         alt={`${cape.cape_name}, cape by ${cape.minecraft_name}`}
                         viewerFallback={{ capeUrl: cape.cape_image_url, minecraftName: cape.minecraft_uuid }}
                     />

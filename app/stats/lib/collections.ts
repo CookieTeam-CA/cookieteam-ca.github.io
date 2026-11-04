@@ -24,26 +24,6 @@ export const pointSort: SortOption[] = [{ value: "points_desc", label: "Punkte: 
 export const valueSort: SortOption[] = [{ value: "value_desc", label: "Wert: höchste zuerst" }, { value: "value_asc", label: "Wert: niedrigste zuerst" }];
 export const timeSort: SortOption[] = [{ value: "time_asc", label: "Abschluss: früheste zuerst" }, { value: "time_desc", label: "Abschluss: neueste zuerst" }];
 
-const collator = new Intl.Collator("de", { numeric: true });
-export function sortRows(rows: CollectionRow[], sort: string): CollectionRow[] {
-  const split = sort.lastIndexOf("_");
-  const field = sort.slice(0, split) as keyof CollectionRow;
-  const direction = sort.slice(split + 1) === "desc" ? -1 : 1;
-  const get = (row: CollectionRow): string | number | undefined => {
-    if (field === "time") { const time = row.time ? Date.parse(row.time) : NaN; return Number.isFinite(time) ? time : undefined; }
-    if (field === "completed") return row.completed === undefined ? undefined : Number(row.completed);
-    const value = row[field];
-    return typeof value === "number" || typeof value === "string" ? value : undefined;
-  };
-  return [...rows].sort((a, b) => {
-    const left = get(a), right = get(b);
-    if (left === undefined && right !== undefined) return 1;
-    if (left !== undefined && right === undefined) return -1;
-    const result = typeof left === "number" && typeof right === "number" ? left - right : collator.compare(String(left ?? ""), String(right ?? ""));
-    return result * direction || collator.compare(a.name, b.name) || a.id.localeCompare(b.id);
-  });
-}
-
 const colors: Record<string, string> = {
   mining: "#60a5fa", mined: "#60a5fa", crafting: "#c084fc", crafted: "#c084fc", broken: "#fb7185",
   custom: "#fbbf24", using: "#34d399", used: "#34d399", dropped: "#fb923c", dropping: "#fb923c", pickedup: "#22d3ee", pickingup: "#22d3ee",

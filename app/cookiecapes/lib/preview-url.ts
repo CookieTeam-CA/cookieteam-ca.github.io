@@ -1,5 +1,9 @@
 const PREVIEW_BASE = "/api/cookiecapes/previews";
 
+export function animatedPreviewUrl(poster: string): string {
+  return `${poster}${poster.includes("?") ? "&" : "?"}animated=1`;
+}
+
 export function capePreviewUrl(id: number, edited?: string | null): string {
   return `${PREVIEW_BASE}/capes/${id}${edited ? `?edited=${encodeURIComponent(edited)}` : ""}`;
 }
