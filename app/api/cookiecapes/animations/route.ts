@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return Response.json(await response.json(), { status: 202, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     await reader.cancel().catch(() => {});
-    return Response.json({ error: error instanceof Error ? error.message : t("Upload failed.") }, { status: error instanceof CapeApiError ? error.status : 400 });
+    return Response.json({ ...(error instanceof CapeApiError ? { code: error.code, existingCapeId: error.existingCapeId } : {}), error: error instanceof Error ? error.message : t("Upload failed.") }, { status: error instanceof CapeApiError ? error.status : 400 });
   }
 }
 

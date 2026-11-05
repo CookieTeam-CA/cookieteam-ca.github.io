@@ -11,7 +11,7 @@ async function result<T>(operation: () => Promise<T>): Promise<AccountActionResu
   const { t } = await getTranslations();
   try { return { value: await operation() }; }
   catch (error) {
-    return { error: error instanceof CapeApiError ? error.message : t("The request could not be completed. Please sign in again or try again later.") };
+    return { ...(error instanceof CapeApiError ? { code: error.code, existingCapeId: error.existingCapeId } : {}), error: error instanceof CapeApiError ? error.message : t("The request could not be completed. Please sign in again or try again later.") };
   }
 }
 

@@ -13,8 +13,8 @@ export interface OwnedCapes {
   review: { id: string; snapshot: { cape_id: number; revision: number }[] } | null;
 }
 
-export type AccountActionResult<T> = { value: T; error?: never } | { error: string; value?: never };
+export type AccountActionResult<T> = { value: T; error?: never } | { error: string; code?: string; existingCapeId?: number; value?: never };
 export function actionValue<T>(result: AccountActionResult<T>): T {
-  if (result.error !== undefined) throw new Error(result.error);
+  if (result.error !== undefined) throw Object.assign(new Error(result.error), { code: result.code, existingCapeId: result.existingCapeId });
   return result.value as T;
 }

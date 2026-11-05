@@ -4,7 +4,7 @@ import type { Locale } from "../i18n/locale";
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_COOKIECAPES_API_URL || "https://api.cookieattack.de").replace(/\/+$/, "");
 
 export class CapeApiError extends Error {
-  constructor(readonly status: number, message: string, readonly retryAfter: string | null = null) { super(message); }
+  constructor(readonly status: number, message: string, readonly retryAfter: string | null = null, readonly code?: string, readonly existingCapeId?: number) { super(message); }
 }
 
 export async function capeApiError(response: Response, locale: Locale = "en"): Promise<CapeApiError> {
@@ -19,9 +19,11 @@ export async function capeApiError(response: Response, locale: Locale = "en"): P
     469: "The cape was rejected by moderation.",
     503: "An external service is temporarily unavailable.",
   };
+  let code: string | undefined, existingCapeId: number | undefined;
   let detail = await response.text();
   try {
     const data = JSON.parse(detail);
+    if (response.status === 409 && data?.code === "duplicate_cape" && Number.isSafeInteger(data.existing_cape_id) && data.existing_cape_id > 0) { code = data.code; existingCapeId = data.existing_cape_id; }
     detail = typeof data?.detail === "string" ? data.detail : "";
   } catch { /* The API may also return plain text. */ }
   const retryAfter = response.headers.get("Retry-After");
@@ -31,7 +33,7 @@ export async function capeApiError(response: Response, locale: Locale = "en"): P
     const seconds = /^\d+$/.test(retryAfter) ? Number(retryAfter) : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
     if (Number.isFinite(seconds) && seconds > 0) message += ` ${t("Please wait at least {seconds} seconds before trying again.", { seconds })}`;
   }
-  return new CapeApiError(response.status, message, retryAfter);
+  return new CapeApiError(response.status, message, retryAfter, code, existingCapeId);
 }
 
 async function request<T>(url: string, options: RequestInit & { next?: { revalidate: number } } = {}): Promise<T> {

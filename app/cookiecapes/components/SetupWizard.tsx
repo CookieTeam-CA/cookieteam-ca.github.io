@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ContextMenu, Dialog, Switch } from "radix-ui";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { startMinecraftLink, uploadWebsiteCape } from "@/app/actions/account-actions";
@@ -16,11 +16,13 @@ import CapeViewer from "./CapeViewer";
 import MinecraftAccountSelect from "./MinecraftAccountSelect";
 import MCIDButton from "./MCIDButton";
 import SubmissionQuotaBar from "./SubmissionQuotaBar";
+import { ToastMessage } from "./ToastMessage";
 import { useTranslations } from "../i18n/client";
+import { useDuplicateToast } from "../lib/duplicate-toast";
 import type { MessageKey } from "../i18n/messages";
 
 const inputClass = "w-full rounded-lg border border-white/15 bg-zinc-950 p-2.5 text-sm focus-visible:outline-2 focus-visible:outline-orange-400";
-type Job = { id?: string; status: string; error?: string; cape_id?: number };
+type Job = { id?: string; status: string; error?: string; error_code?: string; existing_cape_id?: number; cape_id?: number };
 interface Props {
   account: AccountInfo; uuid?: string; quota?: SubmissionQuota; replacementId?: number;
   initialName?: string; initialCapeUrl?: string; initialAnimationManifest?: string; disabled?: boolean; onCancel?: () => void; onUploaded?: () => void; onBusyChange?: (busy: boolean) => void;
@@ -32,6 +34,8 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
   const [selectedUuid, setUuid] = useState(account.links[0]?.minecraft_uuid ?? "");
   const uuid = controlledUuid ?? (account.links.length === 1 ? account.links[0].minecraft_uuid : selectedUuid);
   const player = account.links.find(link => link.minecraft_uuid === uuid);
+  const duplicateToast = useDuplicateToast();
+  const reportedDuplicate = useRef<string | undefined>(undefined);
   const firstStep = replacementId !== undefined ? 2 : account.links.length === 1 && player ? 1 : 0;
   const [currentStep, setStep] = useState(0);
   const step = Math.max(firstStep, currentStep);
@@ -49,6 +53,9 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
   const [error, setError] = useState("");
   const [previewIssue, setPreviewIssue] = useState<MessageKey | null>(null);
   const [job, setJob] = useState<Job | null>(null);
+  useEffect(() => {
+    if (job?.id && job.status === "failed" && reportedDuplicate.current !== job.id && duplicateToast({ code: job.error_code, existingCapeId: job.existing_cape_id })) reportedDuplicate.current = job.id;
+  });
   const [preview, setPreview] = useState<{ canvas: HTMLCanvasElement; revision: number } | null>(null);
   const [poster, setPoster] = useState<string>();
   const posterUrl = useRef<string | null>(null);
@@ -62,6 +69,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
   const visible = usePageVisible(), reduced = useReducedMotion();
   const current = frames[Math.min(selected, frames.length - 1)];
   const pending = !!job && ["queued", "processing"].includes(job.status);
+  const jobError = replacementId === undefined ? job?.error?.replace(/previous cape retained\.?/gi, t("No cape was uploaded.")) : job?.error;
   const locked = disabled || busy || pending;
   const notifyBusy = useEffectEvent((value: boolean) => onBusyChange?.(value));
   const notifyUploaded = useEffectEvent(() => onUploaded?.());
@@ -71,9 +79,10 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
     if (job?.id && job.status === "complete" && reportedJob.current !== job.id) {
       reportedJob.current = job.id; setStep(0); setName(initialName); setSelection(null); clearFrames(); setPreview(null); setPreviewIssue(null); setPoster(undefined);
       if (posterUrl.current) URL.revokeObjectURL(posterUrl.current); posterUrl.current = null;
+      toast.add({ title: t("Your cape was uploaded."), type: "success" });
       notifyUploaded();
     }
-  }, [job, initialName]);
+  }, [job, initialName, t]);
   useEffect(() => {
     const images = ownedImages.current, generation = version;
     return () => { generation.current++; images.forEach(image => image.close()); images.clear(); if (posterUrl.current) URL.revokeObjectURL(posterUrl.current); };
@@ -103,7 +112,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
       try {
         const response = await fetch(`/api/cookiecapes/animations?id=${job.id}`, { signal: controller.signal });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        if (!response.ok) throw Object.assign(new Error(result.error), { code: result.code, existingCapeId: result.existingCapeId });
         setError(""); setJob(result);
       } catch (cause) { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : t("Status unavailable.")); }
     }, 2000);
@@ -206,6 +215,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
         actionValue(await uploadWebsiteCape(body, replacementId));
         setJob({ status: "complete" }); setStep(0); setName(initialName); setSelection(null); change([], 0, false); setPreview(null); setPreviewIssue(null); setPoster(undefined);
         if (posterUrl.current) URL.revokeObjectURL(posterUrl.current); posterUrl.current = null;
+        toast.add({ title: t("Your cape was uploaded."), type: "success" });
         onUploaded?.();
       } else {
         if (edited) {
@@ -224,10 +234,10 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
         if (replacementId !== undefined) body.set("replacement", String(replacementId));
         body.set("options", JSON.stringify({ mode: edited ? "frames" : selection.mode, fit, hd, fps: 12, ...(edited ? { durations_ms: frames.map(frame => frame.duration) } : {}) }));
         const response = await fetch("/api/cookiecapes/animations", { method: "POST", body });
-        const result = await response.json(); if (!response.ok) throw new Error(result.error);
+        const result = await response.json(); if (!response.ok) throw Object.assign(new Error(result.error), { code: result.code, existingCapeId: result.existingCapeId });
         setJob({ id: result.job_id, status: result.status });
       }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : t("Upload failed.")); }
+    } catch (cause) { if (!duplicateToast(cause)) setError(cause instanceof Error ? cause.message : t("Upload failed.")); }
     finally { setBusy(false); }
   }
   async function exportFrames() {
@@ -249,6 +259,9 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
   }
 
   return <section aria-labelledby={`${id}-heading`} className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#101010]">
+    {error && <ToastMessage message={error} />}
+    {previewIssue && <ToastMessage message={t(previewIssue)} type="info" />}
+    {job && job.status !== "complete" && !(job.status === "failed" && job.error_code === "duplicate_cape" && Number.isSafeInteger(job.existing_cape_id) && job.existing_cape_id! > 0) && <ToastMessage key={job.id} message={[job.status === "failed" ? t("The upload was not published.") : t("Your cape is being processed. You can leave this page open."), jobError].filter(Boolean).join(" ")} type={job.status === "failed" || job.error ? "error" : "info"} />}
     <div className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
     <div className="relative border-b border-white/10 p-6 sm:p-8">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -284,7 +297,11 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
           </div>}
           {step === 1 && <div className="space-y-5">
             <h3 className="text-xl font-bold">{t("Cape name")}</h3>
-            <input id={`${id}-name`} value={name} maxLength={100} required disabled={locked} onChange={event => setName(event.target.value)} placeholder={t("For example: Sunset")} className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-zinc-600 focus:border-orange-400 disabled:opacity-50" />
+            <input id={`${id}-name`} value={name} maxLength={100} required disabled={locked} onChange={event => setName(event.target.value)} onKeyDown={event => {
+              if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              if (!locked && player && name.trim()) setStep(2);
+            }} placeholder={t("For example: Sunset")} className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-zinc-600 focus:border-orange-400 disabled:opacity-50" />
           </div>}
           {step === 2 && <div className="space-y-5">
             <div className="relative rounded-2xl border border-dashed border-white/20 bg-white/2 p-5 text-center focus-within:ring-2 focus-within:ring-orange-400"
@@ -323,7 +340,6 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
             {selection && selection.mode !== "static" && <Button ref={advancedTrigger} type="button" variant="outline" disabled={locked} onClick={() => setAdvanced(true)}>{t("Advanced options")}</Button>}
             {step === 2 && <Button asChild variant="outline"><Link href="/cookiecapes/editor" target="_blank">{t("Design a cape in the editor")} <ArrowRight size={15} aria-hidden="true" /></Link></Button>}
           </div>}
-          {step >= 2 && previewIssue && <p role="status" className="mt-3 text-sm text-amber-300">{t(previewIssue)}</p>}
           {step >= 2 && reduced && frames.length > 1 && <p role="status" className="mt-3 text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
@@ -332,10 +348,9 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
             {step > firstStep && <Button size="lg" type="button" disabled={locked} onClick={() => setStep(step - 1)} variant="outline"><ArrowLeft size={16} aria-hidden="true" />{t("Back")}</Button>}
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-3">
-            {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !name.trim()) || (step === 2 && (!selection || (edited && !frames.length)))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" disabled={locked || !player || !selection || !name.trim() || quota?.remaining === 0 || (edited && !frames.length)} onClick={() => void upload()}><Upload size={16} aria-hidden="true" />{pending ? t("Processing…") : busy ? t("Uploading…") : replacementId !== undefined ? t("Update Cape") : t("Upload cape")}</Button>}
+            {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !name.trim()) || (step === 2 && (!selection || (edited && !frames.length)))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" aria-busy={busy || pending} disabled={locked || !player || !selection || !name.trim() || quota?.remaining === 0 || (edited && !frames.length)} onClick={() => void upload()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy ? t("Uploading") : replacementId !== undefined ? t("Update Cape") : t("Upload cape")}</Button>}
           </div>
-          {error && <p role="alert" className="w-full text-sm text-red-300">{error}</p>}
-          {job && <div role="status" className="w-full space-y-2 text-sm"><p>{job.status === "complete" ? t("Your cape was uploaded.") : job.status === "failed" ? t("The upload was not published.") : t("Your cape is being processed. You can leave this page open.")}</p>{job.error && <p className="text-red-300">{job.error}</p>}{error && pending && <Button variant="outline" onClick={() => setJob({ ...job })}>{t("Retry status")}</Button>}</div>}
+          {error && pending && <Button variant="outline" onClick={() => setJob({ ...job })}>{t("Retry status")}</Button>}
         </div>
       </div>
       <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="relative h-96 w-full"><CapeViewer allowElytraSwitch capeUrl={edited && !frames.length ? undefined : poster ?? (!selection && !busy ? initialCapeUrl : undefined)} animationManifest={!selection && !busy && !edited ? initialAnimationManifest : undefined} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
@@ -389,7 +404,6 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
               <Button type="button" variant="outline" disabled={locked || !frames.length} onClick={() => void exportFrames()}>{t("Export as APNG")}</Button>
               <Button type="button" disabled={locked || !frames.length} onClick={() => { setEdited(true); setAdvanced(false); }}>{t("Apply changes")}</Button>
             </div>
-            {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

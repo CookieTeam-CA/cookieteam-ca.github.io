@@ -12,12 +12,14 @@ import CapeViewer from "../components/CapeViewer";
 import MCIDButton from "../components/MCIDButton";
 import MinecraftAccountSelect from "../components/MinecraftAccountSelect";
 import SetupWizard from "../components/SetupWizard";
+import { useDuplicateToast } from "../lib/duplicate-toast";
 import { toast } from "@/components/ui/toast";
 import VerificationBadge from "../components/VerificationBadge";
 import PreviousUploadsReview from "./PreviousUploadsReview";
 
 
 export default function AccountPanel({ account }: { account: AccountInfo }) {
+  const duplicateToast = useDuplicateToast();
   const { t, locale, plural, number } = useTranslations();
   const [renaming, setRenaming] = useState<{ id: number; name: string; error: string } | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -85,7 +87,7 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
       toast.add({ title: message, type: "success" });
       reloadCapes();
     } catch (error) {
-      toast.add({ title: error instanceof Error ? error.message : t("The request failed. Please try again."), type: "error" });
+      if (!duplicateToast(error)) toast.add({ title: error instanceof Error ? error.message : t("The request failed. Please try again."), type: "error" });
     } finally {
       setBusy(false);
     }

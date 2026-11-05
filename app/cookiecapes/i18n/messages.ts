@@ -1,6 +1,8 @@
 import type { Locale } from "./locale";
 
 export const de = {
+  "An identical public cape already exists.": "Ein identisches öffentliches Cape existiert bereits.",
+  "View cape #{id}": "Cape #{id} ansehen",
   "Your animation was automatically reduced to a maximum of 24 FPS, preserving playback speed.": "Deine Animation wurde automatisch auf höchstens 24 FPS reduziert. Die Wiedergabegeschwindigkeit bleibt erhalten.",
   "No animation frames were found.": "Es wurden keine Animationsframes gefunden.",
   "The animated preview could not be decoded. The original animation can still be uploaded; server validation applies.": "Die animierte Vorschau konnte nicht dekodiert werden. Die Originalanimation kann weiterhin hochgeladen werden; sie wird auf dem Server geprüft.",
@@ -71,8 +73,11 @@ export const de = {
   "Retry status": "Status erneut laden",
   "Your cape is being processed. You can leave this page open.": "Dein Cape wird verarbeitet. Du kannst diese Seite geöffnet lassen.",
   "The upload was not published.": "Der Upload wurde nicht veröffentlicht.",
+  "No cape was uploaded.": "Es wurde kein Cape hochgeladen.",
   "Your cape was uploaded.": "Dein Cape wurde hochgeladen.",
   "Processing…": "Wird verarbeitet…",
+  "Processing": "Wird verarbeitet",
+  "Uploading": "Wird hochgeladen",
   "Preparing your cape…": "Dein Cape wird vorbereitet…",
   "Close": "Schließen",
   "Close advanced options": "Erweiterte Optionen schließen",
