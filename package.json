@@ -46,7 +46,7 @@
     "eslint-config-next": "16.2.1",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^7"
   },
   "overrides": {
     "braces": "npm:@dieub/braces-depth-guard@3.0.3-pn.3"
