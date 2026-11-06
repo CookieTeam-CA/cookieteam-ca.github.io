@@ -6,6 +6,7 @@ import { ShieldAlert } from "lucide-react";
 import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import BanPlayerButton from "./BanPlayerButton";
 import Link from "next/link";
+import GalleryLink from "./GalleryLink";
 
 interface PlayerCardProps {
     player: Player;
@@ -17,14 +18,14 @@ export default async function PlayerCard({ player, returnTo = "/cookiecapes/play
     const isAdmin = await getCookieCapesAdmin();
 
     return (
-        <div className="group relative bg-zinc-900 border border-white/10 rounded-xl overflow-hidden transition-all duration-300 flex flex-col">
+        <div className="group relative bg-card border border-border rounded-2xl overflow-hidden transition-colors duration-200 hover:border-white/25 flex flex-col">
 
             {!player.banned && (
                 <BanPlayerButton minecraftName={player.minecraft_name} isAdmin={isAdmin} />
             )}
 
-            <div className="relative w-full aspect-3/4 bg-[#1a1a1a] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+            <div className="preview-surface player-preview-surface relative w-full aspect-square flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center p-3">
                     <StaticPreview
                         src={playerPreviewUrl(player.minecraft_uuid, player.last_edited)}
                         animatedSrc={player.current_cape_id != null ? animatedPreviewUrl(playerPreviewUrl(player.minecraft_uuid, player.last_edited)) : undefined}
@@ -50,19 +51,19 @@ export default async function PlayerCard({ player, returnTo = "/cookiecapes/play
                 )}
             </div>
 
-            <div className="p-4 bg-zinc-950/50 flex-1 flex flex-col items-center text-center">
+            <div className="p-3 sm:p-5 flex-1 flex flex-col items-start text-left">
                 <Link prefetch={false} href={`/cookiecapes/players/${player.minecraft_name}`} className="max-w-full text-white hover:text-orange-400 focus-visible:text-orange-400 transition-colors mb-2">
-                    <h3 className="font-bold truncate">
+                    <h3 className="font-bold truncate" title={player.minecraft_name}>
                         {player.minecraft_name}
                     </h3>
                 </Link>
 
                 {player.cape_name ? (
-                    <Link prefetch={false} href={`/cookiecapes/capes/${player.current_cape_id}?returnTo=${encodeURIComponent(returnTo)}`} className="flex items-center justify-center gap-2 mb-1 max-w-full text-zinc-400 text-sm hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
+                    <GalleryLink prefetch={false} href={`/cookiecapes/capes/${player.current_cape_id}`} returnTo={returnTo} className="flex items-center justify-center gap-2 mb-1 max-w-full text-zinc-400 text-sm hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
                         <span className="truncate">{t("Cape:")} {player.cape_name}</span>
-                    </Link>
+                    </GalleryLink>
                 ) : (
-                    <div className="flex items-center justify-center gap-2 mb-1 w-full text-zinc-600 text-sm">
+                    <div className="flex items-center gap-2 mb-1 w-full text-zinc-400 text-sm">
                         <span>{t("No cape")}</span>
                     </div>
                 )}

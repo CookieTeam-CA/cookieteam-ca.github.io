@@ -6,7 +6,7 @@ import { useState, useRef, useLayoutEffect } from "react";
 import CapeViewer from "./CapeViewer";
 import { ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import GalleryLink from "./GalleryLink";
 import gsap from "gsap";
 import type { Player } from "../lib/api";
 import { playerPreviewUrl } from "../lib/preview-url";
@@ -93,12 +93,13 @@ export default function ProfileSkinDisplay({
                             <div className="text-zinc-300 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500"></span>
                                 {t("Cape:")}
-                                <Link
-                                    href={`/cookiecapes/capes/${player?.current_cape_id}?returnTo=${encodeURIComponent(`/cookiecapes/players/${displayName}`)}`}
+                                <GalleryLink
+                                    href={`/cookiecapes/capes/${player?.current_cape_id}`}
+                                    returnTo={`/cookiecapes/players/${displayName}`}
                                     className="min-w-0 truncate font-bold hover:text-orange-400 focus-visible:text-orange-400 transition-colors"
                                 >
                                     {player?.cape_name || t("Show cape")}
-                                </Link>
+                                </GalleryLink>
                             </div>
                         ) : (
                             <div className="text-zinc-500 flex items-center gap-2">

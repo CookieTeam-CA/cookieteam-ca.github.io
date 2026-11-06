@@ -1,124 +1,59 @@
 "use client";
 
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
+import { Button } from "@/components/ui/button";
+import { ArrowDown } from "lucide-react";
 import Link from "next/link";
-import { useReducedMotion } from "../../lib/visibility";
-import { useRef } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-
-gsap.registerPlugin(ScrollToPlugin);
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SlotText } from "slot-text/react";
+import "slot-text/style.css";
+import { useElementActive, useReducedMotion } from "@/app/lib/visibility";
 
 export default function CapeHero() {
   const { t } = useTranslations();
+  const heroRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const active = useElementActive(heroRef);
   const reducedMotion = useReducedMotion();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const titleStartRef = useRef<HTMLSpanElement>(null);
-  const titleEndRef = useRef<HTMLSpanElement>(null);
-  const tagsRef = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLParagraphElement>(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const phrases = [t("Your skin."), t("Your cape."), "CookieCapes"];
+  const index = reducedMotion ? 2 : phraseIndex;
 
-  useGSAP(() => {
-    if (reducedMotion) return;
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+  useLayoutEffect(() => {
+    const text = textRef.current;
+    if (!text) return;
+    // Keep outgoing glyphs in their original color while incoming glyphs inherit the new one.
+    text.querySelectorAll<HTMLElement>(".char-face").forEach(face => {
+      face.style.color = getComputedStyle(face).color;
+    });
+    text.dataset.brand = String(index === 2);
+  }, [index]);
 
-    const startChars = titleStartRef.current?.children;
-    const endChars = titleEndRef.current?.children;
-
-    if (startChars && endChars) {
-      gsap.set([...Array.from(startChars), ...Array.from(endChars)], { y: 100, autoAlpha: 0 });
-    }
-    gsap.set(tagsRef.current?.children || [], { y: 20, autoAlpha: 0 });
-    gsap.set(descriptionRef.current, { y: 20, autoAlpha: 0 });
-    gsap.set(buttonsRef.current, { y: 20, autoAlpha: 0 });
-
-    tl.to([...Array.from(startChars || []), ...Array.from(endChars || [])], {
-      y: 0,
-      autoAlpha: 1,
-      stagger: 0.05,
-      duration: 1,
-      ease: "back.out(1.7)",
-      delay: 0.2
-    })
-      .to(tagsRef.current?.children || [], {
-        y: 0,
-        autoAlpha: 1,
-        stagger: 0.1,
-        duration: 0.8,
-        ease: "back.out(1.7)"
-      }, "-=0.4")
-      .to(descriptionRef.current, {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.8,
-      }, "-=0.4")
-      .to(buttonsRef.current, {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.8,
-        ease: "power3.out"
-      }, "-=0.4");
-
-  }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true });
-
-  const splitText = (text: string) => {
-    return text.split("").map((char, index) => (
-      <span key={index} className="inline-block">{char}</span>
-    ));
-  };
-
-  const scrollToSetup = () => {
-    if (reducedMotion) { document.querySelector("#setup-wizard")?.scrollIntoView(); return; }
-    gsap.to(window, { duration: 1, scrollTo: "#setup-wizard", ease: "power3.inOut" });
-  };
+  useEffect(() => {
+    if (!active || reducedMotion) return;
+    const interval = window.setInterval(() => setPhraseIndex(current => (current + 1) % 3), 2400);
+    return () => window.clearInterval(interval);
+  }, [active, reducedMotion]);
 
   return (
-    <div ref={containerRef} className="relative flex flex-col items-center justify-center py-20 md:py-32 gap-8 text-center px-4">
-      <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5 blur-[100px] -z-10 pointer-events-none rounded-full" />
-
-      <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter drop-shadow-lg overflow-hidden leading-tight">
-        <span ref={titleStartRef} className="inline-block text-white">
-          {splitText("Cookie")}
-        </span>
-        <span ref={titleEndRef} className="inline-block text-orange-500">
-          {splitText("Capes")}
-        </span>
-      </h1>
-
-      <div ref={tagsRef} className="flex flex-wrap justify-center gap-4 md:gap-8">
-        {[t("Fast"), t("Efficient"), t("Free")].map((tag, i) => (
-          <div
-            key={i}
-            className="px-6 py-2 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 font-bold backdrop-blur-sm shadow-[0_0_15px_rgba(249,115,22,0.2)]"
-          >
-            {tag}
-          </div>
-        ))}
+    <section ref={heroRef} className="cape-hero">
+      <div className="cape-hero-copy">
+        <h1 className="cape-hero-title">
+          <span className="sr-only">{t("Your skin. Your cape.")} CookieCapes</span>
+          <SlotText ref={textRef} aria-hidden="true" text={phrases[index]} options={{ skipUnchanged: false, duration: reducedMotion ? 0 : 800, bounce: 0 }} />
+        </h1>
+        <p className="hero-description">{t("Discover community capes or design your own.")}</p>
+        <div className="hero-actions">
+          <Button asChild size="lg"><a href="#setup-wizard" onClick={event => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            const wizard = document.getElementById("setup-wizard");
+            if (!wizard) return;
+            event.preventDefault();
+            wizard.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+          }}>{t("Upload a cape")}<ArrowDown data-icon="inline-end" /></a></Button>
+          <Button asChild variant="outline" size="lg"><Link href="/cookiecapes/capes">{t("Browse capes")}</Link></Button>
+        </div>
       </div>
-
-      <p ref={descriptionRef} className="max-w-xl text-zinc-400 mt-4 text-sm md:text-base">
-        {t("Discover community capes and design your own in the editor.")}
-        <br />
-        {t("Upload capes through your Minecraft account.")}
-      </p>
-
-      <div ref={buttonsRef} className="flex flex-wrap justify-center gap-4 mt-4">
-        <button
-          onClick={scrollToSetup}
-          className="group relative overflow-hidden rounded-full bg-orange-500 px-8 py-3 font-bold text-white transition-[background-color,box-shadow,transform] hover:bg-orange-600 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)] cursor-pointer select-none"
-        >
-          <span className="relative z-10">{t("Upload a cape")}</span>
-        </button>
-
-        <Link
-          href="/cookiecapes/capes"
-          className="group relative overflow-hidden rounded-full border border-white/10 bg-white/10 px-8 py-3 font-bold text-white transition-all hover:bg-white/10 hover:scale-105 active:scale-95 cursor-pointer select-none"
-        >
-          <span className="relative z-10">{t("Browse capes")}</span>
-        </Link>
-      </div>
-    </div>
+    </section>
   );
 }

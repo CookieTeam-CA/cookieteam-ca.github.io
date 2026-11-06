@@ -1,0 +1,14 @@
+.account-dialog { border-radius: 16px; background: #111; color: var(--foreground); border-color: #ffffff26; box-shadow: 0 24px 100px #000a; }
+.account-dialog h2 { letter-spacing: -.025em; }
+.account-dialog > header { align-items: flex-start; padding: 24px 28px; background: #161616; }
+.account-dialog > footer { padding: 20px 28px; background: #161616; }
+.account-review-dialog article > div[role="group"] { background: radial-gradient(ellipse at 50% 35%, #353535, #242424 75%); }
+.account-review-dialog article { border-radius: 12px; }
+.account-advanced-dialog { padding: 0; }
+.account-advanced-dialog label { line-height: 1.6; }
+.account-advanced-dialog label > :is(select,input) { margin-top: 8px; min-height: 44px; }
+.account-popup { background: #181818; border-color: #ffffff26; box-shadow: 0 12px 48px #0008; }
+@media (max-width: 640px) {
+  .account-dialog > header, .account-dialog > footer { padding: 20px; }
+  .account-animation-settings { grid-template-columns: minmax(0, 1fr); }
+}

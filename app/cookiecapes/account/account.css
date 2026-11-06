@@ -1,0 +1,24 @@
+.account-page { min-height: 60vh; }
+.account-shell .site-footer > div > form, .account-shell .site-footer .footer-account { display: none; }
+.account-page-heading { padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+.account-page-heading h1 { letter-spacing: -.035em; overflow-wrap: anywhere; }
+.account-signin-panel { box-shadow: 0 16px 64px #0005; }
+.account-signin-preview, .account-cape-preview { background: radial-gradient(ellipse at 50% 35%, #353535, #1c1c1c 75%); }
+.account-connections > div > div { padding: 28px; }
+.account-connections h2 { letter-spacing: -.025em; }
+.account-workspace .cape-upload h2 { font-size: 26px; letter-spacing: -.025em; }
+.account-cape-card { transition: border-color .2s; }
+.account-cape-card:hover { border-color: #ffffff30; }
+.account-cape-card h3 { font-size: 17px; }
+.account-cape-card button { font-weight: 500; }
+.account-inline-panel { text-align: left; }
+@media (min-width: 1024px) {
+  .account-workspace .cape-upload[data-step="1"] .cape-upload-preview { height: 240px; }
+}
+@media (max-width: 640px) {
+  .account-cape-actions button { min-width: 0; white-space: normal; text-align: left; }
+  .account-workspace .cape-upload-preview { height: 220px; }
+  .account-page { padding-top: 120px; }
+  .account-connections > div > div { padding: 20px; }
+  .account-signin-panel h1 { font-size: 40px; }
+}

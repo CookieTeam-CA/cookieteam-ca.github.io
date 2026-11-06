@@ -6,13 +6,13 @@ import PlayerGalleryControls from "./PlayerGalleryControls";
 export default async function GalleryLoading({ players = false }: { players?: boolean }) {
     const { t, locale } = await getTranslations();
     return (
-        <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
-            <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
-                <div className="text-center mb-16">
-                    <h1 className="font-nexa text-4xl md:text-6xl mb-4">
-                        {players ? t("Our") : t("Discover")} <span className="text-orange-500">{players ? t("Players") : "Capes"}</span>
+        <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
+            <div className="max-w-7xl mx-auto px-6 pt-36 pb-20">
+                <div className="gallery-heading">
+                    <h1 className="font-nexa text-4xl md:text-5xl mb-4">
+                        {players ? t("Our") : t("Discover")} <span className="text-primary">{players ? t("Players") : "Capes"}</span>
                     </h1>
-                    <p className="text-zinc-400 max-w-2xl mx-auto">
+                    <p className="text-zinc-400 max-w-2xl">
                         {players ? t("Find other players, view their capes, or browse the list.") : t("Browse the community gallery. Find your favourite cape or get inspired.")}
                     </p>
                 </div>

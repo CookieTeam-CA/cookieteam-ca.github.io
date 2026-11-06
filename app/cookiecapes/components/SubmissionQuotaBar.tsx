@@ -32,7 +32,7 @@ export default function SubmissionQuotaBar({ quota }: { quota: SubmissionQuota }
         </Popover.Trigger>
         <Popover.Portal>
           {/* Restoring focus on close would reopen this hover popover through onFocus. */}
-          <Popover.Content aria-label={t("About the daily allowance")} align="end" sideOffset={8} onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()} onPointerEnter={show} onPointerLeave={leave} className="z-50 w-80 max-w-[calc(100vw-2rem)] space-y-3 rounded-xl border border-white/10 bg-zinc-950 p-4 text-sm leading-relaxed text-zinc-300 shadow-xl outline-none">
+          <Popover.Content aria-label={t("About the daily allowance")} align="end" sideOffset={8} onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()} onPointerEnter={show} onPointerLeave={leave} className="account-popup z-50 w-80 max-w-[calc(100vw-2rem)] space-y-3 rounded-xl border border-white/10 bg-zinc-950 p-4 text-sm leading-relaxed text-zinc-300 shadow-xl outline-none">
             <p className="font-medium text-white">{t("Three uploads or replacements per account per UTC day.")}</p>
             {quota.pending > 0 && <p>{t("{pending} submissions in progress; their slots are temporarily reserved.", { pending: number(quota.pending) })}</p>}
             <p className="text-zinc-400">{t("Resets at {time} (00:00 UTC). Renaming, visibility changes, deleting and restoring are free.", { time: new Date(quota.resets_at).toLocaleString(locale) })}</p>

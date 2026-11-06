@@ -1,3 +1,4 @@
+import "./components/account-dialogs.css";
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { auth } from "@/auth";
 import { loadAccount } from "@/app/actions/account-actions";

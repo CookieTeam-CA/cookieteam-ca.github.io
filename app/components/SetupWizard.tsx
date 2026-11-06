@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
 import { useState, useEffect, useRef } from "react";
 import { login } from "../actions/auth-actions";
@@ -150,7 +151,7 @@ export default function SetupWizard({ session }: { session: Session | null }) {
         {registrationError ? <>
           <p role="alert" className="mb-4 text-zinc-300">Dein Registrierungsstatus konnte nicht geladen werden. Bitte versuche es erneut.</p>
           <Button onClick={() => { setRegistrationError(false); setIsRegistered(null); setRegistrationAttempt(value => value + 1); }}>Erneut versuchen</Button>
-        </> : <p role="status" className="text-zinc-300">Registrierungsstatus wird geladen...</p>}
+        </> : <p role="status" className="flex items-center justify-center gap-2 text-zinc-300"><LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>Registrierungsstatus wird geladen</span></p>}
       </div>
     </div>
   );
@@ -211,7 +212,8 @@ export default function SetupWizard({ session }: { session: Session | null }) {
                 disabled={isLoading}
                 size="lg" className="w-full bg-[#5865F2] text-white hover:bg-[#4752C4]"
               >
-                {isLoading ? "Lade..." : "Mit Discord anmelden"}
+                {isLoading && <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+                {isLoading ? "Anmeldung läuft" : "Mit Discord anmelden"}
               </Button>
             )}
           </div>
@@ -373,7 +375,8 @@ export default function SetupWizard({ session }: { session: Session | null }) {
               disabled={isLoading}
               size="lg" className="w-full"
             >
-              {isLoading ? "Wird registriert..." : "Registrierung abschließen"}
+              {isLoading && <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+              {isLoading ? "Wird registriert" : "Registrierung abschließen"}
             </Button>
           </div>
         )}
@@ -424,7 +427,8 @@ export default function SetupWizard({ session }: { session: Session | null }) {
                 disabled={isLoading}
                 variant="destructive" size="lg"
               >
-                {isLoading ? "Bitte warten..." : "Wieder abmelden"}
+                {isLoading && <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" />}
+                {isLoading ? "Bitte warten" : "Wieder abmelden"}
               </Button>
             </div>
           </div>

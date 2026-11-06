@@ -2,56 +2,49 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowDown, ArrowUpRight, Copy, Check } from "lucide-react";
+import StatNumber from "./StatNumber";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Asset } from "../lib/types";
-import ShinyText from "@/components/ShinyText";
-import LightRays from "@/components/LightRays";
-import { SlotText } from "slot-text/react";
-import "slot-text/style.css";
 import { Session } from "next-auth";
 import SetupWizard from "./SetupWizard";
 import { useElementActive, usePageVisible, useReducedMotion } from "../lib/visibility";
-
-gsap.registerPlugin(ScrollTrigger);
+import { SlotText } from "slot-text/react";
+import "slot-text/style.css";
 
 const TimelineSection = dynamic(() => import("./TimelineSection"));
 const DownloadSection = dynamic(() => import("./DownloadSection"));
 const GallerySection = dynamic(() => import("./GallerySection"));
-
-const stats = [
-  { label: "Teilnehmer", value: 350, suffix: "+", decimals: 0 },
-  { label: "Spielstunden", value: 15000, suffix: "+", decimals: 0, formatThousands: true },
-  { label: "Weltdaten", value: 320, suffix: "+ GB", decimals: 0 },
-  { label: "Uptime", value: 99.8, suffix: " %", decimals: 1 },
-  { label: "avg Latenz", value: 45, prefix: "< ", suffix: " ms", decimals: 0 },
-];
-
 const rotatingWords = ["Attack", "Team", "Capes"] as const;
 
+const stats = [
+  { label: "Teilnehmer", value: 350, suffix: "+" },
+  { label: "Spielstunden", value: 15000, suffix: "+" },
+  { label: "Weltdaten", value: 320, suffix: "+ GB" },
+  { label: "Uptime", value: 99.8, suffix: " %", decimals: 1 },
+  { label: "avg Latenz", value: 45, suffix: " ms", prefix: "< " },
+];
+
 export default function HomeClient({ initialAssets, session }: { initialAssets: Asset[], session: Session | null }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const heroSectionRef = useRef<HTMLDivElement>(null);
-  const heroActive = useElementActive(heroSectionRef);
   const pageVisible = usePageVisible();
+  const heroRef = useRef<HTMLElement>(null);
+  const heroActive = useElementActive(heroRef);
   const reducedMotion = useReducedMotion();
-  const statsSectionRef = useRef<HTMLDivElement>(null);
-  const titleStartRef = useRef<HTMLSpanElement>(null);
-  const titleEndRef = useRef<HTMLSpanElement>(null);
-  const pillRef = useRef<HTMLButtonElement>(null);
-  const descriptionRef = useRef<HTMLParagraphElement>(null);
-  const buttonsRef = useRef<HTMLDivElement>(null);
-  const motionButtonRef = useRef<HTMLButtonElement>(null);
-  const statsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeWordIndex, setActiveWordIndex] = useState(0);
-  const [serverStatus, setServerStatus] = useState<{
-    online: boolean;
-    players: { online: number; max: number } | null;
-    loading: boolean;
-  }>({ online: false, players: null, loading: true });
-  const [copyToast, setCopyToast] = useState<{ x: number; y: number; id: number } | null>(null);
+  const statsSectionRef = useRef<HTMLDivElement>(null);
+  const [serverStatus, setServerStatus] = useState<{ online: boolean; players: { online: number; max: number } | null; loading: boolean }>({ online: false, players: null, loading: true });
+  const [copied, setCopied] = useState(false);
+  const copyReset = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (copyReset.current) clearTimeout(copyReset.current); }, []);
+
+  useEffect(() => {
+    if (!heroActive || reducedMotion) return;
+    const interval = window.setInterval(() => setActiveWordIndex(current => (current + 1) % rotatingWords.length), 2400);
+    return () => window.clearInterval(interval);
+  }, [heroActive, reducedMotion]);
 
   useEffect(() => {
     if (!pageVisible) return;
@@ -64,279 +57,52 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
         const res = await fetch("https://api.mcstatus.io/v2/status/java/play.cookieattack.de", { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) });
         if (!res.ok) throw new Error("Failed to fetch server status");
         const data = await res.json();
-        setServerStatus({
-          online: !!data.online,
-          players: data.players ? { online: data.players.online ?? 0, max: data.players.max ?? 0 } : null,
-          loading: false,
-        });
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        console.error("Error fetching Minecraft server status:", err);
-        setServerStatus({ online: false, players: null, loading: false });
+        setServerStatus({ online: !!data.online, players: data.players ? { online: data.players.online ?? 0, max: data.players.max ?? 0 } : null, loading: false });
+      } catch {
+        if (!controller.signal.aborted) setServerStatus({ online: false, players: null, loading: false });
       } finally { fetching = false; }
     };
-
-    fetchStatus();
+    void fetchStatus();
     const interval = setInterval(fetchStatus, 60000);
     return () => { controller.abort(); clearInterval(interval); };
   }, [pageVisible]);
 
-  const handleCopyIp = (e: React.MouseEvent<HTMLButtonElement>) => {
-    navigator.clipboard.writeText("play.cookieattack.de");
-    setCopyToast({ x: e.clientX, y: e.clientY - 10, id: Date.now() });
-    setTimeout(() => {
-      setCopyToast(null);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    if (!heroActive) return;
-    const interval = window.setInterval(() => {
-      setActiveWordIndex((current) => (current + 1) % rotatingWords.length);
-    }, 2400);
-
-    return () => window.clearInterval(interval);
-  }, [heroActive]);
-
-  useGSAP(() => {
-    const heroElements = [pillRef.current, descriptionRef.current, buttonsRef.current, motionButtonRef.current].filter(Boolean);
-    if (reducedMotion) {
-      gsap.set(heroElements, { autoAlpha: 1, y: 0 });
-      gsap.set([...(titleStartRef.current?.children ?? []), ...(titleEndRef.current?.children ?? [])], { autoAlpha: 1, y: 0 });
-      statsRefs.current.forEach((stat, index) => {
-        if (!stat) return;
-        gsap.set(stat, { autoAlpha: 1, y: 0 });
-        const value = stat.querySelector(".stat-value");
-        if (value) value.textContent = `${stats[index].prefix ?? ""}${stats[index].value.toLocaleString("de-DE")}${stats[index].suffix ?? ""}`;
-      });
-      return;
-    }
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-    gsap.set(heroElements, { autoAlpha: 0, y: 20 });
-
-    const startChars = titleStartRef.current?.children;
-    const endChars = titleEndRef.current?.children;
-
-    if (startChars && endChars) {
-      gsap.set([...Array.from(startChars), ...Array.from(endChars)], { y: 100, autoAlpha: 0 });
-    }
-
-    tl.to(pillRef.current, {
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.8,
-      delay: 0.2
-    })
-      .to([...Array.from(startChars || []), ...Array.from(endChars || [])], {
-        y: 0,
-        autoAlpha: 1,
-        stagger: 0.05,
-        duration: 1,
-        ease: "back.out(1.7)"
-      }, "-=0.4")
-      .to(descriptionRef.current, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.8,
-      }, "-=0.6")
-      .to(buttonsRef.current, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.8,
-      }, "-=0.6")
-      .to(motionButtonRef.current, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.8,
-      }, "-=0.6");
-
-    statsRefs.current.forEach((stat, index) => {
-      if (!stat) return;
-
-      const valueSpan = stat.querySelector(".stat-value");
-      const targetValue = stats[index].value;
-      const proxy = { value: 0 };
-
-      gsap.fromTo(stat,
-        { autoAlpha: 0, y: 50 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: statsSectionRef.current,
-            start: "top 80%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-
-      gsap.to(proxy, {
-        value: targetValue,
-        duration: 2,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: statsSectionRef.current,
-          start: "top 80%",
-          once: true
-        },
-        onUpdate: () => {
-          if (valueSpan) {
-            let formatted = proxy.value.toFixed(stats[index].decimals);
-            if (stats[index].formatThousands) {
-              formatted = Number(formatted).toLocaleString("de-DE");
-            } else {
-              formatted = formatted.replace(".", ",");
-            }
-            if (stats[index].decimals === 0 && !stats[index].formatThousands) {
-              formatted = Math.round(proxy.value).toString();
-            }
-
-            valueSpan.textContent = `${stats[index].prefix || ""}${formatted}${stats[index].suffix || ""}`;
-          }
-        }
-      });
-    });
-
-  }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true });
-
-  const splitText = (text: string) => {
-    return text.split("").map((char, index) => (
-      <span key={index} className="inline-block">{char}</span>
-    ));
+  const handleCopyIp = async () => {
+    try {
+      await navigator.clipboard.writeText("play.cookieattack.de");
+      setCopied(true);
+      if (copyReset.current) clearTimeout(copyReset.current);
+      copyReset.current = setTimeout(() => setCopied(false), 1800);
+    } catch { /* The server address remains visible when clipboard access is denied. */ }
   };
 
   const scrollToStats = () => {
-    statsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (statsSectionRef.current) window.scrollTo({ top: statsSectionRef.current.getBoundingClientRect().top + window.scrollY - 96, behavior: reducedMotion ? "instant" : "smooth" });
   };
 
   return (
-    <div ref={containerRef} className="relative bg-[#050505] text-white overflow-x-hidden">
-      <div ref={heroSectionRef} className="relative flex min-h-screen flex-col items-center justify-center z-10 overflow-hidden px-4 py-20">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <LightRays
-            raysOrigin="top-center"
-            raysColor="#ffffff"
-            raysSpeed={1}
-            lightSpread={0.5}
-            rayLength={1}
-            followMouse={false}
-            noiseAmount={0.1}
-            distortion={0}
-            className="rays"
-            fadeDistance={1}
-            saturation={1}
-          />
+    <div className="home-page">
+      <header className="home-nav">
+        <Link href="/" className="home-brand" aria-label="CookieAttack Startseite"><Image src="/minilogo.png" width={32} height={32} alt="" /><span>Cookie<span>Attack</span></span></Link>
+        <nav aria-label="Hauptnavigation"><Link href="/stats">CookieStats</Link><Link href="/cookiecapes">CookieCapes</Link></nav>
+      </header>
+      <section ref={heroRef} className="home-hero">
+        <div className="home-hero-copy">
+          <button onClick={handleCopyIp} className="home-server" aria-label="Serveradresse play.cookieattack.de kopieren" aria-describedby="home-server-status"><span className={serverStatus.online ? "server-dot online" : "server-dot"} /><span>play.cookieattack.de</span><span id="home-server-status" className="home-server-status">{serverStatus.loading ? <><Skeleton className="inline-block h-3 w-24 align-middle" /><span className="sr-only">Serverstatus wird geladen</span></> : serverStatus.online ? serverStatus.players ? serverStatus.players.online + " Spieler online" : "Online" : "Offline"}</span><span className="copy-feedback" data-copied={copied}><Copy size={16} aria-hidden="true" /><Check size={16} aria-hidden="true" /></span><span role="status" className="sr-only">{copied ? "Serveradresse kopiert" : ""}</span></button>
+          <h1 className="home-wordmark"><span>Cookie</span><span className="home-wordmark-rotation">
+            <span className="home-wordmark-measure" aria-hidden="true">{rotatingWords.map(word => <span key={word}>{Array.from(word, (char, index) => <span key={index}>{char}</span>)}</span>)}</span>
+            <SlotText text={rotatingWords[activeWordIndex]} options={{ skipUnchanged: false, duration: reducedMotion ? 0 : 800, bounce: 0 }} />
+          </span></h1>
+          <p className="hero-description">Dein Minecraft-SMP mit Events, Roleplay und Community. Spiele mit, entdecke Spielerstatistiken oder gestalte dein eigenes Cape.</p>
+          <div className="hero-actions"><Button size="lg" onClick={scrollToStats}>CookieAttack entdecken<ArrowDown data-icon="inline-end" /></Button><Button asChild variant="outline" size="lg"><a href="https://dc.cookieattack.de" target="_blank" rel="noopener noreferrer">Zum Discord<ArrowUpRight data-icon="inline-end" /></a></Button></div>
         </div>
-        <div className="relative z-10 flex flex-col items-center gap-6">
-          <button
-            ref={pillRef}
-            onClick={handleCopyIp}
-            className="group relative flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 backdrop-blur-md opacity-0 transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 hover:bg-white/10 cursor-pointer select-none"
-          >
-            <span className="relative flex h-2.5 w-2.5 items-center justify-center">
-              {serverStatus.loading ? (
-                <span className="h-2.5 w-2.5 rounded-full bg-zinc-500 animate-pulse" />
-              ) : serverStatus.online ? (
-                <>
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                </>
-              ) : (
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-              )}
-            </span>
-
-            <div className="flex items-center gap-2.5 text-sm font-medium">
-              <span className="text-zinc-200 group-hover:text-white transition-colors">
-                <ShinyText text="play.cookieattack.de" speed={2.5} yoyo={true} />
-              </span>
-
-              <span className="h-3.5 w-px bg-white/20" />
-
-              {serverStatus.loading ? (
-                <span className="text-zinc-400 text-xs font-normal">Status wird geladen...</span>
-              ) : serverStatus.online ? (
-                <span className="text-emerald-400 text-xs font-semibold flex items-center gap-1">
-                  {serverStatus.players !== null && (
-                    <span className="text-zinc-300 font-normal">
-                      ({serverStatus.players.online}{serverStatus.players.max ? `/${serverStatus.players.max}` : ""} Spieler)
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <span className="text-rose-400 text-xs font-semibold">Offline</span>
-              )}
-            </div>
-          </button>
-
-          <h1 className="font-nexa text-6xl md:text-8xl lg:text-9xl tracking-tighter text-center overflow-hidden leading-tight">
-            <span ref={titleStartRef} className="inline-block text-orange-500">
-              {splitText("Cookie")}
-            </span>
-            <span ref={titleEndRef} className="inline-block text-white">
-              <SlotText
-                text={rotatingWords[activeWordIndex]}
-                options={{
-                  skipUnchanged: false,
-                  duration: 800,
-                  bounce: 0
-                }}
-              />
-            </span>
-          </h1>
-          <p ref={descriptionRef} className="max-w-xl px-6 text-center text-base text-zinc-300 opacity-0 md:text-lg">
-            Dein Minecraft-SMP mit Events, Roleplay und Community. Spiele mit, entdecke Spielerstatistiken oder gestalte dein eigenes Cape.
-          </p>
-
-          <div ref={buttonsRef} className="flex flex-wrap items-center justify-center gap-5 opacity-0">
-            <button
-              onClick={scrollToStats}
-              className="group relative overflow-hidden rounded-full bg-white px-8 py-3.5 font-bold text-black transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <span className="relative z-10">CookieAttack</span>
-              <div className="absolute inset-0 -z-10 translate-y-full bg-orange-500 transition-transform duration-300 group-hover:translate-y-0"></div>
-            </button>
-
-            <Link href="/stats" prefetch={false} className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer">
-              CookieStats
-            </Link>
-
-            <Link
-              href="/cookiecapes" prefetch={false}
-              className="group relative overflow-hidden rounded-full border border-white/20 bg-white/5 px-8 py-3.5 font-bold text-white transition-[color,background-color,border-color,box-shadow,transform,opacity] hover:scale-105 active:scale-95 hover:border-orange-500 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer"
-            >
-              <span className="relative z-10">CookieCapes</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
+      </section>
+      <section className="home-projects" aria-label="Mehr vom CookieTeam">
+        <Link href="/cookiecapes"><div><h2>Cookie<span>Capes</span></h2><p>Entdecke Capes der Community oder gestalte dein eigenes.</p></div><ArrowUpRight aria-hidden="true" /></Link>
+        <Link href="/stats"><div><h2>Cookie<span>Stats</span></h2><p>Vergleiche dich oder andere mit den CookieAttack Statistiken.</p></div><ArrowUpRight aria-hidden="true" /></Link>
+      </section>
+      <div ref={statsSectionRef} className="home-metrics">{stats.map(stat => <div key={stat.label}><strong><StatNumber value={stat.value} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals} /></strong><span>{stat.label}</span></div>)}</div>
       <SetupWizard session={session} />
-
-      <div ref={statsSectionRef} className="relative flex min-h-[50vh] w-full items-center justify-center py-20 bg-[#050505]">
-        <div className="w-full max-w-7xl px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                ref={(el) => { statsRefs.current[index] = el }}
-                className="flex flex-col items-center gap-2"
-              >
-                <span className="stat-value font-nexa text-4xl md:text-5xl lg:text-5xl text-white">
-                  {stat.prefix || ""}0{stat.suffix || ""}
-                </span>
-                <span className="text-sm uppercase tracking-widest text-zinc-500 font-medium">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <TimelineSection />
 
       <DownloadSection />
@@ -364,15 +130,7 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
         </a>
       </div>
 
-      {copyToast && (
-        <div
-          key={copyToast.id}
-          style={{ left: copyToast.x, top: copyToast.y }}
-          className="fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-full px-2.5 py-1 text-xs font-medium text-green-400 bg-black/90 rounded-full shadow-lg backdrop-blur-md animate-in fade-in zoom-in-90 duration-150"
-        >
-          Kopiert!
-        </div>
-      )}
+
     </div>
   );
 }

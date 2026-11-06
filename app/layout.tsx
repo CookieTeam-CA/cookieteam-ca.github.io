@@ -81,7 +81,7 @@ export default function RootLayout({
   return (
     <html lang="de" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${nexaHeavy.variable} antialiased bg-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${nexaHeavy.variable} antialiased bg-background text-foreground`}
       >
         <JsonLd />
         {children}

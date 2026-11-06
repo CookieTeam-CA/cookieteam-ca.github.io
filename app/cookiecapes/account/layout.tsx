@@ -1,4 +1,5 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
+import "./account.css";
 import Footer from "@/app/components/Footer";
 
 export async function generateMetadata() {
@@ -8,5 +9,5 @@ export async function generateMetadata() {
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const { locale } = await getTranslations();
-  return <div className="min-h-screen bg-[#080808] text-white">{children}<Footer locale={locale} /></div>;
+  return <div className="account-shell min-h-screen bg-background text-foreground">{children}<Footer locale={locale} /></div>;
 }

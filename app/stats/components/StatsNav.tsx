@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const links = [["/stats", "Übersicht"], ["/stats/statistiken", "Statistiken"], ["/stats/punkte", "Punkte"], ["/stats/achievements", "Achievements"], ["/stats/spieler", "Spieler"]];
 export default function StatsNav() {
   const pathname = usePathname();
-  const isStatsHome = pathname === "/stats";
+  const isHome = useSelectedLayoutSegment() === null;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -29,25 +29,25 @@ export default function StatsNav() {
 
   const renderLink = ([href, label]: string[]) => {
     const active = href === "/stats"
-      ? pathname === href
+      ? isHome
       : pathname.startsWith(href) || href === "/stats/statistiken" && pathname.startsWith("/stats/statistik/");
     return <Link key={href} href={href} aria-current={active ? "page" : undefined}
       onClick={() => setMenuOpen(false)}
-      className={`${active ? "text-white" : "text-zinc-400"} hover:text-white transition-colors duration-300 font-medium text-[19px]`}>
+      className={`${active ? "text-white" : "text-zinc-400"} hover:text-white transition-colors duration-300 font-medium text-sm min-h-11 inline-flex items-center`}>
       {label}
     </Link>;
   };
 
   return (
-    <header className="fixed top-2.5 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-13.75 z-100 select-none font-[Arial]">
-      <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-2.5 h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-7xl h-16 z-100 select-none">
+      <div className="bg-[#181818]/65 backdrop-blur-xl border border-border rounded-2xl px-4 h-full flex items-center justify-between shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
         <div className="flex items-center">
           <Link href="/" aria-label="CookieAttack Startseite" onClick={() => setMenuOpen(false)}>
             <Image src="/minilogo.png" alt="CookieTeam Logo" width={32} height={32}
               className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]" />
           </Link>
-          <Link href="/stats" aria-label="CookieStats Übersicht" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 pl-2.5 group">
-            <span className="font-nexa text-2xl tracking-tight hidden md:block"><span className={isStatsHome ? "text-[#ff7b00]" : "text-white"}>Cookie</span><span className="text-[#ff7b00]">Stats</span></span>
+          <Link href="/stats" aria-label="CookieStats Übersicht" aria-current={isHome ? "page" : undefined} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 pl-2.5 group">
+            <span className="font-nexa text-xl tracking-tight"><span className={isHome ? "text-primary" : "text-foreground"}>Cookie</span><span className="text-primary">Stats</span></span>
           </Link>
         </div>
 

@@ -4,6 +4,54 @@ export interface ComposerFrame { image: ImageBitmap; duration: number }
 export const MAX_FRAMES = 200;
 export const MAX_SOURCE_BYTES = 120 * 1024 * 1024;
 
+interface ManifestVersion {
+  width: number; height: number; pages: string[];
+  frames: { page: number; x: number; y: number }[];
+  timeline: { frame: number; duration_ms: number }[];
+}
+
+export async function importCapeManifest(url: string, t = translations("en").t): Promise<{ frames: ComposerFrame[]; hd: boolean }> {
+  const pages: ImageBitmap[] = [], images = new Map<number, ImageBitmap>();
+  const invalid = () => new Error(t("The frames could not be opened."));
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw invalid();
+    const manifest = await response.json();
+    const hd = !!manifest?.versions?.hd, quality = hd ? "hd" : "standard";
+    const version: ManifestVersion = manifest?.versions?.[quality];
+    if (manifest?.version !== 1 || !version || !Number.isInteger(version.width) || version.width < 2 || version.width > (hd ? 512 : 256) || version.height * 2 !== version.width || !Number.isInteger(version.height)
+      || !Array.isArray(version.pages) || !version.pages.length || version.pages.length > 8
+      || !Array.isArray(version.frames) || !version.frames.length || version.frames.length > MAX_FRAMES
+      || !Array.isArray(version.timeline) || !version.timeline.length || version.timeline.length > MAX_FRAMES) throw invalid();
+    for (const item of version.timeline) if (!item || !Number.isInteger(item.frame) || !version.frames[item.frame] || !Number.isFinite(item.duration_ms) || item.duration_ms < 1000 / 24 || item.duration_ms > 60000) throw invalid();
+    let pixels = 0;
+    for (const name of version.pages) {
+      if (typeof name !== "string" || !new RegExp(`^${quality}-[0-9]+\\.png$`).test(name)) throw invalid();
+      const response = await fetch(new URL(name, new URL(url, location.href)));
+      if (!response.ok) throw invalid();
+      const blob = await response.blob();
+      if (blob.size > 16 * 1024 * 1024) throw invalid();
+      const page = await createImageBitmap(blob);
+      pages.push(page);
+      pixels += page.width * page.height * 4;
+      if (page.width > 2048 || page.height > 2048 || pixels > MAX_SOURCE_BYTES) throw invalid();
+    }
+    for (const frame of version.frames) if (!frame || !Number.isInteger(frame.page) || !pages[frame.page] || !Number.isInteger(frame.x) || !Number.isInteger(frame.y) || frame.x < 0 || frame.y < 0 || frame.x + version.width > pages[frame.page].width || frame.y + version.height > pages[frame.page].height) throw invalid();
+    const frames: ComposerFrame[] = [];
+    for (const item of version.timeline) {
+      let image = images.get(item.frame);
+      if (!image) {
+        const frame = version.frames[item.frame];
+        image = await createImageBitmap(pages[frame.page], frame.x, frame.y, version.width, version.height);
+        images.set(item.frame, image);
+      }
+      frames.push({ image, duration: item.duration_ms });
+    }
+    return { frames, hd };
+  } catch (error) { images.forEach(image => image.close()); throw error; }
+  finally { pages.forEach(page => page.close()); }
+}
+
 export function limitFrameRate(frames: ComposerFrame[]): ComposerFrame[] {
   const minimum = 1000 / 24;
   if (!frames.some(frame => frame.duration < minimum)) return frames;
