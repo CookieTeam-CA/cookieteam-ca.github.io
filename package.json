@@ -20,7 +20,7 @@
     "gsap": "^3.14.2",
     "input-otp": "^1.5.0",
     "konva": "^10.2.3",
-    "lucide-react": "^1.6.0",
+    "lucide-react": "^1.67.0",
     "motion": "^12.38.0",
     "next": "16.4.3",
     "next-auth": "5.0.0-beta.32",
