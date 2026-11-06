@@ -1,5 +1,6 @@
-import { advancementHref, getStats, getAdvancements, statHref } from "../lib/api";
-import type { Query } from "./UI";
+import { advancementHref, statHref } from "../lib/routes";
+import { getStats, getAdvancements } from "../lib/api";
+import type { Query } from "../lib/query";
 import Collection from "./Collection";
 import { nameSort, valueSort } from "../lib/collections";
 

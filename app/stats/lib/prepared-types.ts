@@ -1,5 +1,8 @@
-import type { Entry } from "./scoring";
-import type { AdvancementInfo, StatInfo, Version } from "./snapshot-adapter";
+export type StatInfo = { id: string; display_name: string; category: string };
+export type AdvancementInfo = { id: string; display_name: string; description: string; tab: string };
+export type Version = { snapshot_version: string; updated_at: string; scoring_version: string };
+export type Entry = { uuid: string; username: string; value: number; rank: number; points: number; completed_at?: string };
+
 export type CollectionData<T = unknown> = {
   items: T[]; page: number; limit: number; total: number; total_pages: number; categories: string[];
 };

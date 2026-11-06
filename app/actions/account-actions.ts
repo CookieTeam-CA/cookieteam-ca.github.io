@@ -3,7 +3,7 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { revalidatePath } from "next/cache";
 import { accountFetch, accountJson } from "@/lib/cookieapi-account";
-import { CapeApiError } from "@/app/cookiecapes/lib/api";
+import { CapeApiError } from "@/app/cookiecapes/lib/api-error";
 import type { AccountActionResult } from "@/app/cookiecapes/lib/account-types";
 import type { AccountInfo, OwnedCapes, MinecraftProfile } from "@/app/cookiecapes/lib/account-types";
 import { normalizeMinecraftServerCode } from "@/app/cookiecapes/lib/minecraft-server-code";
@@ -62,11 +62,19 @@ export async function reviewLegacyCapes(reviewId: string, keepIds: number[]) {
     revalidatePath("/cookiecapes", "layout");
   });
 }
-export async function claimCape(capeId: number, restore = false) {
+export async function claimCape(capeId: number) {
   const { t } = await getTranslations();
   return result(async () => {
     if (!Number.isSafeInteger(capeId) || capeId < 1) throw new Error(t("Invalid cape ID."));
-    await accountJson(restore ? `/me/capes/${capeId}/restore` : `/account/capes/${capeId}/claim`, {});
+    await accountJson(`/account/capes/${capeId}/claim`, {});
+    revalidatePath("/cookiecapes", "layout");
+  });
+}
+export async function restoreOwnedCape(capeId: number) {
+  const { t } = await getTranslations();
+  return result(async () => {
+    if (!Number.isSafeInteger(capeId) || capeId < 1) throw new Error(t("Invalid cape ID."));
+    await accountJson(`/me/capes/${capeId}/restore`, {});
     revalidatePath("/cookiecapes", "layout");
   });
 }

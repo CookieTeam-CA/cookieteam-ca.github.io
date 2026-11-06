@@ -1,5 +1,5 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
-import { ArrowLeft, User, Layers, Globe, History } from "lucide-react";
+import { ArrowLeft, User, Layers } from "lucide-react";
 import Footer from "../../../components/Footer";
 
 export default async function PlayerProfileLoading() {

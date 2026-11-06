@@ -1,13 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getOverview, statHref } from "./lib/api";
-import { Hero, Metrics, number, queryText, type Query } from "./components/UI";
+import { statHref } from "./lib/routes";
+import { getOverview } from "./lib/api";
+import { queryText, type Query } from "./lib/query";
+import { Hero, Metrics, number } from "./components/UI";
 import Podium from "./components/Podium";
 import { MinecraftIcon } from "./components/MinecraftIcon";
 import HeadStack from "./components/HeadStack";
 import CategoryBadge from "./components/CategoryBadge";
-import { queryParams } from "./lib/collections";
+import { queryParams } from "./lib/query";
 import { formatStatValue } from "./lib/stat-units";
 
 export const metadata: Metadata = { title: "Übersicht" };

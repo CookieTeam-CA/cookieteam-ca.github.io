@@ -1,6 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import type { Query } from "../../components/UI";
-import { queryParams } from "../../lib/collections";
+import type { Query } from "../../lib/query";
+import { queryParams } from "../../lib/query";
 
 export default async function LegacyLeaderboard({ params, searchParams }: { params: Promise<{ type: string }>; searchParams: Promise<Query> }) {
   const [{ type }, query] = await Promise.all([params, searchParams]);

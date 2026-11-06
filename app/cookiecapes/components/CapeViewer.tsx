@@ -49,7 +49,7 @@ function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"
     }
 }
 
-export function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean, requireCape = false) {
+function loadTextures(viewer: SkinViewer, cape: string | null | undefined, skin: string | undefined, name: string | undefined, isCurrent: () => boolean, requireCape = false) {
     const load = async (url: string, apply: (image: HTMLImageElement) => void | Promise<void>) => {
         const image = await loadTextureImage(url);
         if (isCurrent()) await apply(image);

@@ -3,7 +3,6 @@ export class StatsApiError extends Error {
 }
 type Representation = { value: unknown; expires: number; etag: string | null; version: string };
 
-// This module is imported only by the server adapter (and independent tests).
 export function createPreparedClient(baseUrl: string, ttl = 300000, fetcher = fetch, now = Date.now) {
   const cached = new Map<string, Representation>();
   const pending = new Map<string, Promise<unknown>>();
@@ -13,7 +12,7 @@ export function createPreparedClient(baseUrl: string, ttl = 300000, fetcher = fe
     return resource + (normalized.size ? `?${normalized}` : "");
   }
   async function get<T>(resource: string, query = new URLSearchParams(), force = false): Promise<T> {
-    const path = pathFor(resource, query); // Includes effective query and version pin.
+    const path = pathFor(resource, query);
     const previous = cached.get(path);
     if (!force && previous && previous.expires > now()) return previous.value as T;
     let task = pending.get(path);

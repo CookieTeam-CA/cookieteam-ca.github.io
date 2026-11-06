@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 import { startMinecraftLink, uploadWebsiteCape } from "@/app/actions/account-actions";
 import { actionValue, type AccountInfo, type SubmissionQuota } from "../lib/account-types";
 import { selectCapeFiles, type CapeSelection } from "../lib/cape-upload";
-import { canvasPng, drawTemplate, exportApng, templateWidth, frameAt, importCapeManifest, importFrames, inspectImage, limitFrameRate, MAX_SOURCE_BYTES, type ComposerFrame } from "../lib/animation";
+import { frameAt, MAX_FRAMES, MAX_UPLOAD_BYTES, MIN_FRAME_DURATION, MAX_FRAME_DURATION } from "../lib/animation-manifest";
+import { canvasPng, drawTemplate, exportApng, templateWidth, importCapeManifest, importFrames, inspectImage, limitFrameRate, MAX_SOURCE_BYTES, type ComposerFrame } from "../lib/animation";
 import { toast } from "@/components/ui/toast";
 import { usePageVisible, useReducedMotion } from "../../lib/visibility";
 import CapeViewer from "./CapeViewer";
@@ -107,7 +108,6 @@ export default function SetupWizard({ account: initialAccount, onAccountLinked, 
     const tick = (now: number) => { setSelected(frameAt(durations, now - start + offset)); request = requestAnimationFrame(tick); };
     request = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(request);
-    // Selection follows the clock without restarting it on each frame.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing, frames, visible, reduced]);
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function SetupWizard({ account: initialAccount, onAccountLinked, 
 
   function change(next: ComposerFrame[], index: number, dirty = true) {
     const bytes = next.reduce((sum, frame) => sum + frame.image.width * frame.image.height * 4, 0);
-    if (next.length > 200 || bytes > MAX_SOURCE_BYTES) { setError(t("Maximum 200 frames and 120 MiB of source pixels.")); return; }
+    if (next.length > MAX_FRAMES || bytes > MAX_SOURCE_BYTES) { setError(t("Maximum 200 frames and 120 MiB of source pixels.")); return; }
     const keep = new Set(next.map(frame => frame.image));
     for (const image of ownedImages.current) if (!keep.has(image)) { image.close(); ownedImages.current.delete(image); }
     next.forEach(frame => ownedImages.current.add(frame.image));
@@ -137,7 +137,6 @@ export default function SetupWizard({ account: initialAccount, onAccountLinked, 
   function acceptImportedFrames(decoded: ComposerFrame[]) {
     const limited = limitFrameRate(decoded);
     const adjusted = limited !== decoded;
-    // Own every decoded bitmap before dropping frames so skipped images are released too.
     decoded.forEach(frame => ownedImages.current.add(frame.image));
     change(limited, 0, adjusted);
     if (adjusted) toast.add({ title: t("Your animation was automatically reduced to a maximum of 24 FPS, preserving playback speed."), type: "success" });
@@ -237,7 +236,7 @@ export default function SetupWizard({ account: initialAccount, onAccountLinked, 
             canvas.width = frames[i].image.width; canvas.height = frames[i].image.height;
             canvas.getContext("2d")!.drawImage(frames[i].image, 0, 0);
             const blob = await canvasPng(canvas, t); total += blob.size;
-            if (total > 32 * 1024 * 1024) throw new Error(t("The frames exceed 32 MiB."));
+            if (total > MAX_UPLOAD_BYTES) throw new Error(t("The frames exceed 32 MiB."));
             body.append("files", blob, `frame-${i}.png`);
           }
           canvas.width = canvas.height = 0;
@@ -408,13 +407,13 @@ export default function SetupWizard({ account: initialAccount, onAccountLinked, 
                   </button>
                 </ContextMenu.Trigger>
                 <ContextMenu.Portal><ContextMenu.Content className="account-popup z-60 min-w-36 rounded-lg border border-white/15 bg-zinc-950 p-1 text-sm text-white shadow-xl">
-                  <ContextMenu.Item disabled={locked || frames.length >= 200} className="cursor-pointer rounded px-3 py-2 outline-none data-highlighted:bg-white/10 data-disabled:opacity-40" onSelect={() => change([...frames.slice(0, index + 1), { ...frame }, ...frames.slice(index + 1)], index + 1)}>{t("Duplicate")}</ContextMenu.Item>
+                  <ContextMenu.Item disabled={locked || frames.length >= MAX_FRAMES} className="cursor-pointer rounded px-3 py-2 outline-none data-highlighted:bg-white/10 data-disabled:opacity-40" onSelect={() => change([...frames.slice(0, index + 1), { ...frame }, ...frames.slice(index + 1)], index + 1)}>{t("Duplicate")}</ContextMenu.Item>
                   <ContextMenu.Item disabled={locked} className="cursor-pointer rounded px-3 py-2 text-red-300 outline-none data-highlighted:bg-white/10 data-disabled:opacity-40" onSelect={() => change(frames.filter((_, item) => item !== index), index)}>{t("Delete")}</ContextMenu.Item>
                 </ContextMenu.Content></ContextMenu.Portal>
               </ContextMenu.Root>)}
             </div>
             <Button disabled={!frames.length || locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>
-            <label className="block text-sm">{t("Frame duration (42–60,000 ms)")}<input className={inputClass} type="number" min={1000 / 24} max={60000} step="any" value={Number((current?.duration ?? 1000 / 12).toFixed(2))} disabled={!current || locked} onChange={event => { const duration = Number(event.target.value); if (duration >= 1000 / 24 && duration <= 60000) change(frames.map((frame, index) => index === selected ? { ...frame, duration } : frame), selected); }} /></label>
+            <label className="block text-sm">{t("Frame duration (42–60,000 ms)")}<input className={inputClass} type="number" min={MIN_FRAME_DURATION} max={MAX_FRAME_DURATION} step="any" value={Number((current?.duration ?? 1000 / 12).toFixed(2))} disabled={!current || locked} onChange={event => { const duration = Number(event.target.value); if (duration >= MIN_FRAME_DURATION && duration <= MAX_FRAME_DURATION) change(frames.map((frame, index) => index === selected ? { ...frame, duration } : frame), selected); }} /></label>
             <div className="flex flex-wrap gap-2">{[6, 12, 24].map(fps => <Button key={fps} variant="outline" disabled={!frames.length || locked} onClick={() => change(frames.map(frame => ({ ...frame, duration: 1000 / fps })), selected)}>{t("All: {fps} FPS", { fps })}</Button>)}</div>
             {reduced && <p className="text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
 

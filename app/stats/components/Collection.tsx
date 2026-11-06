@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { Empty, number, date, Pagination, queryText, type Query } from "./UI";
+import { queryText, type Query } from "../lib/query";
+import { Empty, number, date, Pagination } from "./UI";
 import Filters from "./Filters";
 import { SearchResults } from "./SearchProvider";
 import { MinecraftIcon } from "./MinecraftIcon";
 import HeadStack from "./HeadStack";
 import PlayerVisual from "./PlayerVisual";
 import CategoryBadge from "./CategoryBadge";
-import { excludedCategories, nameSort, type CollectionRow, type SortOption } from "../lib/collections";
+import { excludedCategories } from "../lib/query";
+import { nameSort, type CollectionRow, type SortOption } from "../lib/collections";
 import type { CollectionData } from "../lib/prepared-types";
 import CategoryFilters from "./CategoryFilters";
 import { formatStatValue } from "../lib/stat-units";

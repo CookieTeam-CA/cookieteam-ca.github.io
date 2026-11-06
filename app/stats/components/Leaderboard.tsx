@@ -1,9 +1,9 @@
 import type { CollectionData } from "../lib/prepared-types";
-import type { Entry } from "../lib/scoring";
-import { playerHref } from "../lib/api";
+import type { Entry } from "../lib/prepared-types";
+import { playerHref } from "../lib/routes";
 import { nameSort, rankSort, pointSort, timeSort, valueSort } from "../lib/collections";
 import Collection from "./Collection";
-import type { Query } from "./UI";
+import type { Query } from "../lib/query";
 
 export default function Leaderboard({ entries, data, query, achievement = false, showPoints = true, valueLabel = "Wert", statKey }: { entries: Entry[]; data: CollectionData; query: Query; achievement?: boolean; showPoints?: boolean; valueLabel?: string; statKey?: string }) {
   const rows = entries.map(entry => ({ id: entry.uuid, name: entry.username, href: playerHref(entry.uuid), player: entry,

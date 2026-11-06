@@ -1,14 +1,8 @@
 import { translations } from "../i18n/messages";
+import { animationVersion, MAX_FRAMES, MAX_UPLOAD_BYTES, MAX_PAGE_BYTES, MAX_PAGE_SIZE, MIN_FRAME_DURATION, MAX_FRAME_DURATION } from "./animation-manifest";
 
 export interface ComposerFrame { image: ImageBitmap; duration: number }
-export const MAX_FRAMES = 200;
 export const MAX_SOURCE_BYTES = 120 * 1024 * 1024;
-
-interface ManifestVersion {
-  width: number; height: number; pages: string[];
-  frames: { page: number; x: number; y: number }[];
-  timeline: { frame: number; duration_ms: number }[];
-}
 
 export async function importCapeManifest(url: string, t = translations("en").t): Promise<{ frames: ComposerFrame[]; hd: boolean }> {
   const pages: ImageBitmap[] = [], images = new Map<number, ImageBitmap>();
@@ -18,25 +12,20 @@ export async function importCapeManifest(url: string, t = translations("en").t):
     if (!response.ok) throw invalid();
     const manifest = await response.json();
     const hd = !!manifest?.versions?.hd, quality = hd ? "hd" : "standard";
-    const version: ManifestVersion = manifest?.versions?.[quality];
-    if (manifest?.version !== 1 || !version || !Number.isInteger(version.width) || version.width < 2 || version.width > (hd ? 512 : 256) || version.height * 2 !== version.width || !Number.isInteger(version.height)
-      || !Array.isArray(version.pages) || !version.pages.length || version.pages.length > 8
-      || !Array.isArray(version.frames) || !version.frames.length || version.frames.length > MAX_FRAMES
-      || !Array.isArray(version.timeline) || !version.timeline.length || version.timeline.length > MAX_FRAMES) throw invalid();
-    for (const item of version.timeline) if (!item || !Number.isInteger(item.frame) || !version.frames[item.frame] || !Number.isFinite(item.duration_ms) || item.duration_ms < 1000 / 24 || item.duration_ms > 60000) throw invalid();
+    const version = animationVersion(manifest, quality);
+    if (!version) throw invalid();
     let pixels = 0;
     for (const name of version.pages) {
-      if (typeof name !== "string" || !new RegExp(`^${quality}-[0-9]+\\.png$`).test(name)) throw invalid();
       const response = await fetch(new URL(name, new URL(url, location.href)));
       if (!response.ok) throw invalid();
       const blob = await response.blob();
-      if (blob.size > 16 * 1024 * 1024) throw invalid();
+      if (blob.size > MAX_PAGE_BYTES) throw invalid();
       const page = await createImageBitmap(blob);
       pages.push(page);
       pixels += page.width * page.height * 4;
-      if (page.width > 2048 || page.height > 2048 || pixels > MAX_SOURCE_BYTES) throw invalid();
+      if (page.width > MAX_PAGE_SIZE || page.height > MAX_PAGE_SIZE || pixels > MAX_SOURCE_BYTES) throw invalid();
     }
-    for (const frame of version.frames) if (!frame || !Number.isInteger(frame.page) || !pages[frame.page] || !Number.isInteger(frame.x) || !Number.isInteger(frame.y) || frame.x < 0 || frame.y < 0 || frame.x + version.width > pages[frame.page].width || frame.y + version.height > pages[frame.page].height) throw invalid();
+    for (const frame of version.frames) if (frame.x + version.width > pages[frame.page].width || frame.y + version.height > pages[frame.page].height) throw invalid();
     const frames: ComposerFrame[] = [];
     for (const item of version.timeline) {
       let image = images.get(item.frame);
@@ -53,7 +42,7 @@ export async function importCapeManifest(url: string, t = translations("en").t):
 }
 
 export function limitFrameRate(frames: ComposerFrame[]): ComposerFrame[] {
-  const minimum = 1000 / 24;
+  const minimum = MIN_FRAME_DURATION;
   if (!frames.some(frame => frame.duration < minimum)) return frames;
   const total = frames.reduce((sum, frame) => sum + frame.duration, 0);
   const count = Math.min(MAX_FRAMES, Math.max(1, Math.floor(total / minimum)));
@@ -63,18 +52,10 @@ export function limitFrameRate(frames: ComposerFrame[]): ComposerFrame[] {
   for (let sample = 0; sample < count; sample++) {
     while (index < frames.length - 1 && sample * duration >= end) end += frames[++index].duration;
     const image = frames[index].image;
-    if (result.at(-1)?.image === image && result[result.length - 1].duration + duration <= 60000) result[result.length - 1].duration += duration;
+    if (result.at(-1)?.image === image && result[result.length - 1].duration + duration <= MAX_FRAME_DURATION) result[result.length - 1].duration += duration;
     else result.push({ image, duration });
   }
   return result;
-}
-
-export function frameAt(durations: number[], elapsed: number): number {
-  const total = durations.reduce((sum, duration) => sum + duration, 0);
-  if (!durations.length || total <= 0) return 0;
-  let time = ((elapsed % total) + total) % total;
-  for (let i = 0; i < durations.length; i++) { if (time < durations[i]) return i; time -= durations[i]; }
-  return 0;
 }
 
 function compactTemplateWidth(width: number, height: number) {
@@ -132,7 +113,7 @@ export async function inspectImage(file: Blob, t = translations("en").t): Promis
 }
 
 export async function importFrames(files: File[], mode: "image" | "frames" | "sheet", width: number, height: number, t = translations("en").t): Promise<ComposerFrame[]> {
-  if (!files.length || files.length > MAX_FRAMES || files.reduce((sum, file) => sum + file.size, 0) > 32 * 1024 * 1024) throw new Error(t("Maximum 200 frames and 32 MiB."));
+  if (!files.length || files.length > MAX_FRAMES || files.reduce((sum, file) => sum + file.size, 0) > MAX_UPLOAD_BYTES) throw new Error(t("Maximum 200 frames and 32 MiB."));
   if (mode !== "frames" && files.length !== 1) throw new Error(t("Please choose one animation or sprite sheet."));
   const result: ComposerFrame[] = [];
   let pixels = 0;
@@ -141,19 +122,19 @@ export async function importFrames(files: File[], mode: "image" | "frames" | "sh
     if (result.length >= MAX_FRAMES || pixels > MAX_SOURCE_BYTES || image.width > 512 || image.height > 300 || image.width < 2) {
       image.close(); throw new Error(t("Maximum 200 frames, 512 × 300 per frame and 120 MiB of source pixels."));
     }
-    if (!Number.isFinite(duration) || duration <= 0 || duration > 60000) { image.close(); throw new Error(t("Frame durations must be greater than zero and no longer than 60 seconds.")); }
+    if (!Number.isFinite(duration) || duration <= 0 || duration > MAX_FRAME_DURATION) { image.close(); throw new Error(t("Frame durations must be greater than zero and no longer than 60 seconds.")); }
     result.push({ image, duration });
   };
   try {
     for (const file of files) {
       const size = await inspectImage(file, t);
-      const maxWidth = mode === "sheet" ? 2048 : 512, maxHeight = mode === "sheet" ? 2048 : 300;
+      const maxWidth = mode === "sheet" ? MAX_PAGE_SIZE : 512, maxHeight = mode === "sheet" ? MAX_PAGE_SIZE : 300;
       if (size.width < 2 || size.height < 1 || size.width > maxWidth || size.height > maxHeight) throw new Error(t("The image dimensions exceed the import limit."));
       if (mode === "sheet") {
         if (!Number.isInteger(width) || !Number.isInteger(height) || width < 2 || width > 512 || height < 1 || height > 300) throw new Error(t("Invalid frame size."));
         const sheet = await createImageBitmap(file);
         try {
-          if (sheet.width > 2048 || sheet.height > 2048 || sheet.width % width || sheet.height % height || sheet.width / width * (sheet.height / height) > 200) throw new Error(t("Sprite sheets must not exceed 2048 × 2048 pixels, must divide evenly into frames and must contain at most 200 frames."));
+          if (sheet.width > MAX_PAGE_SIZE || sheet.height > MAX_PAGE_SIZE || sheet.width % width || sheet.height % height || sheet.width / width * (sheet.height / height) > MAX_FRAMES) throw new Error(t("Sprite sheets must not exceed 2048 × 2048 pixels, must divide evenly into frames and must contain at most 200 frames."));
           for (let y = 0; y < sheet.height; y += height) for (let x = 0; x < sheet.width; x += width) append(await createImageBitmap(sheet, x, y, width, height));
         } finally { sheet.close(); }
       } else if (mode === "frames") {
@@ -197,9 +178,8 @@ export async function canvasPng(canvas: HTMLCanvasElement, t = translations("en"
   return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error(t("PNG export failed."))), "image/png"));
 }
 
-/** Reuse browser PNG compression; full RGBA frames use SOURCE/NONE disposal. */
 export async function exportApng(frames: ComposerFrame[], fit: "pad" | "crop", maximum: number, t = translations("en").t): Promise<Blob> {
-  if (!frames.length || frames.length > 200) throw new Error(t("Please choose 1–200 frames."));
+  if (!frames.length || frames.length > MAX_FRAMES) throw new Error(t("Please choose 1–200 frames."));
   const output: Uint8Array[] = [new Uint8Array([137,80,78,71,13,10,26,10])];
   const canvas = document.createElement("canvas");
   let sequence = 0, expectedWidth = 0, expectedHeight = 0;

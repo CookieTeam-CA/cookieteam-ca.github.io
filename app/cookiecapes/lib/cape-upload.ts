@@ -1,3 +1,4 @@
+import { MAX_FRAMES, MAX_UPLOAD_BYTES } from "./animation-manifest";
 import { translations } from "../i18n/messages";
 
 export type CapeImportMode = "auto" | "image" | "frames" | "sheet";
@@ -5,7 +6,7 @@ export interface CapeSelection { files: File[]; mode: "static" | "image" | "fram
 
 /** Detect containers from their bytes, so an animated PNG never becomes a static upload. */
 export async function selectCapeFiles(files: File[], mode: CapeImportMode = "auto", t = translations("en").t): Promise<CapeSelection> {
-  if (!files.length || files.length > 200 || files.some(file => !file.size) || files.reduce((sum, file) => sum + file.size, 0) > 32 * 1024 * 1024) throw new Error(t("Please choose up to 200 frames totaling no more than 32 MiB."));
+  if (!files.length || files.length > MAX_FRAMES || files.some(file => !file.size) || files.reduce((sum, file) => sum + file.size, 0) > MAX_UPLOAD_BYTES) throw new Error(t("Please choose up to 200 frames totaling no more than 32 MiB."));
   const normalized: File[] = [];
   let animated = false;
   for (const file of files) {

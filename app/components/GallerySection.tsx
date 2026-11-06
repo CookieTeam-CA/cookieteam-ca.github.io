@@ -77,7 +77,6 @@ export default function GallerySection({ allAssets }: { allAssets: Asset[] }) {
                                         alt="Gallery Image"
                                         fill
                                         className="object-cover"
-                                        // Removed priority={index === 0} to improve initial page load since this is below the fold
                                         loading="lazy"
                                         sizes="(max-width: 1280px) calc(100vw - 48px), 1232px"
                                     />

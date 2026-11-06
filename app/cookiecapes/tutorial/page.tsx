@@ -1,7 +1,7 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Download, Edit3, Image as ImageIcon, Save, CheckCircle } from "lucide-react";
+import { Download, Edit3, Image as ImageIcon } from "lucide-react";
 import { Metadata } from "next";
 import Footer from "../../components/Footer";
 

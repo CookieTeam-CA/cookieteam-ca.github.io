@@ -1,11 +1,12 @@
+import { MAX_FRAMES, MAX_UPLOAD_BYTES } from "@/app/cookiecapes/lib/animation-manifest";
 import { cookies } from "next/headers";
 import { accountFetch } from "@/lib/cookieapi-account";
-import { websiteSessionCookie } from "@/lib/cookieapi-adapter";
-import { CapeApiError } from "@/app/cookiecapes/lib/api";
+import { websiteSessionCookie } from "@/lib/cookieapi-config";
+import { CapeApiError } from "@/app/cookiecapes/lib/api-error";
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 
 export const runtime = "nodejs";
-const MAX_BODY = 33 * 1024 * 1024;
+const MAX_BODY = MAX_UPLOAD_BYTES + 1024 * 1024;
 
 export async function POST(request: Request) {
   const { t } = await getTranslations();
@@ -33,11 +34,11 @@ export async function POST(request: Request) {
     const body = new FormData();
     let bytes = 0;
     const files = form.getAll("files");
-    if (!files.length || files.length > 200) throw new Error(t("Please choose 1–200 frames."));
+    if (!files.length || files.length > MAX_FRAMES) throw new Error(t("Please choose 1–200 frames."));
     for (const file of files) {
       if (!(file instanceof File) || !file.size) throw new Error(t("Invalid file."));
       bytes += file.size;
-      if (bytes > 32 * 1024 * 1024) throw new Error(t("Maximum 32 MiB per upload."));
+      if (bytes > MAX_UPLOAD_BYTES) throw new Error(t("Maximum 32 MiB per upload."));
       body.append("files", file);
     }
     for (const key of ["minecraft_name", "cape_name", "options", "is_private", "replacement"]) {

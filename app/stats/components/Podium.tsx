@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Crown, Medal } from "lucide-react";
-import { playerHref } from "../lib/api";
+import { playerHref } from "../lib/routes";
 import PlayerVisual from "./PlayerVisual";
 import AnimatedNumber from "./AnimatedNumber";
 

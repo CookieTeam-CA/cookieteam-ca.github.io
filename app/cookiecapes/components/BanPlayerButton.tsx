@@ -3,7 +3,7 @@
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { Gavel } from "lucide-react";
-import { banPlayer } from "../../actions/player-actions";
+import { banPlayer } from "../../actions/moderation-actions";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 

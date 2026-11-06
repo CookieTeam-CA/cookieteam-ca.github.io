@@ -2,7 +2,7 @@ import "server-only";
 import { auth } from "@/auth";
 import { notFound, redirect } from "next/navigation";
 import { isCookieCapesAdmin } from "@/lib/cookiecapes-admin";
-import { cookieApiUrl } from "@/lib/cookieapi-adapter";
+import { cookieApiUrl } from "@/lib/cookieapi-config";
 import { statsRange, type AdminStats, type StatsRange, type StatsSearch } from "./types";
 
 export async function loadAdminStats(params: StatsSearch): Promise<{ data?: AdminStats; range?: StatsRange; error?: string }> {

@@ -6,15 +6,14 @@ import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, LayoutGrid, List, ChevronDown } from "lucide-react";
 import { useStatsSearch } from "./SearchProvider";
-import type { SortOption } from "../lib/collections";
+import { nameSort, type SortOption } from "../lib/collections";
 
-const defaultOptions = [{ value: "name_asc", label: "Name: A–Z" }, { value: "name_desc", label: "Name: Z–A" }];
 type Props = {
   search: string; placeholder?: string;
   sort?: string; sortOptions?: SortOption[]; defaultSort?: string; view?: "cards" | "list";
   defaultView?: "cards" | "list"; prefix?: string; label?: string;
 };
-export default function Filters({ search, placeholder = "Statistik suchen ...", sort = "name_asc", sortOptions = defaultOptions, defaultSort = "name_asc", view = "cards", defaultView = "cards", prefix = "", label = "Einträge" }: Props) {
+export default function Filters({ search, placeholder = "Statistik suchen ...", sort = "name_asc", sortOptions = nameSort, defaultSort = "name_asc", view = "cards", defaultView = "cards", prefix = "", label = "Einträge" }: Props) {
   const pathname = usePathname();
   const params = useSearchParams();
   const { navigate, pending } = useStatsSearch();
