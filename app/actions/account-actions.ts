@@ -6,6 +6,7 @@ import { accountFetch, accountJson } from "@/lib/cookieapi-account";
 import { CapeApiError } from "@/app/cookiecapes/lib/api";
 import type { AccountActionResult } from "@/app/cookiecapes/lib/account-types";
 import type { AccountInfo, OwnedCapes, MinecraftProfile } from "@/app/cookiecapes/lib/account-types";
+import { normalizeMinecraftServerCode } from "@/app/cookiecapes/lib/minecraft-server-code";
 
 async function result<T>(operation: () => Promise<T>): Promise<AccountActionResult<T>> {
   const { t } = await getTranslations();
@@ -21,6 +22,30 @@ export async function loadOwnedCapes(uuid: string) {
 }
 export async function startMinecraftLink() {
   return result(() => accountJson<{ url: string }>("/account/minecraft/start", {}));
+}
+export async function redeemMinecraftServerCode(input: string) {
+  const { t } = await getTranslations();
+  return result(async () => {
+    const code = normalizeMinecraftServerCode(input);
+    if (!code) throw new CapeApiError(400, t("Enter the 12-character code from the Minecraft server."));
+    try {
+      const linked = await accountJson<{ linked: string[] }>("/account/minecraft/server/redeem", { code });
+      revalidatePath("/cookiecapes", "layout");
+      return linked;
+    } catch (error) {
+      // Do not expose upstream detail that could contain a submitted code.
+      if (error instanceof CapeApiError) {
+        const message = error.status === 400 ? t("This code is invalid, expired or already used. Join the server again for a new code.")
+          : error.status === 409 ? t("This Minecraft account is already linked to another user.")
+          : error.status === 503 ? t("Server linking is currently unavailable. Use MC-ID or try again later.")
+          : error.status === 429 ? t("Too many requests. Please try again later.")
+          : error.status === 401 ? t("Please sign in again.")
+          : t("The request could not be completed. Please sign in again or try again later.");
+        throw new CapeApiError(error.status, message);
+      }
+      throw error;
+    }
+  });
 }
 export async function completeMinecraftLink(code: string, state: string) {
   return accountJson<{ state: string; profiles: MinecraftProfile[] }>("/account/minecraft/callback", { code, state });

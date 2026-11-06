@@ -9,6 +9,7 @@ import { editOwnedCape, claimCape, loadOwnedCapes, startMinecraftLink } from "@/
 import { actionValue } from "../lib/account-types";
 import type { AccountInfo, OwnedCape, OwnedCapes } from "../lib/account-types";
 import CapeViewer from "../components/CapeViewer";
+import MinecraftServerLink from "../components/MinecraftServerLink";
 import MCIDButton from "../components/MCIDButton";
 import MinecraftAccountSelect from "../components/MinecraftAccountSelect";
 import SetupWizard from "../components/SetupWizard";
@@ -18,7 +19,9 @@ import VerificationBadge from "../components/VerificationBadge";
 import PreviousUploadsReview from "./PreviousUploadsReview";
 
 
-export default function AccountPanel({ account }: { account: AccountInfo }) {
+export default function AccountPanel({ account: initialAccount }: { account: AccountInfo }) {
+  const [updatedAccount, setAccount] = useState<AccountInfo | null>(null);
+  const account = updatedAccount ?? initialAccount;
   const duplicateToast = useDuplicateToast();
   const { t, locale, plural, number } = useTranslations();
   const [renaming, setRenaming] = useState<{ id: number; name: string; error: string } | null>(null);
@@ -75,6 +78,12 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
     setRefresh(value => value + 1);
   }
 
+  function accountLinked(nextAccount: AccountInfo, linkedUuid: string) {
+    setAccount(nextAccount);
+    setUuid(linkedUuid);
+    reloadCapes();
+  }
+
   function cancelRename(id: number) {
     setRenaming(null);
     document.getElementById(`rename-cape-${id}`)?.focus();
@@ -99,7 +108,7 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
       <div className="grid lg:grid-cols-[1fr_1.3fr]">
         <div className="border-b border-white/10 bg-linear-to-br from-orange-500/10 to-transparent p-6 sm:p-8 lg:border-r lg:border-b-0">
           <h2 id="minecraft-accounts-title" className="font-nexa text-2xl sm:text-3xl">{t("Minecraft accounts")}</h2>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">{t("Your players, your collection. Connect your Minecraft accounts with MC-ID and manage each player's capes.")}</p>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">{t("Your players, your collection. Link your Minecraft accounts and manage each player's capes.")}</p>
           <div className="mt-6 flex flex-wrap gap-2 text-xs text-zinc-300">
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">{number(account.links.length)} {plural(account.links.length, "account linked", "accounts linked")}</span>
             {selectedAccount && <span className="rounded-full border border-orange-400/20 bg-orange-500/10 px-3 py-1.5 text-orange-300">{t("Active:")} {selectedAccount.minecraft_name}</span>}
@@ -107,13 +116,17 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
         </div>
         <div className="space-y-5 p-6 sm:p-8">
           {account.links.length > 0 ? <MinecraftAccountSelect links={account.links} value={uuid} disabled={controlsDisabled} onChange={nextUuid => { setUuid(nextUuid); reloadCapes(); }} /> : <div className="rounded-2xl border border-dashed border-white/15 p-5 text-sm leading-relaxed text-zinc-400">{t("No Minecraft account linked yet. Connect your first account to upload capes.")}</div>}
-          <MCIDButton disabled={controlsDisabled || !account.mcid_enabled} onClick={() => run(async () => { const result = actionValue(await startMinecraftLink()); window.location.assign(result.url); }, t("Continue to MC-ID…"))}>{t("Link with MC-ID")}</MCIDButton>
+          <div className="flex items-center gap-2">
+<MinecraftServerLink account={account} disabled={controlsDisabled} onLinked={accountLinked} />
+          {account.server_link_enabled && account.server_link_address && <p className="max-w-16 shrink-0 text-center text-xs text-zinc-500">{t("or through MC-ID")}</p>}
+          <MCIDButton className="min-w-0 flex-1 px-3 text-sm" disabled={controlsDisabled || !account.mcid_enabled} onClick={() => run(async () => { const result = actionValue(await startMinecraftLink()); window.location.assign(result.url); }, t("Continue to MC-ID…"))}>{t("Link with MC-ID")}</MCIDButton>
+</div>
           {!account.mcid_enabled && <p className="text-xs leading-relaxed text-zinc-500">{t("MC-ID linking is not enabled yet. Please try again later.")}</p>}
         </div>
       </div>
     </section>
 
-    <SetupWizard account={account} uuid={uuid} quota={owned?.quota} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} />
+    <SetupWizard account={account} onAccountLinked={accountLinked} uuid={uuid} quota={owned?.quota} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} />
 
     {replacement && <div ref={replacementRef} role="region" aria-label={t("Replace cape image")} tabIndex={-1} className="scroll-mt-24"><SetupWizard key={replacement.cape_id} account={account} uuid={uuid} initialName={replacement.cape_name} initialCapeUrl={`/cookiecapes/account/images/${replacement.cape_id}?v=${refresh}`} initialAnimationManifest={replacement.animation ? `/cookiecapes/account/animation/${replacement.cape_id}/manifest.json?v=${refresh}` : undefined} quota={owned?.quota} replacementId={replacement.cape_id} disabled={controlsDisabled} onCancel={() => setReplacement(null)} onUploaded={reloadCapes} onBusyChange={setUploadBusy} /></div>}
     {uuid && <section aria-labelledby="owned-capes-title" className="space-y-6">

@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/toast";
 import { usePageVisible, useReducedMotion } from "../../lib/visibility";
 import CapeViewer from "./CapeViewer";
 import MinecraftAccountSelect from "./MinecraftAccountSelect";
+import MinecraftServerLink from "./MinecraftServerLink";
 import MCIDButton from "./MCIDButton";
 import SubmissionQuotaBar from "./SubmissionQuotaBar";
 import { ToastMessage } from "./ToastMessage";
@@ -24,11 +25,14 @@ import type { MessageKey } from "../i18n/messages";
 const inputClass = "w-full rounded-lg border border-white/15 bg-zinc-950 p-2.5 text-sm focus-visible:outline-2 focus-visible:outline-orange-400";
 type Job = { id?: string; status: string; error?: string; error_code?: string; existing_cape_id?: number; cape_id?: number };
 interface Props {
+  onAccountLinked?: (account: AccountInfo, uuid: string) => void;
   account: AccountInfo; uuid?: string; quota?: SubmissionQuota; replacementId?: number;
   initialName?: string; initialCapeUrl?: string; initialAnimationManifest?: string; disabled?: boolean; onCancel?: () => void; onUploaded?: () => void; onBusyChange?: (busy: boolean) => void;
 }
 
-export default function SetupWizard({ account, uuid: controlledUuid, quota, replacementId, initialName = "", initialCapeUrl, initialAnimationManifest, disabled = false, onCancel, onUploaded, onBusyChange }: Props) {
+export default function SetupWizard({ account: initialAccount, onAccountLinked, uuid: controlledUuid, quota, replacementId, initialName = "", initialCapeUrl, initialAnimationManifest, disabled = false, onCancel, onUploaded, onBusyChange }: Props) {
+  const [updatedAccount, setAccount] = useState<AccountInfo | null>(null);
+  const account = updatedAccount ?? initialAccount;
   const { t } = useTranslations();
   const id = useId();
   const [selectedUuid, setUuid] = useState(account.links[0]?.minecraft_uuid ?? "");
@@ -289,8 +293,15 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
               <img src={`https://minotar.net/helm/${encodeURIComponent(player.minecraft_uuid)}/64`} width={48} height={48} alt={t("Minecraft skin of {name}", { name: player.minecraft_name })} className="rounded-lg [image-rendering:pixelated]" />
               <div><p className="font-bold text-white">{player.minecraft_name}</p><p className="text-xs text-zinc-500">{t("Your active Minecraft account")}</p></div>
             </div> : null : <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5">
-              <p className="text-sm leading-relaxed text-zinc-400">{t("First link your Minecraft account with MC-ID. Then you can upload your cape here.")}</p>
-              <MCIDButton disabled={locked || !account.mcid_enabled} onClick={() => void linkMinecraft()}>{t("Link with MC-ID")}</MCIDButton>
+              <p className="text-sm leading-relaxed text-zinc-400">{t("First link your Minecraft account. Then you can upload your cape here.")}</p>
+              <div className="flex items-center gap-2">
+<MinecraftServerLink account={account} disabled={locked} onLinked={(nextAccount, linkedUuid) => {
+                if (onAccountLinked) onAccountLinked(nextAccount, linkedUuid);
+                else { setAccount(nextAccount); setUuid(linkedUuid); }
+              }} />
+              {account.server_link_enabled && account.server_link_address && <p className="max-w-16 shrink-0 text-center text-xs text-zinc-500">{t("or through MC-ID")}</p>}
+              <MCIDButton className="min-w-0 flex-1 px-3 text-sm" disabled={locked || !account.mcid_enabled} onClick={() => void linkMinecraft()}>{t("Link with MC-ID")}</MCIDButton>
+</div>
               {!account.mcid_enabled && <p className="text-xs text-zinc-500">{t("MC-ID is currently not enabled.")}</p>}
             </div>}
             <p className="text-sm leading-relaxed text-zinc-500">{t("Website uploads receive a blue badge. This verifies identity at upload time, not copyright ownership of the design.")}</p>
