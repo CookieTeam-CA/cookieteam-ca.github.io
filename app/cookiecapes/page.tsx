@@ -1,5 +1,6 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import CapeHero from "./components/CapeHero";
 import SetupWizard from "./components/SetupWizard";
@@ -14,6 +15,7 @@ import { auth } from "@/auth";
 import { loadAccount } from "@/app/actions/account-actions";
 import type { AccountInfo } from "./lib/account-types";
 import { ToastMessage } from "./components/ToastMessage";
+import CapeFAQ from "./components/CapeFAQ";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getTranslations();
@@ -37,9 +39,18 @@ export default async function CookieCapesPage() {
   return (
     <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {accountUnavailable && <ToastMessage message={t("Your account details could not be loaded. Please try again later.")} />}
-      <CapeHero cape={capes[0]} />
+      <CapeHero />
 
-      <Suspense fallback={<div className="h-125 w-full flex items-center justify-center text-zinc-500">{t("Loading capes...")}</div>}>
+      <Suspense fallback={<div role="status" className="mx-auto w-full max-w-7xl px-6 py-16">
+        <span className="sr-only">{t("Loading capes...")}</span>
+        <Skeleton className="mb-8 h-10 w-2/3 max-w-sm" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 3 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card">
+            <Skeleton className="aspect-square rounded-none" />
+            <div className="flex flex-col gap-3 p-3 sm:p-5"><Skeleton className="h-6 w-2/3" /><Skeleton className="h-5 w-1/2" /><Skeleton className="mt-3 h-4 w-20" /></div>
+          </div>)}
+        </div>
+      </div>}>
         <RandomCapes capes={capes} />
       </Suspense>
 
@@ -52,6 +63,7 @@ export default async function CookieCapesPage() {
       </div>
 
       <DownloadSection />
+      <CapeFAQ />
       <Footer locale={locale} />
     </main>
   );

@@ -33,19 +33,20 @@ export default function PlayerGalleryControls() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="gallery-controls mb-8 flex flex-col gap-2 md:flex-row">
             <GallerySearch placeholder={t("Search players...")} />
 
             <div className="flex gap-2">
                 <Button
                     variant="outline" size="icon-lg"
                     onClick={toggleOrder}
-                    className="group h-12 hover:border-orange-500/50"
+                    className="gallery-control size-12"
+                    aria-label={searchParams.get("order") === "desc" ? t("Descending") : t("Ascending")}
                     title={searchParams.get("order") === "desc" ? t("Descending") : t("Ascending")}
                 >
                     <ArrowUpDown
-                        size={20}
-                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "desc" ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                        className={searchParams.get("order") === "desc" ? "rotate-180" : undefined}
                     />
                 </Button>
 
@@ -53,13 +54,11 @@ export default function PlayerGalleryControls() {
                     variant="outline" size="icon-lg"
                     onClick={toggleBanned}
                     aria-pressed={searchParams.get("banned") === "true"}
-                    className={`h-12 ${searchParams.get("banned") === "true"
-                            ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
-                            : "text-zinc-400"
-                        }`}
+                    className="gallery-control size-12"
+                    aria-label={searchParams.get("banned") === "true" ? t("Hide banned players") : t("Show banned players")}
                     title={searchParams.get("banned") === "true" ? t("Hide banned players") : t("Show banned players")}
                 >
-                    <ShieldAlert size={18} />
+                    <ShieldAlert aria-hidden="true" />
                 </Button>
             </div>
         </div>

@@ -8,6 +8,7 @@ import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import DeleteCapeButton from "./DeleteCapeButton";
 import BanPlayerButton from "./BanPlayerButton";
 import Link from "next/link";
+import GalleryLink from "./GalleryLink";
 
 interface CapeCardProps {
     cape: Cape;
@@ -42,11 +43,11 @@ export default async function CapeCard({ cape, returnTo }: CapeCardProps) {
             </div>
 
             <div className="p-3 sm:p-5 flex-1 flex flex-col items-start text-left">
-                <Link prefetch={false} href={`/cookiecapes/capes/${cape.cape_id}${returnTo ? "?returnTo=" + encodeURIComponent(returnTo) : ""}`} className="max-w-full mb-2 text-white hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
+                <GalleryLink prefetch={false} href={`/cookiecapes/capes/${cape.cape_id}`} returnTo={returnTo} className="max-w-full mb-2 text-white hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
                     <h2 className="font-bold truncate" title={cape.cape_name}>
                         {cape.cape_name} <VerificationBadge verification={cape.verification} />
                     </h2>
-                </Link>
+                </GalleryLink>
 
                 <Link prefetch={false} href={`/cookiecapes/players/${cape.minecraft_name}`} className="flex items-center justify-center gap-2 mb-3 max-w-full text-zinc-400 hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
                     <img

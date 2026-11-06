@@ -28,7 +28,7 @@ export default function GalleryControls() {
     };
 
     return (
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="gallery-controls mb-8 flex flex-col gap-2 md:flex-row">
             <GallerySearch placeholder={t("Search capes...")} />
 
             <div className="flex gap-2">
@@ -37,25 +37,26 @@ export default function GalleryControls() {
                         aria-label={t("Popularity")}
                         value={searchParams.get("sort") || "active_user_count"}
                         onChange={(e) => handleSortChange(e.target.value)}
-                        className="appearance-none bg-zinc-900 border border-white/10 rounded-lg pl-10 pr-8 py-3 text-white focus:border-orange-500 focus:outline-none cursor-pointer hover:bg-zinc-800 transition-colors"
+                        className="gallery-control w-full appearance-none pl-10 pr-4 cursor-pointer"
                     >
                         <option value="active_user_count">{t("Popularity")}</option>
                         <option value="last_edited">{t("Date")}</option>
                         <option value="cape_name">Name</option>
                         <option value="cape_id">ID</option>
                     </select>
-                    <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" size={18} />
+                    <SlidersHorizontal aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 </div>
 
                 <Button
                     variant="outline" size="icon-lg"
                     onClick={toggleOrder}
-                    className="group h-auto self-stretch hover:border-orange-500/50"
+                    className="gallery-control size-12"
+                    aria-label={searchParams.get("order") === "asc" ? t("Ascending") : t("Descending")}
                     title={searchParams.get("order") === "asc" ? t("Ascending") : t("Descending")}
                 >
                     <ArrowUpDown
-                        size={20}
-                        className={`text-zinc-400 group-hover:text-white transition-transform duration-300 ${searchParams.get("order") === "asc" ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                        className={searchParams.get("order") === "asc" ? "rotate-180" : undefined}
                     />
                 </Button>
             </div>

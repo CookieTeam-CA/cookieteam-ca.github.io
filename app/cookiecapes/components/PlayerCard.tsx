@@ -6,6 +6,7 @@ import { ShieldAlert } from "lucide-react";
 import { getCookieCapesAdmin } from "@/lib/cookiecapes-admin";
 import BanPlayerButton from "./BanPlayerButton";
 import Link from "next/link";
+import GalleryLink from "./GalleryLink";
 
 interface PlayerCardProps {
     player: Player;
@@ -58,9 +59,9 @@ export default async function PlayerCard({ player, returnTo = "/cookiecapes/play
                 </Link>
 
                 {player.cape_name ? (
-                    <Link prefetch={false} href={`/cookiecapes/capes/${player.current_cape_id}?returnTo=${encodeURIComponent(returnTo)}`} className="flex items-center justify-center gap-2 mb-1 max-w-full text-zinc-400 text-sm hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
+                    <GalleryLink prefetch={false} href={`/cookiecapes/capes/${player.current_cape_id}`} returnTo={returnTo} className="flex items-center justify-center gap-2 mb-1 max-w-full text-zinc-400 text-sm hover:text-orange-400 focus-visible:text-orange-400 transition-colors">
                         <span className="truncate">{t("Cape:")} {player.cape_name}</span>
-                    </Link>
+                    </GalleryLink>
                 ) : (
                     <div className="flex items-center gap-2 mb-1 w-full text-zinc-400 text-sm">
                         <span>{t("No cape")}</span>

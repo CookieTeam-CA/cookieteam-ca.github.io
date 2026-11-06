@@ -2,34 +2,58 @@
 
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUpRight, Check } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import Link from "next/link";
-import type { Cape } from "../lib/api";
-import { capePreviewUrl } from "../lib/preview-url";
-import StaticPreview from "./StaticPreview";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SlotText } from "slot-text/react";
+import "slot-text/style.css";
+import { useElementActive, useReducedMotion } from "@/app/lib/visibility";
 
-export default function CapeHero({ cape }: { cape?: Cape }) {
+export default function CapeHero() {
   const { t } = useTranslations();
+  const heroRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const active = useElementActive(heroRef);
+  const reducedMotion = useReducedMotion();
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const phrases = [t("Your skin."), t("Your cape."), "CookieCapes"];
+  const index = reducedMotion ? 2 : phraseIndex;
+
+  useLayoutEffect(() => {
+    const text = textRef.current;
+    if (!text) return;
+    // Keep outgoing glyphs in their original color while incoming glyphs inherit the new one.
+    text.querySelectorAll<HTMLElement>(".char-face").forEach(face => {
+      face.style.color = getComputedStyle(face).color;
+    });
+    text.dataset.brand = String(index === 2);
+  }, [index]);
+
+  useEffect(() => {
+    if (!active || reducedMotion) return;
+    const interval = window.setInterval(() => setPhraseIndex(current => (current + 1) % 3), 2400);
+    return () => window.clearInterval(interval);
+  }, [active, reducedMotion]);
 
   return (
-    <section className="cape-hero">
+    <section ref={heroRef} className="cape-hero">
       <div className="cape-hero-copy">
-        <p className="section-kicker">Minecraft / CookieCapes</p>
-        <h1>{t("Your skin. Your cape.")}</h1>
-        <p className="hero-description">{t("Discover community capes and design your own in the editor.")} {t("Upload capes through your Minecraft account.")}</p>
+        <h1 className="cape-hero-title">
+          <span className="sr-only">{t("Your skin. Your cape.")} CookieCapes</span>
+          <SlotText ref={textRef} aria-hidden="true" text={phrases[index]} options={{ skipUnchanged: false, duration: reducedMotion ? 0 : 800, bounce: 0 }} />
+        </h1>
+        <p className="hero-description">{t("Discover community capes or design your own.")}</p>
         <div className="hero-actions">
-          <Button asChild size="lg"><a href="#setup-wizard">{t("Upload a cape")}<ArrowDown data-icon="inline-end" /></a></Button>
-          <Button asChild variant="outline" size="lg"><Link href="/cookiecapes/capes">{t("Browse capes")}<ArrowUpRight data-icon="inline-end" /></Link></Button>
+          <Button asChild size="lg"><a href="#setup-wizard" onClick={event => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            const wizard = document.getElementById("setup-wizard");
+            if (!wizard) return;
+            event.preventDefault();
+            wizard.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+          }}>{t("Upload a cape")}<ArrowDown data-icon="inline-end" /></a></Button>
+          <Button asChild variant="outline" size="lg"><Link href="/cookiecapes/capes">{t("Browse capes")}</Link></Button>
         </div>
-        <ul className="cape-benefits">
-          {[t("Fast"), t("Efficient"), t("Free")].map(tag => <li key={tag}><Check size={15} aria-hidden="true" />{tag}</li>)}
-        </ul>
       </div>
-      {cape && <Link href={`/cookiecapes/capes/${cape.cape_id}`} className="cape-hero-art" aria-label={cape.cape_name}>
-        <div className="cape-art-heading"><span>Community / Capes</span><ArrowUpRight size={20} aria-hidden="true" /></div>
-        <div className="cape-art-preview"><StaticPreview src={capePreviewUrl(cape.cape_id, cape.last_edited)} alt={`${cape.cape_name}, cape by ${cape.minecraft_name}`} viewerFallback={{ capeUrl: cape.cape_image_url, minecraftName: cape.minecraft_uuid }} /></div>
-        <div className="cape-art-caption"><div><strong>{cape.cape_name}</strong><span>{cape.minecraft_name}</span></div><span className="font-mono text-xs">#{cape.cape_id}</span></div>
-      </Link>}
     </section>
   );
 }

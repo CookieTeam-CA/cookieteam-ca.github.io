@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { ArrowDown, ArrowUpRight, Copy } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Copy, Check } from "lucide-react";
+import StatNumber from "./StatNumber";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Asset } from "../lib/types";
 import { Session } from "next-auth";
@@ -19,11 +21,11 @@ const GallerySection = dynamic(() => import("./GallerySection"));
 const rotatingWords = ["Attack", "Team", "Capes"] as const;
 
 const stats = [
-  { label: "Teilnehmer", value: "350+" },
-  { label: "Spielstunden", value: "15.000+" },
-  { label: "Weltdaten", value: "320+ GB" },
-  { label: "Uptime", value: "99,8 %" },
-  { label: "avg Latenz", value: "< 45 ms" },
+  { label: "Teilnehmer", value: 350, suffix: "+" },
+  { label: "Spielstunden", value: 15000, suffix: "+" },
+  { label: "Weltdaten", value: 320, suffix: "+ GB" },
+  { label: "Uptime", value: 99.8, suffix: " %", decimals: 1 },
+  { label: "avg Latenz", value: 45, suffix: " ms", prefix: "< " },
 ];
 
 export default function HomeClient({ initialAssets, session }: { initialAssets: Asset[], session: Session | null }) {
@@ -34,7 +36,9 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const statsSectionRef = useRef<HTMLDivElement>(null);
   const [serverStatus, setServerStatus] = useState<{ online: boolean; players: { online: number; max: number } | null; loading: boolean }>({ online: false, players: null, loading: true });
-  const [copyToast, setCopyToast] = useState<{ x: number; y: number; id: number } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const copyReset = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (copyReset.current) clearTimeout(copyReset.current); }, []);
 
   useEffect(() => {
     if (!heroActive || reducedMotion) return;
@@ -63,40 +67,41 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
     return () => { controller.abort(); clearInterval(interval); };
   }, [pageVisible]);
 
-  const handleCopyIp = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { clientX: x, clientY: y } = e;
+  const handleCopyIp = async () => {
     try {
       await navigator.clipboard.writeText("play.cookieattack.de");
-      setCopyToast({ x, y: y - 10, id: Date.now() });
-      setTimeout(() => setCopyToast(null), 1000);
+      setCopied(true);
+      if (copyReset.current) clearTimeout(copyReset.current);
+      copyReset.current = setTimeout(() => setCopied(false), 1800);
     } catch { /* The server address remains visible when clipboard access is denied. */ }
   };
 
   const scrollToStats = () => {
-    if (statsSectionRef.current) window.scrollTo({ top: statsSectionRef.current.getBoundingClientRect().top + window.scrollY - 96 });
+    if (statsSectionRef.current) window.scrollTo({ top: statsSectionRef.current.getBoundingClientRect().top + window.scrollY - 96, behavior: reducedMotion ? "instant" : "smooth" });
   };
 
   return (
     <div className="home-page">
       <header className="home-nav">
         <Link href="/" className="home-brand" aria-label="CookieAttack Startseite"><Image src="/minilogo.png" width={32} height={32} alt="" /><span>Cookie<span>Attack</span></span></Link>
-        <nav aria-label="Hauptnavigation"><Link href="/stats">CookieStats</Link><Link href="/cookiecapes">CookieCapes</Link><Link href="/galerie">Galerie</Link></nav>
+        <nav aria-label="Hauptnavigation"><Link href="/stats">CookieStats</Link><Link href="/cookiecapes">CookieCapes</Link></nav>
       </header>
       <section ref={heroRef} className="home-hero">
         <div className="home-hero-copy">
-          <p className="section-kicker">Minecraft SMP / CookieAttack 6</p>
-          <h1 className="home-wordmark"><span>Cookie</span><SlotText text={rotatingWords[activeWordIndex]} options={{ skipUnchanged: false, duration: reducedMotion ? 0 : 800, bounce: 0 }} /></h1>
+          <button onClick={handleCopyIp} className="home-server" aria-label="Serveradresse play.cookieattack.de kopieren" aria-describedby="home-server-status"><span className={serverStatus.online ? "server-dot online" : "server-dot"} /><span>play.cookieattack.de</span><span id="home-server-status" className="home-server-status">{serverStatus.loading ? <><Skeleton className="inline-block h-3 w-24 align-middle" /><span className="sr-only">Serverstatus wird geladen</span></> : serverStatus.online ? serverStatus.players ? serverStatus.players.online + " Spieler online" : "Online" : "Offline"}</span><span className="copy-feedback" data-copied={copied}><Copy size={16} aria-hidden="true" /><Check size={16} aria-hidden="true" /></span><span role="status" className="sr-only">{copied ? "Serveradresse kopiert" : ""}</span></button>
+          <h1 className="home-wordmark"><span>Cookie</span><span className="home-wordmark-rotation">
+            <span className="home-wordmark-measure" aria-hidden="true">{rotatingWords.map(word => <span key={word}>{Array.from(word, (char, index) => <span key={index}>{char}</span>)}</span>)}</span>
+            <SlotText text={rotatingWords[activeWordIndex]} options={{ skipUnchanged: false, duration: reducedMotion ? 0 : 800, bounce: 0 }} />
+          </span></h1>
           <p className="hero-description">Dein Minecraft-SMP mit Events, Roleplay und Community. Spiele mit, entdecke Spielerstatistiken oder gestalte dein eigenes Cape.</p>
           <div className="hero-actions"><Button size="lg" onClick={scrollToStats}>CookieAttack entdecken<ArrowDown data-icon="inline-end" /></Button><Button asChild variant="outline" size="lg"><a href="https://dc.cookieattack.de" target="_blank" rel="noopener noreferrer">Zum Discord<ArrowUpRight data-icon="inline-end" /></a></Button></div>
-          <button onClick={handleCopyIp} className="home-server" aria-label="Serveradresse play.cookieattack.de kopieren" aria-describedby="home-server-status"><span className={serverStatus.online ? "server-dot online" : "server-dot"} /><span>play.cookieattack.de</span><span id="home-server-status" className="home-server-status">{serverStatus.loading ? "Lädt…" : serverStatus.online ? serverStatus.players ? serverStatus.players.online + " Spieler online" : "Online" : "Offline"}</span><Copy size={14} aria-hidden="true" /></button>
         </div>
-        <Link href="/galerie" className="home-hero-image">
-          {/* The tall crop needs enough source pixels for its height as well as its width. */}
-          <Image src="/galerie/ca3-45.png" alt="Die CookieAttack Community zusammen bei Sonnenuntergang in Minecraft" fill priority sizes="(max-width: 800px) 800px, 1080px" />
-          <div className="home-image-caption"><span>Aus der Community</span><strong>Unsere Welt. Unsere Geschichten.</strong><span>CookieAttack 3 <ArrowUpRight size={16} aria-hidden="true" /></span></div>
-        </Link>
       </section>
-      <div ref={statsSectionRef} className="home-metrics">{stats.map(stat => <div key={stat.label}><strong>{stat.value}</strong><span>{stat.label}</span></div>)}</div>
+      <section className="home-projects" aria-label="Mehr vom CookieTeam">
+        <Link href="/cookiecapes"><div><h2>Cookie<span>Capes</span></h2><p>Entdecke Capes der Community oder gestalte dein eigenes.</p></div><ArrowUpRight aria-hidden="true" /></Link>
+        <Link href="/stats"><div><h2>Cookie<span>Stats</span></h2><p>Vergleiche dich oder andere mit den CookieAttack Statistiken.</p></div><ArrowUpRight aria-hidden="true" /></Link>
+      </section>
+      <div ref={statsSectionRef} className="home-metrics">{stats.map(stat => <div key={stat.label}><strong><StatNumber value={stat.value} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals} /></strong><span>{stat.label}</span></div>)}</div>
       <SetupWizard session={session} />
       <TimelineSection />
 
@@ -125,15 +130,7 @@ export default function HomeClient({ initialAssets, session }: { initialAssets: 
         </a>
       </div>
 
-      {copyToast && (
-        <div
-          key={copyToast.id}
-          style={{ left: copyToast.x, top: copyToast.y }}
-          className="fixed pointer-events-none z-50 -translate-x-1/2 -translate-y-full px-2.5 py-1 text-xs font-medium text-green-400 bg-black/90 rounded-full shadow-lg backdrop-blur-md animate-in fade-in zoom-in-90 duration-150"
-        >
-          Kopiert!
-        </div>
-      )}
+
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { startMinecraftLink, uploadWebsiteCape } from "@/app/actions/account-actions";
 import { actionValue, type AccountInfo, type SubmissionQuota } from "../lib/account-types";
 import { selectCapeFiles, type CapeSelection } from "../lib/cape-upload";
-import { canvasPng, drawTemplate, exportApng, templateWidth, frameAt, importFrames, inspectImage, limitFrameRate, MAX_SOURCE_BYTES, type ComposerFrame } from "../lib/animation";
+import { canvasPng, drawTemplate, exportApng, templateWidth, frameAt, importCapeManifest, importFrames, inspectImage, limitFrameRate, MAX_SOURCE_BYTES, type ComposerFrame } from "../lib/animation";
 import { toast } from "@/components/ui/toast";
 import { usePageVisible, useReducedMotion } from "../../lib/visibility";
 import CapeViewer from "./CapeViewer";
@@ -71,6 +71,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
   const pending = !!job && ["queued", "processing"].includes(job.status);
   const jobError = replacementId === undefined ? job?.error?.replace(/previous cape retained\.?/gi, t("No cape was uploaded.")) : job?.error;
   const locked = disabled || busy || pending;
+  const sourceReady = !!selection || (edited && frames.length > 0);
   const notifyBusy = useEffectEvent((value: boolean) => onBusyChange?.(value));
   const notifyUploaded = useEffectEvent(() => onUploaded?.());
   const clearFrames = useEffectEvent(() => change([], 0, false));
@@ -180,10 +181,17 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
     finally { if (generation === version.current) setBusy(false); }
   }
   async function loadFrames() {
-    if (!selection || busy) return;
+    if (locked || (!selection && !initialAnimationManifest)) return;
     setBusy(true); setError("");
     const generation = version.current;
     try {
+      if (!selection && initialAnimationManifest) {
+        const loaded = await importCapeManifest(initialAnimationManifest, t);
+        if (generation !== version.current) { new Set(loaded.frames.map(frame => frame.image)).forEach(image => image.close()); return; }
+        change(loaded.frames, 0); setHd(loaded.hd); setFit("pad"); setPlaying(true); setPreviewIssue(null);
+        return;
+      }
+      if (!selection) return;
       const next = await importFrames(selection.files, selection.mode === "static" ? "frames" : selection.mode, 64, 32, t);
       if (generation !== version.current) { next.forEach(frame => frame.image.close()); return; }
       acceptImportedFrames(next); setPreviewIssue(null);
@@ -197,12 +205,12 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
     finally { setBusy(false); }
   }
   async function upload() {
-    if (step !== 3 || locked || !selection || !player || !name.trim()) return;
+    if (step !== 3 || locked || !sourceReady || !player || !name.trim()) return;
     setBusy(true); setPlaying(false); setError("");
     try {
       const body = new FormData();
       body.set("cape_name", name.trim()); body.set("is_private", String(privateCape));
-      if (selection.mode === "static" && (!edited || frames.length <= 1)) {
+      if (selection?.mode === "static" && (!edited || frames.length <= 1)) {
         let file = selection.files[0];
         if ((edited && current) || fit !== "pad" || hd) {
           const canvas = document.createElement("canvas");
@@ -229,10 +237,10 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
             body.append("files", blob, `frame-${i}.png`);
           }
           canvas.width = canvas.height = 0;
-        } else selection.files.forEach(file => body.append("files", file));
+        } else selection?.files.forEach(file => body.append("files", file));
         body.set("minecraft_name", uuid);
         if (replacementId !== undefined) body.set("replacement", String(replacementId));
-        body.set("options", JSON.stringify({ mode: edited ? "frames" : selection.mode, fit, hd, fps: 12, ...(edited ? { durations_ms: frames.map(frame => frame.duration) } : {}) }));
+        body.set("options", JSON.stringify({ mode: edited ? "frames" : selection?.mode, fit, hd, fps: 12, ...(edited ? { durations_ms: frames.map(frame => frame.duration) } : {}) }));
         const response = await fetch("/api/cookiecapes/animations", { method: "POST", body });
         const result = await response.json(); if (!response.ok) throw Object.assign(new Error(result.error), { code: result.code, existingCapeId: result.existingCapeId });
         setJob({ id: result.job_id, status: result.status });
@@ -258,11 +266,10 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
     timeline.current?.querySelectorAll("button")[to]?.focus();
   }
 
-  return <section aria-labelledby={`${id}-heading`} className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#101010]">
+  return <section aria-labelledby={`${id}-heading`} data-step={step} className="cape-upload relative overflow-hidden rounded-2xl border border-border bg-card">
     {error && <ToastMessage message={error} />}
     {previewIssue && <ToastMessage message={t(previewIssue)} type="info" />}
     {job && job.status !== "complete" && !(job.status === "failed" && job.error_code === "duplicate_cape" && Number.isSafeInteger(job.existing_cape_id) && job.existing_cape_id! > 0) && <ToastMessage key={job.id} message={[job.status === "failed" ? t("The upload was not published.") : t("Your cape is being processed. You can leave this page open."), jobError].filter(Boolean).join(" ")} type={job.status === "failed" || job.error ? "error" : "info"} />}
-    <div className="pointer-events-none absolute -right-20 -top-32 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
     <div className="relative border-b border-white/10 p-6 sm:p-8">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0"><h2 id={`${id}-heading`} className="font-nexa text-3xl text-white">{replacementId !== undefined ? <>{t("Replace cape image")}: <span className="wrap-anywhere text-orange-300">{initialName}</span></> : t("Upload your own cape!")}</h2>
@@ -316,17 +323,17 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
                 if (files.length) void choose(files);
               }}>
               <Upload size={36} className="mx-auto mb-3 text-orange-400" aria-hidden="true" />
-              <p className="break-all text-sm text-muted-foreground" aria-live="polite">{selection ? <>{selection.files[0].name}{selection.files.length > 1 ? t(" + {count} frames", { count: selection.files.length - 1 }) : ""}</> : t("Drop your image here or use the file picker.")}</p>
+              <p className="break-all text-sm text-muted-foreground" aria-live="polite">{selection ? <>{selection.files[0].name}{selection.files.length > 1 ? t(" + {count} frames", { count: selection.files.length - 1 }) : ""}</> : edited && frames.length ? t("{count} frames", { count: frames.length }) : t("Drop your image here or use the file picker.")}</p>
               <input id={`${id}-file`} type="file" accept="image/*" multiple disabled={locked} aria-label={t("Cape file")} aria-describedby={`${id}-file-help`} className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; if (files.length) void choose(files); }} />
               <p id={`${id}-file-help`} className="mt-3 text-xs leading-relaxed text-muted-foreground">{t("PNG, JPG, GIF, APNG or WebP. Multiple PNGs automatically become an animation. Static images: up to 3 MiB and 4096 × 4096 pixels. Animations: up to 32 MiB, 200 frames and 512 × 300 pixels per frame.")}</p>
-              {busy && <p role="status" className="mt-3 text-xs text-muted-foreground">{t("Preparing your cape…")}</p>}
+              {busy && <p role="status" className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />{t("Preparing your cape…")}</p>}
             </div>
           </div>}
           {step === 3 && <div className="space-y-5">
             <dl className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm">
               <div><dt className="text-zinc-500">{t("Minecraft account")}</dt><dd className="mt-1 font-bold text-white">{player?.minecraft_name}</dd></div>
               <div><dt className="text-zinc-500">{t("Cape name")}</dt><dd className="mt-1 wrap-break-word font-bold text-white">{name.trim()}</dd></div>
-              <div><dt className="text-zinc-500">{t("File")}</dt><dd className="mt-1 break-all text-zinc-300">{selection?.files[0].name}</dd></div>
+              <div><dt className="text-zinc-500">{selection ? t("File") : t("Current cape animation")}</dt><dd className="mt-1 break-all text-zinc-300">{selection?.files[0].name ?? initialName}</dd></div>
             </dl>
             {replacementId === undefined && <label htmlFor={`${id}-private`} className="flex min-h-14 cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white">
               <span>{t("Publish privately")}</span>
@@ -337,7 +344,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
             <p className="text-sm leading-relaxed text-zinc-400">{t("Check your cape from every angle. Uploading assigns it to your selected Minecraft account.")}</p>
           </div>}
           {step === 2 && <div className="mt-5 flex flex-wrap items-center gap-3">
-            {selection && selection.mode !== "static" && <Button ref={advancedTrigger} type="button" variant="outline" disabled={locked} onClick={() => setAdvanced(true)}>{t("Advanced options")}</Button>}
+            {(selection ? selection.mode !== "static" : !!initialAnimationManifest) && <Button ref={advancedTrigger} type="button" variant="outline" disabled={locked} onClick={() => { setAdvanced(true); if (!selection && !frames.length) void loadFrames(); }}>{t("Advanced options")}</Button>}
             {step === 2 && <Button asChild variant="outline"><Link href="/cookiecapes/editor" target="_blank">{t("Design a cape in the editor")} <ArrowRight size={15} aria-hidden="true" /></Link></Button>}
           </div>}
           {step >= 2 && reduced && frames.length > 1 && <p role="status" className="mt-3 text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
@@ -348,23 +355,23 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
             {step > firstStep && <Button size="lg" type="button" disabled={locked} onClick={() => setStep(step - 1)} variant="outline"><ArrowLeft size={16} aria-hidden="true" />{t("Back")}</Button>}
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-3">
-            {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !name.trim()) || (step === 2 && (!selection || (edited && !frames.length)))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" aria-busy={busy || pending} disabled={locked || !player || !selection || !name.trim() || quota?.remaining === 0 || (edited && !frames.length)} onClick={() => void upload()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy ? t("Uploading") : replacementId !== undefined ? t("Update Cape") : t("Upload cape")}</Button>}
+            {step < 3 ? <Button size="lg" type="button" disabled={locked || !player || (step === 1 && !name.trim()) || (step === 2 && (!sourceReady || (edited && !frames.length)))} onClick={() => setStep(step + 1)}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button> : <Button size="lg" type="button" aria-busy={busy || pending} disabled={locked || !player || !sourceReady || !name.trim() || quota?.remaining === 0 || (edited && !frames.length)} onClick={() => void upload()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy ? t("Uploading") : replacementId !== undefined ? t("Update Cape") : t("Upload cape")}</Button>}
           </div>
           {error && pending && <Button variant="outline" onClick={() => setJob({ ...job })}>{t("Retry status")}</Button>}
         </div>
       </div>
-      <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="relative h-96 w-full"><CapeViewer allowElytraSwitch capeUrl={edited && !frames.length ? undefined : poster ?? (!selection && !busy ? initialCapeUrl : undefined)} animationManifest={!selection && !busy && !edited ? initialAnimationManifest : undefined} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
+      <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="cape-upload-preview relative h-96 w-full"><CapeViewer allowElytraSwitch capeUrl={edited && !frames.length ? undefined : poster ?? (!selection && !busy ? initialCapeUrl : undefined)} animationManifest={!selection && !busy && !edited ? initialAnimationManifest : undefined} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
         {frames.length > 1 && <Button size="sm" type="button" variant="outline" className="absolute top-4 right-4 z-30" disabled={locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>}
       </div>
     </div>
     <Dialog.Root open={advanced} onOpenChange={setAdvanced}>
       <Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm" />
-        <Dialog.Content onCloseAutoFocus={event => { event.preventDefault(); advancedTrigger.current?.focus(); }} className="fixed top-1/2 left-1/2 z-50 max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-3xl border border-white/10 bg-zinc-950 p-5 text-white sm:p-8">
-          <div className="mb-3 flex items-start justify-between gap-4"><Dialog.Title className="font-nexa text-2xl">{t("Advanced options")}</Dialog.Title><Dialog.Close asChild><Button variant="outline" aria-label={t("Close advanced options")}>{t("Close")}</Button></Dialog.Close></div>
-          <Dialog.Description className="mb-6 text-sm text-zinc-400">{t("The defaults work for most capes. You can edit animations frame by frame here.")}</Dialog.Description>
-          <div className="flex min-w-0 flex-col gap-5">
-            {selection && !frames.length && <div className="flex flex-col gap-2"><Button disabled={locked} variant="outline" onClick={() => void loadFrames()}>{t("Open frames for editing")}</Button><p className="text-xs text-zinc-400">{t("This is optional for uploading. Editing animated images requires browser support for ImageDecoder.")}</p></div>}
-            <div className="grid grid-cols-2 gap-3"><label className="text-sm">{t("Template")}<select disabled={locked} className={inputClass} value={fit} onChange={e => setFit(e.target.value as typeof fit)}><option value="pad">{t("Pad with transparency")}</option><option value="crop">{t("Crop to center")}</option></select></label><label className="text-sm">{t("Quality")}<select disabled={locked} className={inputClass} value={hd ? "hd" : "standard"} onChange={e => setHd(e.target.value === "hd")}><option value="standard">{t("Standard · up to 256 × 128")}</option><option value="hd">{t("HD · up to 512 × 256")}</option></select></label></div>
+        <Dialog.Content onCloseAutoFocus={event => { event.preventDefault(); advancedTrigger.current?.focus(); }} className="account-dialog account-advanced-dialog fixed top-1/2 left-1/2 z-50 flex max-h-[90dvh] flex-col w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 text-white">
+          <header><div className="mb-3 flex items-start justify-between gap-4"><Dialog.Title className="font-nexa text-2xl">{t("Advanced options")}</Dialog.Title><Dialog.Close asChild><Button variant="outline" aria-label={t("Close advanced options")}>{t("Close")}</Button></Dialog.Close></div>
+          <Dialog.Description className="text-sm leading-relaxed text-zinc-400">{t("The defaults work for most capes. You can edit animations frame by frame here.")}</Dialog.Description></header>
+          <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto overscroll-contain p-5 sm:p-7">
+            {(selection || initialAnimationManifest) && !frames.length && <div className="flex flex-col gap-2"><Button disabled={locked} variant="outline" onClick={() => void loadFrames()}>{busy ? <Loader2 aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : null}{t("Open frames for editing")}</Button>{selection && <p className="text-xs text-zinc-400">{t("This is optional for uploading. Editing animated images requires browser support for ImageDecoder.")}</p>}</div>}
+            <div className="account-animation-settings grid grid-cols-2 gap-3"><label className="text-sm">{t("Template")}<select disabled={locked} className={inputClass} value={fit} onChange={e => setFit(e.target.value as typeof fit)}><option value="pad">{t("Pad with transparency")}</option><option value="crop">{t("Crop to center")}</option></select></label><label className="text-sm">{t("Quality")}<select disabled={locked} className={inputClass} value={hd ? "hd" : "standard"} onChange={e => setHd(e.target.value === "hd")}><option value="standard">{t("Standard · up to 256 × 128")}</option><option value="hd">{t("HD · up to 512 × 256")}</option></select></label></div>
             {current && <div className="grid grid-cols-2 gap-4"><FramePreview frame={current} frames={frames} fit={fit} maximum={256} label="Standard" /><FramePreview frame={current} frames={frames} fit={fit} maximum={512} label="HD" /></div>}
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm" aria-live="polite">{t("Frame {current} / {total}", { current: frames.length ? selected + 1 : 0, total: frames.length })}</p>
@@ -374,7 +381,7 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
               </div>
             </div>
             <p className="text-xs text-zinc-400">{t("Drag frames to reorder. Right-click for Duplicate or Delete. Use Alt + arrow keys to reorder with the keyboard.")}</p>
-            <div ref={timeline} id={`${id}-timeline`} role="group" aria-label={t("Frame timeline")} className="flex w-full min-w-0 gap-2 overflow-x-auto rounded-xl border border-white/10 bg-black/20 p-3">
+            <div ref={timeline} id={`${id}-timeline`} role="group" aria-label={t("Frame timeline")} className="flex w-full min-w-0 shrink-0 gap-2 overflow-x-auto rounded-xl border border-white/10 bg-black/20 p-3">
               {frames.map((frame, index) => <ContextMenu.Root key={index} onOpenChange={open => { if (open) { setPlaying(false); setSelected(index); } }}>
                 <ContextMenu.Trigger asChild disabled={locked}>
                   <button type="button" disabled={locked} draggable={!locked} aria-label={t("Frame {number}", { number: index + 1 })} aria-pressed={selected === index}
@@ -389,22 +396,21 @@ export default function SetupWizard({ account, uuid: controlledUuid, quota, repl
                     <span className="mt-1 block">{index + 1} · {Math.round(frame.duration)} ms</span>
                   </button>
                 </ContextMenu.Trigger>
-                <ContextMenu.Portal><ContextMenu.Content className="z-60 min-w-36 rounded-lg border border-white/15 bg-zinc-950 p-1 text-sm text-white shadow-xl">
+                <ContextMenu.Portal><ContextMenu.Content className="account-popup z-60 min-w-36 rounded-lg border border-white/15 bg-zinc-950 p-1 text-sm text-white shadow-xl">
                   <ContextMenu.Item disabled={locked || frames.length >= 200} className="cursor-pointer rounded px-3 py-2 outline-none data-highlighted:bg-white/10 data-disabled:opacity-40" onSelect={() => change([...frames.slice(0, index + 1), { ...frame }, ...frames.slice(index + 1)], index + 1)}>{t("Duplicate")}</ContextMenu.Item>
                   <ContextMenu.Item disabled={locked} className="cursor-pointer rounded px-3 py-2 text-red-300 outline-none data-highlighted:bg-white/10 data-disabled:opacity-40" onSelect={() => change(frames.filter((_, item) => item !== index), index)}>{t("Delete")}</ContextMenu.Item>
                 </ContextMenu.Content></ContextMenu.Portal>
               </ContextMenu.Root>)}
             </div>
             <Button disabled={!frames.length || locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>
-            <label className="block text-sm">{t("Frame duration (42–60,000 ms)")}<input className={inputClass} type="number" min={1000 / 24} max={60000} step="any" value={current?.duration ?? 1000 / 12} disabled={!current || locked} onChange={event => { const duration = Number(event.target.value); if (duration >= 1000 / 24 && duration <= 60000) change(frames.map((frame, index) => index === selected ? { ...frame, duration } : frame), selected); }} /></label>
+            <label className="block text-sm">{t("Frame duration (42–60,000 ms)")}<input className={inputClass} type="number" min={1000 / 24} max={60000} step="any" value={Number((current?.duration ?? 1000 / 12).toFixed(2))} disabled={!current || locked} onChange={event => { const duration = Number(event.target.value); if (duration >= 1000 / 24 && duration <= 60000) change(frames.map((frame, index) => index === selected ? { ...frame, duration } : frame), selected); }} /></label>
             <div className="flex flex-wrap gap-2">{[6, 12, 24].map(fps => <Button key={fps} variant="outline" disabled={!frames.length || locked} onClick={() => change(frames.map(frame => ({ ...frame, duration: 1000 / fps })), selected)}>{t("All: {fps} FPS", { fps })}</Button>)}</div>
             {reduced && <p className="text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
 
-            <div className="flex flex-wrap justify-end gap-3 border-t border-white/10 pt-5">
+          </div><footer className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-white/10">
               <Button type="button" variant="outline" disabled={locked || !frames.length} onClick={() => void exportFrames()}>{t("Export as APNG")}</Button>
               <Button type="button" disabled={locked || !frames.length} onClick={() => { setEdited(true); setAdvanced(false); }}>{t("Apply changes")}</Button>
-            </div>
-          </div>
+          </footer>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

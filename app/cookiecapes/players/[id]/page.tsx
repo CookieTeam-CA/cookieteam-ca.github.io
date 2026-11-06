@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ArrowLeft, User, Layers, Globe, MessageCircle, History, BadgeCheck, Info } from "lucide-react";
 import Footer from "../../../components/Footer";
 import CapeCard from "../../components/CapeCard";
+import { playerPreviewUrl } from "../../lib/preview-url";
+import { socialMetadata } from "../../lib/social-metadata";
 
 export const revalidate = 60;
 
@@ -16,10 +18,16 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
     const { t } = await getTranslations();
     const { id } = await params;
-    return {
-        title: `${id} - ${t("Player profile")}`,
-        description: t("View {name}'s profile on CookieCapes.", { name: id }),
-    };
+    const player = await getPlayer(id);
+    const history = player ? undefined : await getPlayerHistory(id);
+    const name = player?.minecraft_name ?? history?.current_username ?? id;
+    const uuid = player?.minecraft_uuid ?? history?.uuid;
+    return socialMetadata(
+        `${name} - ${t("Player profile")}`,
+        t("View {name}'s profile on CookieCapes.", { name }),
+        `/cookiecapes/players/${encodeURIComponent(name)}`,
+        uuid ? playerPreviewUrl(uuid, player?.last_edited) : undefined,
+    );
 }
 
 function countryCodeToFlag(code: string): string {

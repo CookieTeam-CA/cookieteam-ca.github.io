@@ -23,7 +23,7 @@ export default async function TutorialPage() {
                         {t("Create a cape")} <span className="text-orange-500">Tutorial</span>
                     </h1>
                     <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-                        {t("Learn how to design your own Minecraft cape, step by step.")}
+                        {t("Learn how to design your own Cape, step by step.")}
                     </p>
                 </div>
 

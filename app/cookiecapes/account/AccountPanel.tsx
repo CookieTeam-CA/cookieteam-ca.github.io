@@ -2,8 +2,9 @@
 
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import Link from "next/link";
-import { ArrowUpRight, Check, Globe, EyeOff, ImageUp, LockKeyhole, Pencil, Trash2, X } from "lucide-react";
+import { ArrowUpRight, Check, Globe, EyeOff, ImageUp, LoaderCircle, LockKeyhole, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { editOwnedCape, claimCape, loadOwnedCapes, startMinecraftLink } from "@/app/actions/account-actions";
 import { actionValue } from "../lib/account-types";
@@ -94,11 +95,11 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
   }
 
   const candidates = new Set(owned?.review?.snapshot.map(cape => cape.cape_id) ?? []);
-  return <div className="space-y-10">
-    <section aria-labelledby="minecraft-accounts-title" className="overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/60">
-      <div className="grid lg:grid-cols-[1fr_1.3fr]">
-        <div className="border-b border-white/10 bg-linear-to-br from-orange-500/10 to-transparent p-6 sm:p-8 lg:border-r lg:border-b-0">
-          <h2 id="minecraft-accounts-title" className="font-nexa text-2xl sm:text-3xl">{t("Minecraft accounts")}</h2>
+  return <div className="account-workspace flex flex-col gap-8">
+    <section aria-labelledby="minecraft-accounts-title" className="account-connections overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="grid lg:grid-cols-[1fr_2fr]">
+        <div className="border-b border-white/10 bg-black/20 p-6 sm:p-8 lg:border-r lg:border-b-0">
+          <h2 id="minecraft-accounts-title" className="font-nexa text-2xl">{t("Minecraft accounts")}</h2>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">{t("Your players, your collection. Connect your Minecraft accounts with MC-ID and manage each player's capes.")}</p>
           <div className="mt-6 flex flex-wrap gap-2 text-xs text-zinc-300">
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">{number(account.links.length)} {plural(account.links.length, "account linked", "accounts linked")}</span>
@@ -119,17 +120,25 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
     {uuid && <section aria-labelledby="owned-capes-title" className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 id="owned-capes-title" className="font-nexa text-3xl">{t("Manage your capes here.")}</h2>
+          <h2 id="owned-capes-title" className="font-nexa text-2xl sm:text-3xl">{t("Manage your capes here.")}</h2>
         </div>
         {owned && <span className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-zinc-400">{owned.capes.length} {owned.capes.length === 1 ? "Cape" : "Capes"}</span>}
       </div>
-      {!owned && !ownedError && <div role="status" className="rounded-2xl border border-white/10 bg-zinc-900/40 p-8 text-center text-zinc-400">{t("Loading capes…")}</div>}
+      {!owned && !ownedError && <div role="status">
+        <span className="sr-only">{t("Loading capes…")}</span>
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+          {Array.from({ length: 3 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl border border-border bg-card">
+            <Skeleton className="h-64 rounded-none" />
+            <div className="flex flex-col gap-4 p-5"><Skeleton className="h-5 w-2/3" /><Skeleton className="h-11 w-full" /><Skeleton className="h-11 w-full" /></div>
+          </div>)}
+        </div>
+      </div>}
       {ownedError && <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-6 text-center"><Button size="lg" disabled={controlsDisabled} variant="outline" onClick={reloadCapes}>{t("Reload")}</Button></div>}
       {owned && <>
         {candidates.size > 0 && <PreviousUploadsReview key={`${uuid}:${[...candidates].join(",")}`} owned={owned} minecraftName={selectedAccount?.minecraft_name} disabled={controlsDisabled} onReviewed={reloadCapes} onReload={reloadCapes} />}
         {!owned.capes.length && <div className="rounded-2xl border border-dashed border-white/15 py-14 text-center"><h3 className="text-lg font-bold">{t("Room for your first cape")}</h3><p className="mt-2 text-sm text-zinc-400">{t("This account has no capes yet. Start with the upload above.")}</p></div>}
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{owned.capes.map(cape => <article key={cape.cape_id} className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/60">
-          <div className="relative h-72 bg-linear-to-b from-white/5 to-transparent" role="group" aria-label={t("3D preview of {name}", { name: cape.cape_name })}>
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{owned.capes.map(cape => <article key={cape.cape_id} className="account-cape-card overflow-hidden rounded-2xl border border-border bg-card">
+          <div className="account-cape-preview relative h-64" role="group" aria-label={t("3D preview of {name}", { name: cape.cape_name })}>
             <CapeViewer capeUrl={`/cookiecapes/account/images/${cape.cape_id}?v=${refresh}`} animationManifest={`/cookiecapes/account/animation/${cape.cape_id}/manifest.json?v=${refresh}`} minecraftName={selectedAccount?.minecraft_name} />
             <span className="pointer-events-none absolute top-4 left-4 rounded-lg border border-white/10 bg-black/40 px-2.5 py-1 text-xs text-zinc-400">#{cape.cape_id}</span>
             <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -143,13 +152,13 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
               <VerificationBadge verification={cape.verification} />
             </div>
             {!cape.hidden_at && <>
-              <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:grid-cols-1 md:grid-cols-2 border-t border-white/5 pt-4">
+              <div className="account-cape-actions grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:grid-cols-1 md:grid-cols-2 border-t border-white/5 pt-4">
                 <Button id={`rename-cape-${cape.cape_id}`} className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => { setDeleting(null); setRenaming({ id: cape.cape_id, name: cape.cape_name, error: "" }); }}><Pencil aria-hidden="true" />{t("Rename")}</Button>
                 <Button className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => run(async () => { actionValue(await editOwnedCape(cape.cape_id, "visibility", !cape.is_private)); }, t("Cape updated."))}>{cape.is_private ? <Globe aria-hidden="true" /> : <LockKeyhole aria-hidden="true" />}{cape.is_private ? t("Make public") : t("Make private")}</Button>
                 <Button className="min-h-11 justify-start px-3 text-zinc-300 hover:border-orange-400/25 hover:text-zinc-300" disabled={controlsDisabled} variant="outline" onClick={() => setReplacement(cape)}><ImageUp aria-hidden="true" />{t("Replace image")}</Button>
                 <Button className="min-h-11 justify-start px-3" disabled={controlsDisabled} variant="destructive" onClick={() => { setRenaming(null); setDeleting(cape.cape_id); }}><Trash2 aria-hidden="true" />{t("Delete")}</Button>
               </div>
-              {renaming?.id === cape.cape_id && <form className="space-y-3 rounded-xl border border-orange-400/20 bg-black/20 p-4" onSubmit={async event => {
+              {renaming?.id === cape.cape_id && <form className="account-inline-panel space-y-3 rounded-xl border border-white/15 bg-black/30 p-4" onSubmit={async event => {
                 event.preventDefault();
                 if (controlsDisabled || !renaming.name.trim()) return;
                 setBusy(true);
@@ -161,9 +170,10 @@ export default function AccountPanel({ account }: { account: AccountInfo }) {
                   setRenaming(current => current && ({ ...current, error: error instanceof Error ? error.message : t("The request failed. Please try again.") }));
                 } finally { setBusy(false); }
               }} onKeyDown={event => { if (event.key === "Escape" && !controlsDisabled) { event.preventDefault(); cancelRename(cape.cape_id); }; }}>
+                <label htmlFor={`cape-name-${cape.cape_id}`} className="block text-sm text-zinc-300">{t("Cape name")}</label>
                 <input id={`cape-name-${cape.cape_id}`} autoFocus required maxLength={200} value={renaming.name} disabled={controlsDisabled} aria-invalid={!!renaming.error} aria-describedby={renaming.error ? `cape-name-error-${cape.cape_id}` : undefined} onChange={event => setRenaming({ ...renaming, name: event.target.value, error: "" })} className="min-h-11 w-full rounded-lg border border-white/10 bg-zinc-950 px-3 text-sm text-white outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/15 disabled:opacity-50" />
                 {renaming.error && <p id={`cape-name-error-${cape.cape_id}`} role="alert" className="text-sm text-red-300">{renaming.error}</p>}
-                <div className="flex flex-col gap-2 min-[400px]:flex-row sm:flex-col md:flex-row"><Button className="min-h-11 flex-1" type="submit" disabled={controlsDisabled || !renaming.name.trim()}><Check aria-hidden="true" />{busy ? t("Saving…") : t("Save")}</Button><Button className="min-h-11 flex-1 text-zinc-300 hover:text-zinc-300" type="button" variant="outline" disabled={controlsDisabled} onClick={() => cancelRename(cape.cape_id)}><X aria-hidden="true" />{t("Cancel")}</Button></div>
+                <div className="flex flex-col gap-2 min-[400px]:flex-row sm:flex-col md:flex-row"><Button className="min-h-11 flex-1" type="submit" disabled={controlsDisabled || !renaming.name.trim()}>{busy ? <LoaderCircle data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Check aria-hidden="true" />}{busy ? t("Saving…") : t("Save")}</Button><Button className="min-h-11 flex-1 text-zinc-300 hover:text-zinc-300" type="button" variant="outline" disabled={controlsDisabled} onClick={() => cancelRename(cape.cape_id)}><X aria-hidden="true" />{t("Cancel")}</Button></div>
               </form>}
               {deleting === cape.cape_id && <div role="alert" className="space-y-3 rounded-xl border border-red-400/20 bg-red-500/5 p-4">
                 <p className="text-sm leading-relaxed text-zinc-300">{t("Delete this cape? It will be unequipped immediately. You can restore it here for 30 days.")}</p>

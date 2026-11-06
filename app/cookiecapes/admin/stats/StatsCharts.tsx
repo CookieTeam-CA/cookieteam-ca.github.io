@@ -2,6 +2,7 @@
 
 import { useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ChartConfiguration } from "chart.js";
+import { LoaderCircle } from "lucide-react";
 import { StatsThemeContext } from "./StatsWorkspace";
 import type { DailyStats } from "./types";
 import css from "./stats.module.css";
@@ -105,7 +106,7 @@ export default function StatsCharts({ daily, kind, tableId }: { daily: DailyStat
     {kind === "stock" && <div className={css.chartToolbar}><div role="group" aria-label="Bestandsmetrik" className={css.chartControls}>{stocks.map(([key, label]) => <button key={key} type="button" aria-pressed={stock === key} onClick={() => setStock(key)}>{label}</button>)}</div><span>Ein Bestand pro Skala</span></div>}
     {hasData ? <div className={css.chartViewport} aria-busy={status === "loading"}>
       <canvas ref={canvas} role="img" aria-label={name} aria-describedby={descriptionId} aria-details={tableId} aria-hidden={status === "error" ? true : undefined}>Die exakten Werte stehen in der zugehörigen Tagestabelle.</canvas>
-      {status !== "ready" && <p role="status" className={css.chartEmpty}>{status === "error" ? "Das Diagramm konnte nicht geladen werden. Die Tagestabelle bleibt verfügbar." : "Diagramm wird geladen…"}</p>}
+      {status !== "ready" && <p role="status" className={css.chartEmpty}>{status === "error" ? "Das Diagramm konnte nicht geladen werden. Die Tagestabelle bleibt verfügbar." : <><LoaderCircle className="size-6 animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="sr-only">Diagramm wird geladen…</span></>}</p>}
     </div> : <p role="status" className={css.chartEmpty}>{empty}</p>}
     {kind === "activity" && <ul aria-label="Zeitreihen" className={css.chartLegend}>{series.map(line => <li key={line.label}><span aria-hidden="true" style={{ display: "inline-block", width: 16, borderTop: `2px ${line.dash.length ? "dashed" : "solid"} var(${line.color})` }} />{line.label}</li>)}</ul>}
     <div className={css.chartSummary}><span id={descriptionId}>{kind === "activity" ? "Die Gruppen überschneiden sich und dürfen nicht addiert werden." : kind === "stock" ? `${stock === "capes" ? "Sichtbare und verborgene eigene Capes. " : ""}Fehlende Bestandsaufnahmen bleiben als Lücken sichtbar.` : "Gespeicherte HTTP-Anfragen im ausgewählten Zeitraum."}</span><a className={css.chartTableLink} href={`#${tableId}`} onClick={() => document.getElementById(tableId)?.closest("details")?.setAttribute("open", "")}>Tageswerte ansehen</a></div>

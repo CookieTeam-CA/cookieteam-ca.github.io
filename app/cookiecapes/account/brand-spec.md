@@ -1,5 +1,15 @@
 # Account controls: design reference
 
+## Public UI polish: account and FAQ
+
+Deep black pages, orange, Nexa, Geist, authenticated actions, quota rules and recovery semantics. Use matte 16px panels,
+consistent 20–28px padding, quieter account selection and neutral preview stages.
+Review and advanced dialogs share surfaces and bounded scrolling. Their headers
+and actions stay reachable above navigation; quota and frame-menu popovers use
+the same surface. Keep inline rename/delete confirmations and their focus behavior.
+
+The FAQ belongs to the CookieCapes landing page and uses the shadcn Radix accordion.
+
 Mode: extension. Audience: cape owners on phone and desktop. Quiet account
 management, with compact actions and progressive disclosure of quota details.
 Variance 2, motion 2, density 5, asset dependence 2, brand fidelity 10.

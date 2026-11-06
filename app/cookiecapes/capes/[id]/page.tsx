@@ -6,6 +6,8 @@ import { getPlayersByCape } from "../../lib/api";
 import CapeViewer from "../../components/CapeViewer";
 import Pagination from "../../components/Pagination";
 import Link from "next/link";
+import { GalleryReturnLink } from "../../components/GalleryLink";
+import { socialMetadata } from "../../lib/social-metadata";
 import { ArrowLeft, User, Calendar, Hash, Users } from "lucide-react";
 import Footer from "../../../components/Footer";
 import { galleryReturn } from "../../lib/gallery-return";
@@ -30,9 +32,13 @@ export async function generateMetadata({ params }: PageProps) {
     }
 
     return {
-        title: cape.cape_name,
+        ...socialMetadata(
+            cape.cape_name,
+            t('View the cape "{cape}" by {name}.', { cape: cape.cape_name, name: cape.minecraft_name }),
+            `/cookiecapes/capes/${cape.cape_id}`,
+            cape.is_private ? undefined : capePreviewUrl(cape.cape_id, cape.last_edited),
+        ),
         ...(cape.is_private ? { robots: { index: false, follow: false } } : {}),
-        description: t('View the cape "{cape}" by {name}.', { cape: cape.cape_name, name: cape.minecraft_name }),
     };
 }
 
@@ -50,9 +56,9 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
             <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
                 <h1 className="text-3xl font-bold mb-4">{t("Cape not found")}</h1>
                 <p className="text-zinc-400 mb-8">{t("This cape does not exist or has been deleted.")}</p>
-                <Button asChild size="lg"><Link href={returnTo}>
+                <Button asChild size="lg"><GalleryReturnLink href={returnTo} returnTo={typeof query.returnTo === "string" ? query.returnTo : undefined}>
                     {t("Back to gallery")}
-                </Link></Button>
+                </GalleryReturnLink></Button>
             </div>
         );
     }
@@ -66,10 +72,10 @@ export default async function CapeDetailsPage({ params, searchParams }: PageProp
         <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
             <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
 
-                <Link href={returnTo} className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
+                <GalleryReturnLink href={returnTo} returnTo={typeof query.returnTo === "string" ? query.returnTo : undefined} className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 group">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     {t("Back to gallery")}
-                </Link>
+                </GalleryReturnLink>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

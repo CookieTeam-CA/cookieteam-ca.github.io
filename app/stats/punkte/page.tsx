@@ -9,7 +9,7 @@ export default async function PointsPage({ searchParams }: { searchParams: Promi
   const query = await searchParams;
   const data = await getPoints(query);
   const entries = data.items.map(player => ({ uuid: player.uuid, username: player.username, rank: player.rank, value: player.points, points: player.points }));
-  return <><Hero title="Punkte" eyebrow="GESAMTWERTUNG / CA6" description="Alle Statistik- und Achievement Punkte zusammen. Jede Platzierung auf dem Podest zählt." /><Podium players={data.top3} /><div className="stats-section-heading"><h2>Alle Platzierungen</h2></div>
+  return <><Hero title="Punkte" eyebrow="GESAMTWERTUNG / CA6" description="Alle Statistik- und Achievement Punkte zusammen." /><Podium players={data.top3} /><div className="stats-section-heading"><h2>Alle Platzierungen</h2></div>
     <Leaderboard entries={entries} data={data} query={query} valueLabel="Gesamtpunkte" showPoints={false} />
   </>;
 }

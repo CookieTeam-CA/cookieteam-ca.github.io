@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "../i18n/client";
 import { useElementActive, useReducedMotion } from "../../lib/visibility";
 
@@ -52,7 +53,7 @@ export default function StaticPreview({ src, alt, animatedSrc, viewerFallback }:
 
     if (failed) {
         if (viewerFallback && Viewer) return <Viewer {...viewerFallback} animation="none" terminalErrorMessage={errorMessage} />;
-        return <p role="status" className="p-4 text-center text-sm text-zinc-400">{viewerFallback && failedViewerSrc !== src ? t("Loading capes...") : errorMessage}</p>;
+        return <p role="status" className="flex items-center justify-center gap-2 p-4 text-center text-sm text-zinc-400">{viewerFallback && failedViewerSrc !== src ? <><LoaderCircle className="size-6 animate-spin motion-reduce:animate-none" aria-hidden="true" /><span className="sr-only">{t("Loading capes...")}</span></> : errorMessage}</p>;
     }
 
     return (
