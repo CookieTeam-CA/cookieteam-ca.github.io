@@ -14,7 +14,7 @@ export default async function Footer({ locale, showLanguageSwitch = !!locale }: 
     catch { /* The footer remains available when the session service is unavailable. */ }
 
     return (
-        <footer className="w-full mt-10 border-t border-white/5 pt-12 pb-16 px-6">
+        <footer className="site-footer w-full mt-10 border-t border-border pt-12 pb-12 px-6">
             <div className="max-w-7xl mx-auto flex flex-col items-center gap-10">
                 {!session ? (
                     <form action={login}>
@@ -78,7 +78,7 @@ export default async function Footer({ locale, showLanguageSwitch = !!locale }: 
                     <p className="text-zinc-400 text-sm">
                         &copy; {currentYear} CookieTeam. {t("All rights reserved.")}
                     </p>
-                    <p className="text-zinc-400 text-[10px] leading-relaxed tracking-wider uppercase">
+                    <p className="text-zinc-400 text-xs leading-relaxed">
                         Not an official Minecraft service. Not approved by or associated with Mojang or Microsoft.
                     </p>
                 </div>

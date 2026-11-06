@@ -18,7 +18,6 @@ interface NavbarIdentity {
 export default function CookieNavbar({ identity = null }: { identity?: NavbarIdentity | null }) {
   const { t, number } = useTranslations();
   const pathname = usePathname();
-  const isCookieCapesHome = pathname === "/cookiecapes";
   const [totalPlayers, setTotalPlayers] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -63,20 +62,20 @@ export default function CookieNavbar({ identity = null }: { identity?: NavbarIde
   const isAccount = pathname?.startsWith("/cookiecapes/account");
 
   return (
-    <nav aria-label={t("CookieCapes navigation")} className="fixed top-2.5 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl h-13.75 z-100 transition-all duration-300 select-none">
-      <div className="bg-[#1e1e1e]/80 backdrop-blur-[10px] border border-white/10 rounded-[18px] px-2.5 h-full flex items-center justify-between gap-3 shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
+    <nav aria-label={t("CookieCapes navigation")} className="fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-7xl h-16 z-100 select-none">
+      <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl px-4 h-full flex items-center justify-between gap-3 shadow-[0_2px_15px_rgba(0,0,0,0.3)]">
         <div className="flex shrink-0 items-center">
           <Link href="/" aria-label={t("CookieTeam home")} className="rounded-lg focus-visible:outline-2 focus-visible:outline-orange-400">
             <Image src="/minilogo.png" alt={t("CookieTeam logo")} width={32} height={32} className="h-8 w-auto object-contain transition-transform duration-300 hover:scale-[1.07]" />
           </Link>
           <Link href="/cookiecapes" onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center gap-3 pl-2.5 group rounded-lg focus-visible:outline-2 focus-visible:outline-orange-400" aria-label={t("CookieCapes Startpage")}>
-            <span className="font-nexa text-base md:text-2xl tracking-tight"><span className={isCookieCapesHome ? "text-[#ff7b00]" : "text-white"}>Cookie</span><span className="text-[#ff7b00]">Capes</span></span>
+            <span className="font-nexa text-base md:text-xl tracking-tight"><span className="text-foreground">Cookie</span><span className="text-primary">Capes</span></span>
           </Link>
         </div>
 
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-6">
           {[["/cookiecapes/players", t("Players")], ["/cookiecapes/capes", "Capes"], ["/cookiecapes/rules", t("Rules")], ["/cookiecapes/tutorial", "Tutorial"]].map(([href, label]) => (
-            <Link key={href} href={href} aria-current={pathname?.startsWith(href) ? "page" : undefined} className="text-zinc-400 aria-[current=page]:text-white hover:text-white transition-colors duration-300 font-medium text-base rounded-md focus-visible:outline-2 focus-visible:outline-orange-400">{label}</Link>
+            <Link key={href} href={href} aria-current={pathname?.startsWith(href) ? "page" : undefined} className="text-zinc-400 aria-[current=page]:text-white hover:text-white transition-colors duration-300 font-medium text-sm min-h-11 flex items-center rounded-md focus-visible:outline-2 focus-visible:outline-orange-400">{label}</Link>
           ))}
         </div>
 

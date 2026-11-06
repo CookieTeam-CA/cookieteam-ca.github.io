@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 export default function DownloadSection() {
   const { t } = useTranslations();
     return (
-        <section className="w-full py-20 relative overflow-hidden">
+        <section className="w-full py-12 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="text-center mb-12">
-                    <h2 className="font-nexa text-4xl md:text-5xl text-white mb-4">
-                        {t("Download the")} <span className="text-orange-500">Mod</span> {t("to get started")}
+                    <h2 className="font-nexa text-3xl md:text-4xl text-white mb-4">
+                        {t("Download the")} <span className="text-primary">Mod</span> {t("to get started")}
                     </h2>
                     <p className="text-zinc-400 max-w-2xl mx-auto">
                         {t("You need our mod to see and select capes in the game.")}
@@ -20,7 +20,7 @@ export default function DownloadSection() {
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-6">
-                    <Button asChild variant="outline" className="group relative h-auto gap-4 border-[#1bd96a]/20 bg-[#1bd96a]/10 p-6 rounded-2xl hover:bg-[#1bd96a]/20 hover:scale-105 transition-all w-full md:w-auto md:min-w-75 dark:border-[#1bd96a]/20 dark:bg-[#1bd96a]/10 dark:hover:bg-[#1bd96a]/20"><a
+                    <Button asChild variant="outline" className="group relative h-auto gap-4 border-[#1bd96a]/20 bg-[#1bd96a]/10 p-6 rounded-2xl hover:bg-[#1bd96a]/20  transition-colors w-full md:w-auto md:min-w-75 dark:border-[#1bd96a]/20 dark:bg-[#1bd96a]/10 dark:hover:bg-[#1bd96a]/20"><a
                         href="https://modrinth.com/mod/cookiecapes"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -32,10 +32,10 @@ export default function DownloadSection() {
                             <h3 className="text-[#1bd96a] font-bold text-xl">Modrinth</h3>
                             <p className="text-zinc-400 text-sm">{t("Download via Modrinth")}</p>
                         </div>
-                        <div className="absolute inset-0 border-2 border-[#1bd96a] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none" />
+                        <div className="absolute inset-0 border-2 border-[#1bd96a] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-colors pointer-events-none" />
                     </a></Button>
 
-                    <Button asChild variant="outline" className="group relative h-auto gap-4 border-[#f16436]/20 bg-[#f16436]/10 p-6 rounded-2xl hover:bg-[#f16436]/20 hover:scale-105 transition-all w-full md:w-auto md:min-w-75 dark:border-[#f16436]/20 dark:bg-[#f16436]/10 dark:hover:bg-[#f16436]/20"><a
+                    <Button asChild variant="outline" className="group relative h-auto gap-4 border-[#f16436]/20 bg-[#f16436]/10 p-6 rounded-2xl hover:bg-[#f16436]/20  transition-colors w-full md:w-auto md:min-w-75 dark:border-[#f16436]/20 dark:bg-[#f16436]/10 dark:hover:bg-[#f16436]/20"><a
                         href="https://www.curseforge.com/minecraft/mc-mods/cookie-capes"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -47,7 +47,7 @@ export default function DownloadSection() {
                             <h3 className="text-[#f16436] font-bold text-xl">CurseForge</h3>
                             <p className="text-zinc-400 text-sm">{t("Download via CurseForge")}</p>
                         </div>
-                        <div className="absolute inset-0 border-2 border-[#f16436] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none" />
+                        <div className="absolute inset-0 border-2 border-[#f16436] rounded-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-colors pointer-events-none" />
                     </a></Button>
                 </div>
             </div>

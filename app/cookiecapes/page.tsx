@@ -35,16 +35,15 @@ export default async function CookieCapesPage() {
   } catch { accountUnavailable = true; }
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
+    <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {accountUnavailable && <ToastMessage message={t("Your account details could not be loaded. Please try again later.")} />}
-      <CapeHero />
+      <CapeHero cape={capes[0]} />
 
       <Suspense fallback={<div className="h-125 w-full flex items-center justify-center text-zinc-500">{t("Loading capes...")}</div>}>
         <RandomCapes capes={capes} />
       </Suspense>
 
-      <div id="setup-wizard" className="relative px-6 py-20">
-        <div className="absolute top-0 left-0 w-full h-full bg-orange-500/5" />
+      <div id="setup-wizard" className="relative scroll-mt-24 px-6 py-8">
         <div className="relative mx-auto max-w-5xl">{account ? <SetupWizard account={account} /> : <section className="rounded-3xl border border-white/10 bg-[#101010] p-8 text-center sm:p-12">
           <h2 className="font-nexa text-3xl">{t("Your skin. Your cape.")}</h2>
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-zinc-400">{accountUnavailable ? t("Open your account to start the upload wizard.") : t("Sign in, link your Minecraft account, and bring your own design into the game.")}</p>

@@ -51,14 +51,14 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
     const galleryKey = crypto.randomUUID(); // Reset accumulated cards after server refreshes, including moderation.
 
     return (
-        <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
+        <main className="min-h-screen bg-background text-foreground overflow-x-hidden">
 
-            <div className="max-w-7xl mx-auto px-6 pt-32 pb-20">
-                <div className="text-center mb-16">
-                    <h1 className="font-nexa text-4xl md:text-6xl mb-4">
-                        {t("Our")} <span className="text-orange-500">{t("Players")}</span>
+            <div className="max-w-7xl mx-auto px-6 pt-36 pb-20">
+                <div className="gallery-heading">
+                    <h1 className="font-nexa text-4xl md:text-5xl mb-4">
+                        {t("Our")} <span className="text-primary">{t("Players")}</span>
                     </h1>
-                    <p className="text-zinc-400 max-w-2xl mx-auto">
+                    <p className="text-zinc-400 max-w-2xl">
                         {t("Find other players, view their capes, or browse the list.")}
                     </p>
                 </div>
@@ -71,7 +71,7 @@ export default async function CookiePlayerPage({ searchParams }: PageProps) {
                         initialBatch={initialBatch}
                         initialPage={page}
                         loadPageAction={loadPage}
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
+                        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
                     />
                 ) : (
                     <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-white/5">
