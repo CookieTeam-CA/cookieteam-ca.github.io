@@ -1,5 +1,4 @@
-import type { SortOption } from "./collections";
-type Query = Record<string, string | string[] | undefined>;
+import { queryText, queryValues, type Query } from "./query";
 const pair = (field: string) => [`${field}_asc`, `${field}_desc`];
 export const sorts = {
   points: [...pair("name"), ...pair("rank"), ...pair("points"), ...pair("value")],
@@ -11,16 +10,15 @@ export const sorts = {
   profileStats: [...pair("name"), ...pair("rank"), ...pair("value"), "category_asc"],
   profileAdvancements: [...pair("name"), ...pair("rank"), ...pair("time"), ...pair("completed"), "category_asc"],
 };
-export function collectionQuery(query: Query, allowed: string[] | SortOption[], defaultSort: string, prefix = "", apiPrefix = "", limit = 15) {
-  const text = (key: string) => typeof query[prefix + key] === "string" ? query[prefix + key] as string : "";
+export function collectionQuery(query: Query, allowed: string[], defaultSort: string, prefix = "", apiPrefix = "", limit = 15) {
+  const text = (key: string) => queryText(query, prefix + key);
   const sort = text("sort");
   const page = Number(text("page"));
   const params = new URLSearchParams();
   params.set(apiPrefix + "q", text("search").trim().toLowerCase());
   params.set(apiPrefix + "category", text("category"));
-  const exclude = query[prefix + "exclude"];
-  for (const item of (Array.isArray(exclude) ? exclude : typeof exclude === "string" ? [exclude] : []).filter(Boolean)) params.append(apiPrefix + "exclude", item);
-  params.set(apiPrefix + "sort", allowed.some(option => (typeof option === "string" ? option : option.value) === sort) ? sort : defaultSort);
+  for (const item of queryValues(query, prefix + "exclude")) params.append(apiPrefix + "exclude", item);
+  params.set(apiPrefix + "sort", allowed.includes(sort) ? sort : defaultSort);
   params.set(apiPrefix + "page", String(Number.isSafeInteger(page) && page > 0 ? page : 1));
   // The website has fixed page sizes; arbitrary URL limit parameters were ignored.
   params.set(apiPrefix + "limit", String(limit));

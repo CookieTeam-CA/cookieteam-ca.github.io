@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { decodeKey, getStatBoard, statHref } from "../../lib/api";
-import { Hero, Metrics, number, type Query } from "../../components/UI";
+import { decodeKey, statHref } from "../../lib/routes";
+import { getStatBoard } from "../../lib/api";
+import { type Query } from "../../lib/query";
+import { Hero, Metrics, number } from "../../components/UI";
 import { MinecraftIcon } from "../../components/MinecraftIcon";
 import Leaderboard from "../../components/Leaderboard";
 import { formatStatValue } from "../../lib/stat-units";
@@ -18,5 +20,5 @@ export default async function StatPage({ params, searchParams }: { params: Promi
   const data = await getStatBoard(key, query);
   const info = data.metadata;
   const entries = data.items;
-  return <><Link className="stats-back" href="/stats/statistiken">← Alle Statistiken</Link><div className="stats-detail-icon"><MinecraftIcon statKey={key} size={64} /></div><Hero title={info.display_name} eyebrow={`STATISTIK / ${info.category.toUpperCase()}`} description="Die höchsten Werte gewinnen. Platz 1 erhält 5 Punkte, Platz 2 erhält 3 Punkte und Platz 3 erhält 1 Punkt." /><Metrics items={[{ label: "Spieler mit positivem Wert", value: number(data.summary.participants) }, { label: "Höchster Wert", value: formatStatValue(key, data.summary.maximum) }, { label: "Summe", value: formatStatValue(key, data.summary.sum) }, { label: "Durchschnitt (aktive Spieler)", value: formatStatValue(key, data.summary.average) }]} /><Leaderboard entries={entries} data={data} query={query} statKey={key} /></>;
+  return <><Link className="stats-back" href="/stats/statistiken">← Alle Statistiken</Link><div className="stats-detail-icon"><MinecraftIcon statKey={key} size={64} /></div><Hero title={info.display_name} description="Die höchsten Werte gewinnen. Platz 1 erhält 5 Punkte, Platz 2 erhält 3 Punkte und Platz 3 erhält 1 Punkt." /><Metrics items={[{ label: "Spieler mit positivem Wert", value: number(data.summary.participants) }, { label: "Höchster Wert", value: formatStatValue(key, data.summary.maximum) }, { label: "Summe", value: formatStatValue(key, data.summary.sum) }, { label: "Durchschnitt (aktive Spieler)", value: formatStatValue(key, data.summary.average) }]} /><Leaderboard entries={entries} data={data} query={query} statKey={key} /></>;
 }

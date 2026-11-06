@@ -1,7 +1,8 @@
 import "server-only";
 import { cache } from "react";
 import { accountJson } from "@/lib/cookieapi-account";
-import { CapeApiError, getCape, type Cape } from "./api";
+import { getCape, type Cape } from "./api";
+import { CapeApiError } from "./api-error";
 import type { AccountInfo, OwnedCape } from "./account-types";
 
 // Request-local reuse between page metadata and content; owner data stays server-side.

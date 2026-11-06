@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
-import { CookieApiAdapter, websiteSessionCookie } from "./lib/cookieapi-adapter";
+import { CookieApiAdapter } from "./lib/cookieapi-adapter";
+import { websiteSessionCookie } from "./lib/cookieapi-config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: CookieApiAdapter(),

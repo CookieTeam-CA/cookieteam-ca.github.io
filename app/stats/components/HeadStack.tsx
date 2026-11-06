@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PlayerVisual from "./PlayerVisual";
-import { playerHref } from "../lib/api";
+import { playerHref } from "../lib/routes";
 
 export default function HeadStack({ players, total }: { players: { uuid: string; username: string }[]; total: number }) {
   if (!total) return <span className="stats-muted">Noch keine Spieler</span>;

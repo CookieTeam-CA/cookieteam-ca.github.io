@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { advancementHref, getProfile, playerHref, statHref } from "../../lib/api";
-import { date, Hero, Metrics, number, type Query } from "../../components/UI";
+import { advancementHref, playerHref, statHref } from "../../lib/routes";
+import { getProfile } from "../../lib/api";
+import { type Query } from "../../lib/query";
+import { date, Hero, Metrics, number } from "../../components/UI";
 import PlayerVisual from "../../components/PlayerVisual";
 import Collection from "../../components/Collection";
 import { nameSort, rankSort, timeSort, valueSort } from "../../lib/collections";
@@ -34,7 +36,7 @@ export default async function PlayerPage({ params, searchParams }: { params: Pro
   const completion = achievementPercentage(player.legacy_advancement_count);
   return <>
     <Link className="stats-back" href="/stats/spieler">← Alle Spieler</Link>
-    <div className={`stats-profile-hero ${player.rank <= 3 ? `podium-${player.rank}` : ""}`}><div><Hero title={player.username} eyebrow={`PLATZIERUNG #${player.rank}`} description={`Zuletzt synchronisiert: ${date(player.last_sync)}`} /><div className="stats-profile-name"><PlayerVisual uuid={player.uuid} username={player.username} size={40} /><span>{player.username}</span></div></div><PlayerVisual uuid={player.uuid} username={player.username} skin interactive priority /></div>
+    <div className={`stats-profile-hero ${player.rank <= 3 ? `podium-${player.rank}` : ""}`}><div><Hero title={player.username} description={`Zuletzt synchronisiert: ${date(player.last_sync)}`} /><div className="stats-profile-name"><PlayerVisual uuid={player.uuid} username={player.username} size={40} /><span>{player.username}</span></div></div><PlayerVisual uuid={player.uuid} username={player.username} skin interactive priority /></div>
     <Metrics items={[{ label: "Gesamtpunkte", value: number(player.points) }, { label: "Statistik-Punkte", value: number(player.stat_points) }, { label: "Achievement-Punkte", value: number(player.advancement_points) }, { label: "Achievement-Fortschritt", value: `${number(completion)} %` }]} />
     <section className="stats-profile-progress" aria-label="Achievement-Fortschritt">
       <p>Achievement-Fortschritt <span>{number(player.legacy_advancement_count)} / {number(CA6_ACHIEVEMENT_TOTAL)} abgeschlossen</span></p>

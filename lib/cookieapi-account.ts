@@ -1,8 +1,8 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import "server-only";
 import { cookies } from "next/headers";
-import { capeApiError } from "@/app/cookiecapes/lib/api";
-import { cookieApiUrl, serviceHeaders, websiteSessionCookie } from "./cookieapi-adapter";
+import { capeApiError } from "@/app/cookiecapes/lib/api-error";
+import { cookieApiUrl, serviceHeaders, websiteSessionCookie } from "./cookieapi-config";
 
 export async function accountFetch(path: string, init: RequestInit = {}) {
   const { t, locale } = await getTranslations();

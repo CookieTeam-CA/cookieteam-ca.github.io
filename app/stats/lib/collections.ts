@@ -1,22 +1,8 @@
 export type SortOption = { value: string; label: string };
-type CollectionQuery = Record<string, string | string[] | undefined>;
-export function queryParams(query: CollectionQuery): URLSearchParams {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (typeof value === "string") params.set(key, value);
-    else if (Array.isArray(value)) for (const item of value) params.append(key, item);
-  }
-  return params;
-}
-export function excludedCategories(query: CollectionQuery, prefix = ""): string[] {
-  const value = query[`${prefix}exclude`];
-  return [...new Set((Array.isArray(value) ? value : typeof value === "string" ? [value] : []).filter(Boolean))];
-}
 export type CollectionRow = {
   id: string; name: string; href: string; category?: string; description?: string; iconKey?: string;
   achievement?: boolean; player?: { uuid: string; username: string }; heads?: { uuid: string; username: string }[];
   participants?: number; value?: number; statKey?: string; rank?: number | null; points?: number; time?: string | null; completed?: boolean;
-  searchText?: string;
 };
 export const nameSort: SortOption[] = [{ value: "name_asc", label: "Name: A–Z" }, { value: "name_desc", label: "Name: Z–A" }];
 export const rankSort: SortOption[] = [{ value: "rank_asc", label: "Beste Platzierung" }, { value: "rank_desc", label: "Platznummer: höchste zuerst" }];

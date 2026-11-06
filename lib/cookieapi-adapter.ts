@@ -1,21 +1,12 @@
 import "server-only";
 import type { Adapter, AdapterSession, AdapterUser } from "next-auth/adapters";
 
-export const websiteSessionCookie = process.env.NODE_ENV === "production"
-  ? "__Secure-cookiecapes.session-token" : "cookiecapes.session-token";
+import { cookieApiUrl, serviceHeaders } from "./cookieapi-config";
 
-export function serviceHeaders(): Headers {
-  const token = process.env.WEBSITE_SERVICE_TOKEN;
-  if (!token) throw new Error("WEBSITE_SERVICE_TOKEN is not configured");
-  return new Headers({ Authorization: `Bearer ${token}` });
-}
-
-export const cookieApiUrl = () => (process.env.COOKIECAPES_API_URL || "https://api.cookieattack.de").replace(/\/+$/, "");
-
-export function hydrateUser(user: AdapterUser): AdapterUser {
+function hydrateUser(user: AdapterUser): AdapterUser {
   return { ...user, emailVerified: user.emailVerified ? new Date(user.emailVerified) : null };
 }
-export function hydrateSession(session: AdapterSession): AdapterSession {
+function hydrateSession(session: AdapterSession): AdapterSession {
   return { ...session, expires: new Date(session.expires) };
 }
 

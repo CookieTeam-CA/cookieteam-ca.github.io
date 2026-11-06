@@ -1,6 +1,7 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
-import { API_BASE_URL, CapeApiError, getCape, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
+import { API_BASE_URL, getCape, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
+import { CapeApiError } from "../../lib/api-error";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
 import { ArrowLeft, User, Layers, Globe, MessageCircle, History, BadgeCheck, Info } from "lucide-react";

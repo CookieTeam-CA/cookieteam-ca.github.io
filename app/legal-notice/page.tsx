@@ -1,5 +1,5 @@
-import LegalPage from "@/app/cookiecapes/legal/LegalPage";
-import { operator } from "@/app/cookiecapes/legal/content";
+import LegalPage from "@/app/legal/LegalPage";
+import { operator } from "@/app/legal/content";
 
 export const metadata = { title: "Legal notice", alternates: { canonical: "/legal-notice" } };
 

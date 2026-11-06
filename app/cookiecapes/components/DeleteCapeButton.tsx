@@ -3,7 +3,7 @@
 import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { Trash2, AlertCircle, X, Check } from "lucide-react";
-import { deleteCape } from "../../actions/cape-actions";
+import { deleteCape } from "../../actions/moderation-actions";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 

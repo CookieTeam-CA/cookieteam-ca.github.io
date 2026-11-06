@@ -1,5 +1,5 @@
-import LegalPage from "@/app/cookiecapes/legal/LegalPage";
-import { legalCopy } from "@/app/cookiecapes/legal/content";
+import LegalPage from "@/app/legal/LegalPage";
+import { legalCopy } from "@/app/legal/content";
 
 export const metadata = { title: "Privacy policy", alternates: { canonical: "/privacy-policy" } };
 

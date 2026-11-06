@@ -6,7 +6,7 @@ import { ArrowUpRight, Check, Globe, EyeOff, ImageUp, LoaderCircle, LockKeyhole,
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { editOwnedCape, claimCape, loadOwnedCapes, startMinecraftLink } from "@/app/actions/account-actions";
+import { editOwnedCape, claimCape, restoreOwnedCape, loadOwnedCapes, startMinecraftLink } from "@/app/actions/account-actions";
 import { actionValue } from "../lib/account-types";
 import type { AccountInfo, OwnedCape, OwnedCapes } from "../lib/account-types";
 import CapeViewer from "../components/CapeViewer";
@@ -195,7 +195,7 @@ export default function AccountPanel({ account: initialAccount }: { account: Acc
             </>}
             {cape.hidden_at ? <>
               <p className="text-xs leading-relaxed text-orange-300/80">{t("Hidden. Deletion:")} {cape.delete_after ? new Date(cape.delete_after).toLocaleString(locale) : t("pending")}</p>
-              <Button size="lg" disabled={controlsDisabled} onClick={() => run(async () => { actionValue(await claimCape(cape.cape_id, true)); }, t("Cape restored."))} variant="outline" className="w-full">{t("Restore")}</Button>
+              <Button size="lg" disabled={controlsDisabled} onClick={() => run(async () => { actionValue(await restoreOwnedCape(cape.cape_id)); }, t("Cape restored."))} variant="outline" className="w-full">{t("Restore")}</Button>
             </> : !candidates.has(cape.cape_id) && cape.verification !== "website" ? <Button size="lg" disabled={controlsDisabled} onClick={() => run(async () => { actionValue(await claimCape(cape.cape_id)); }, t("Cape claimed and verified with a blue badge."))} variant="outline" className="w-full">{t("Verify with a blue badge")}</Button> : null}
           </div>
         </article>)}</div>

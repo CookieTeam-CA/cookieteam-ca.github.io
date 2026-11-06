@@ -1,5 +1,5 @@
 import { accountFetch } from "@/lib/cookieapi-account";
-import { CapeApiError } from "@/app/cookiecapes/lib/api";
+import { CapeApiError } from "@/app/cookiecapes/lib/api-error";
 export const dynamic = "force-dynamic";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string; asset: string }> }) {
   const { id, asset } = await params;

@@ -2,17 +2,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 import AnimatedNumber from "./AnimatedNumber";
-import { queryParams } from "../lib/collections";
-export { default as Filters } from "./Filters";
+import { queryParams, type Query } from "../lib/query";
 
-export type Query = { [key: string]: string | string[] | undefined };
-export const queryText = (query: Query, key: string) => typeof query[key] === "string" ? query[key] as string : "";
 const numberFormatter = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "medium", timeZone: "Europe/Berlin" });
 export const number = (value: number) => numberFormatter.format(value);
 export const date = (value?: string | null) => value && Number.isFinite(Date.parse(value)) ? dateFormatter.format(new Date(value)) : "–";
 
-export function Hero({ title, description }: { eyebrow?: string; title: string; description: string }) {
+export function Hero({ title, description }: { title: string; description: string }) {
   return <div className="stats-hero"><h1>{title.startsWith("Cookie") ? <><span>Cookie</span>{title.slice(6)}</> : title}</h1><p className="stats-description">{description}</p></div>;
 }
 export function Rules() {
