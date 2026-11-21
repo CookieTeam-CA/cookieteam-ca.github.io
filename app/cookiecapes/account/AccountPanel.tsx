@@ -13,7 +13,7 @@ import CapeViewer from "../components/CapeViewer";
 import MinecraftServerLink from "../components/MinecraftServerLink";
 import MCIDButton from "../components/MCIDButton";
 import MinecraftAccountSelect from "../components/MinecraftAccountSelect";
-import SetupWizard from "../components/SetupWizard";
+import CapeCreator from "../components/CapeCreator";
 import { useDuplicateToast } from "../lib/duplicate-toast";
 import { toast } from "@/components/ui/toast";
 import VerificationBadge from "../components/VerificationBadge";
@@ -127,9 +127,9 @@ export default function AccountPanel({ account: initialAccount }: { account: Acc
       </div>
     </section>
 
-    <SetupWizard account={account} onAccountLinked={accountLinked} uuid={uuid} quota={owned?.quota} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} />
+    <CapeCreator account={account} onAccountLinked={accountLinked} uuid={uuid} quota={owned?.quota} disabled={controlsDisabled} onUploaded={reloadCapes} onBusyChange={setUploadBusy} />
 
-    {replacement && <div ref={replacementRef} role="region" aria-label={t("Replace cape image")} tabIndex={-1} className="scroll-mt-24"><SetupWizard key={replacement.cape_id} account={account} uuid={uuid} initialName={replacement.cape_name} initialCapeUrl={`/cookiecapes/account/images/${replacement.cape_id}?v=${refresh}`} initialAnimationManifest={replacement.animation ? `/cookiecapes/account/animation/${replacement.cape_id}/manifest.json?v=${refresh}` : undefined} quota={owned?.quota} replacementId={replacement.cape_id} disabled={controlsDisabled} onCancel={() => setReplacement(null)} onUploaded={reloadCapes} onBusyChange={setUploadBusy} /></div>}
+    {replacement && <div ref={replacementRef} role="region" aria-label={t("Replace cape image")} tabIndex={-1} className="scroll-mt-24"><CapeCreator key={replacement.cape_id} account={account} uuid={uuid} initialName={replacement.cape_name} initialCapeUrl={`/cookiecapes/account/images/${replacement.cape_id}?v=${refresh}`} initialAnimationManifest={replacement.animation ? `/cookiecapes/account/animation/${replacement.cape_id}/manifest.json?v=${refresh}` : undefined} quota={owned?.quota} replacementId={replacement.cape_id} disabled={controlsDisabled} onCancel={() => setReplacement(null)} onUploaded={reloadCapes} onBusyChange={setUploadBusy} /></div>}
     {uuid && <section aria-labelledby="owned-capes-title" className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>

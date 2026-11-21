@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
     ArrowLeft, Download, Eraser, Image as ImageIcon,
     Pencil, RotateCcw, RotateCw, Move, Hand, ZoomIn, ZoomOut, Maximize,
-    Trash2, Eye, EyeOff, Plus, PaintBucket, SlidersHorizontal, X
+    Trash2, Eye, EyeOff, Plus, PaintBucket, SlidersHorizontal, X, Upload
 } from "lucide-react";
 import { Stage, Layer, Image as KonvaImage, Line, Transformer } from "react-konva/lib/ReactKonvaCore";
 import "konva/lib/shapes/Image";
@@ -19,7 +20,7 @@ import type { MessageKey } from "../i18n/messages";
 import { clampZoom } from "./viewport";
 
 type Tool = "brush" | "eraser" | "move" | "fill" | "hand";
-import { readEditorDraft, EDITOR_DRAFT_KEY, type EditorLayer, type LineData } from "./draft";
+import { readEditorDraft, EDITOR_DRAFT_KEY, CREATOR_IMPORT_KEY, type EditorLayer, type LineData } from "./draft";
 
 interface HistoryState {
     layers: EditorLayer[];
@@ -154,6 +155,7 @@ const URLImage = ({ src, layerProps, isSelected, onSelect, onChange }: {
 
 export default function CapeEditorPage() {
     const { t } = useTranslations();
+    const router = useRouter();
     const layerName = (layer: EditorLayer) => layer.type === "template" ? t("Template") : layer.type === "drawing" ? t("Drawing {number}", { number: layer.name.match(/\d+$/)?.[0] ?? 1 }) : layer.name;
     const [layers, setLayers] = useState<EditorLayer[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -511,9 +513,10 @@ export default function CapeEditorPage() {
         reader.readAsDataURL(file);
     };
 
-    const downloadCape = async () => {
+    /** Renders the cape without the template guide or selection handles. */
+    const renderCape = () => {
         const stage = stageRef.current;
-        if (!stage) return;
+        if (!stage) return null;
 
         const templateLayer = layers.find(l => l.type === "template");
         const templateNode = stage.findOne(`#${templateLayer?.id}`);
@@ -526,11 +529,28 @@ export default function CapeEditorPage() {
 
         if (templateNode && templateLayer?.visible) templateNode.show();
         transformers.forEach(t => t.show());
+        return dataURL;
+    };
 
+    const downloadCape = () => {
+        const dataURL = renderCape();
+        if (!dataURL) return;
         const link = document.createElement("a");
         link.download = `my-cookiecape-${activeTemplate}.png`;
         link.href = dataURL;
         link.click();
+    };
+
+    const sendToCreator = () => {
+        const dataURL = renderCape();
+        if (!dataURL) return;
+        try {
+            sessionStorage.setItem(CREATOR_IMPORT_KEY, JSON.stringify({ name: layers.find(layer => layer.type === "image")?.name ?? "", dataUrl: dataURL }));
+        } catch {
+            setDraftError("The draft could not be saved. Export your cape as PNG before leaving.");
+            return;
+        }
+        router.push("/cookiecapes/create");
     };
 
     const stageWidth = layers.find(l => l.type === "template")?.width || 64;
@@ -618,7 +638,8 @@ export default function CapeEditorPage() {
                         <Button type="button" variant="outline" className="min-h-12 sm:hidden" onClick={() => propertiesDialog.current?.showModal()}><SlidersHorizontal data-icon="inline-start" /> {t("Properties")}</Button>
                         <Button type="button" variant="outline" size="icon" onClick={undo} disabled={historyStep <= 0} aria-label={t("Undo")}><RotateCcw /></Button>
                         <Button type="button" variant="outline" size="icon" onClick={redo} disabled={historyStep >= history.length - 1} aria-label={t("Redo")}><RotateCw /></Button>
-                        <Button type="button" onClick={downloadCape} disabled={!!templateError || !layers.length}><Download data-icon="inline-start" /> {t("Export PNG")}</Button>
+                        <Button type="button" variant="outline" onClick={downloadCape} disabled={!!templateError || !layers.length}><Download data-icon="inline-start" /> {t("Export PNG")}</Button>
+                        <Button type="button" onClick={sendToCreator} disabled={!!templateError || !layers.length}><Upload data-icon="inline-start" /> {t("Use this cape")}</Button>
                     </div>
                 </header>
                 {(draftLoadError || draftError) && <p role="alert" className="bg-amber-950 p-3 text-sm text-amber-200">{t((draftError || draftLoadError) as MessageKey)}</p>}
