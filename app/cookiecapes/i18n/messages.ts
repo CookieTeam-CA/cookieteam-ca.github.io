@@ -526,7 +526,6 @@ export const de = {
   "Your browser shows only the first frame. The full animation is created when you publish.": "Dein Browser zeigt nur das erste Frame. Die vollständige Animation wird beim Veröffentlichen erstellt.",
   "The animation is too large in HD. Turn off HD or shorten it.": "Die Animation ist in HD zu groß. Schalte HD aus oder kürze sie.",
   "Turn any picture into a cape": "Mach aus jedem Bild ein Cape",
-  "Drop a picture or a GIF, choose the part you like, and publish. We build the cape around it.": "Zieh ein Bild oder GIF hierher, wähle den Ausschnitt und veröffentliche es. Wir bauen das Cape drumherum.",
   "Drop your picture here": "Zieh dein Bild hierher",
   "or click to choose one. You can also paste an image.": "oder klicke, um eins auszuwählen. Du kannst auch ein Bild einfügen.",
   "Choose a picture": "Bild auswählen",

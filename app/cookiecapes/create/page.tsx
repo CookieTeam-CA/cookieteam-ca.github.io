@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getTranslations();
-  return { title: t("Create a cape"), description: t("Drop a picture or a GIF, choose the part you like, and publish. We build the cape around it.") };
+  return { title: t("Create a cape") };
 }
 
 export default async function CreateCapePage() {
