@@ -419,7 +419,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
         <div className="flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
           {onCancel && <Button size="lg" type="button" variant="outline" disabled={locked} onClick={onCancel}>{t("Cancel")}</Button>}
           {stepIndex > 0 && <Button size="lg" type="button" variant="outline" disabled={locked} onClick={() => setStepKey(steps[stepIndex - 1])}><ArrowLeft size={16} aria-hidden="true" />{t("Back")}</Button>}
-          {source && <Button ref={moreTrigger} size="lg" type="button" variant="outline" disabled={locked} onClick={() => setMore(true)}><Settings2 aria-hidden="true" />{t("More options")}</Button>}
+          {source && (step === "position" || (kind === "texture" && step === "picture")) && <Button ref={moreTrigger} size="lg" type="button" variant="outline" disabled={locked} onClick={() => setMore(true)}><Settings2 aria-hidden="true" />{t("More options")}</Button>}
           {step !== "publish"
             ? <Button size="lg" type="button" className="ml-auto" disabled={locked || !source} onClick={() => setStepKey(steps[stepIndex + 1])}>{t("Next")}<ArrowRight size={16} aria-hidden="true" /></Button>
             : <Button size="lg" type="button" className="ml-auto" aria-busy={busy || pending} disabled={!canPublish} onClick={() => void publish()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy ? t("Uploading") : replacing ? t("Update Cape") : t("Publish cape")}</Button>}
