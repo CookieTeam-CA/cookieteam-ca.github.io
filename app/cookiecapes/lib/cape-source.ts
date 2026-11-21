@@ -69,7 +69,9 @@ async function decodeAnimation(file: File, t: ReturnType<typeof translations>["t
       try {
         if (!i) { width = image.displayWidth; height = image.displayHeight; scale = workingScale(width, height, count); }
         images.push(await bitmap(image, width, height, scale));
-        durations.push(image.duration ? Math.min(60000, image.duration / 1000) : DEFAULT_DURATION);
+        const duration = image.duration ? image.duration / 1000 : null;
+        // Browsers play GIF delays of 10 ms or less at 100 ms; CookieAPI does the same.
+        durations.push(duration === null ? DEFAULT_DURATION : file.type === "image/gif" && duration <= 10 ? 100 : Math.min(60000, duration));
       } finally { image.close(); }
     }
     return { images, durations, width, height };
