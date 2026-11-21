@@ -30,7 +30,7 @@ export default async function TutorialPage() {
                     <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
                         {t("All you need is a picture. We build the cape around it.")}
                     </p>
-                    <Button asChild size="lg" className="mt-8"><Link href="/cookiecapes/create"><ImagePlus size={18} />{t("Create a cape")}</Link></Button>
+                    <Button asChild size="lg" className="mt-8"><Link href="/cookiecapes#setup-wizard"><ImagePlus size={18} />{t("Create a cape")}</Link></Button>
                 </div>
 
                 <div className="space-y-12">

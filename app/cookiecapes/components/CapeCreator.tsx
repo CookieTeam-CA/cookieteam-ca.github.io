@@ -62,6 +62,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
   const [privateCape, setPrivate] = useState(false);
   const [hd, setHd] = useState(false);
   const [more, setMore] = useState(false);
+  const [sourceKey, setSourceKey] = useState(0);
   const [stepKey, setStepKey] = useState<StepKey>("picture");
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -172,7 +173,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
     try {
       const next = await loadCapeSource(files, t);
       if (generation !== version.current) { new Set(next.frames.map(frame => frame.image)).forEach(image => image.close()); return; }
-      reset(false); accept(next); setStepKey(next.kind === "artwork" ? "position" : "publish");
+      reset(false); accept(next); setSourceKey(key => key + 1); setStepKey(next.kind === "artwork" ? "position" : "publish");
     } catch (cause) { if (generation === version.current) setError(cause instanceof Error ? cause.message : t("Import failed.")); }
     finally { if (generation === version.current) setBusy(false); }
   }
@@ -428,7 +429,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
       </div>
       <div className="relative min-w-0 lg:sticky lg:top-24 lg:self-start">
         <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="cape-upload-preview relative h-96 w-full">
-          <CapeViewer allowElytraSwitch capeUrl={source ? undefined : initialCapeUrl} animationManifest={source ? undefined : initialAnimationManifest} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
+          <CapeViewer allowElytraSwitch cameraDistance={46} focusCapeKey={sourceKey || undefined} capeUrl={source ? undefined : initialCapeUrl} animationManifest={source ? undefined : initialAnimationManifest} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
           {frames.length > 1 && <Button size="sm" type="button" variant="outline" className="absolute top-4 right-4 z-30" disabled={locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>}
         </div>
         {reduced && frames.length > 1 && <p role="status" className="text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}

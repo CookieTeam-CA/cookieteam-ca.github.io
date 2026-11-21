@@ -550,7 +550,7 @@ export default function CapeEditorPage() {
             setDraftError("The draft could not be saved. Export your cape as PNG before leaving.");
             return;
         }
-        router.push("/cookiecapes/create");
+        router.push("/cookiecapes#setup-wizard");
     };
 
     const stageWidth = layers.find(l => l.type === "template")?.width || 64;

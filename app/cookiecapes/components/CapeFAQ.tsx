@@ -4,7 +4,7 @@ import { getTranslations } from "../i18n/server";
 
 const questions = [
   ["Is CookieCapes free?", "CookieCapes is free to use. Install the mod to see and select capes in Minecraft."],
-  ["How do I upload my own cape?", "Sign in, link your Minecraft account, then open Create cape and drop any picture or GIF. Choose the part you like and publish."],
+  ["How do I upload my own cape?", "Sign in, link your Minecraft account, then drop any picture or GIF into the upload on the CookieCapes page or in your account. Choose the part you like and publish."],
   ["Why can other players not see my cape?", "Players need the CookieCapes mod to see CookieCapes designs in the game. Check that the mod is installed and that you have selected a cape."],
   ["Which files can I upload?", "Any PNG, JPG, GIF, APNG or WebP up to 32 MiB. Pictures are fitted onto the cape for you, and animations are reduced to 24 FPS and 200 frames when needed. Files drawn on the cape template are uploaded unchanged."],
   ["How many capes can I upload?", "You have three uploads or image replacements per account per UTC day. Your account shows the remaining allowance and reset time. Renaming, visibility changes, deleting and restoring do not use this allowance."],

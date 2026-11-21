@@ -4,7 +4,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://cookieattack.de";
 
   return [
-    ...["/cookiecapes", "/cookiecapes/capes", "/cookiecapes/players", "/cookiecapes/create", "/cookiecapes/rules", "/cookiecapes/tutorial", "/legal-notice", "/privacy-policy"].map(path => ({
+    ...["/cookiecapes", "/cookiecapes/capes", "/cookiecapes/players", "/cookiecapes/rules", "/cookiecapes/tutorial", "/legal-notice", "/privacy-policy"].map(path => ({
       url: `${baseUrl}${path}`,
       changeFrequency: "weekly" as const,
       priority: 0.6,
