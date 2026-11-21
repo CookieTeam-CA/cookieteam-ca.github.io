@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ContextMenu, Dialog, Switch } from "radix-ui";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Paintbrush, Settings2, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Paintbrush, Settings2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { startMinecraftLink, uploadWebsiteCape } from "@/app/actions/account-actions";
@@ -86,6 +86,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
   const jobError = !replacing ? job?.error?.replace(/previous cape retained\.?/gi, t("No cape was uploaded.")) : job?.error;
   const locked = disabled || busy || pending;
   const ready = !!source && frames.length > 0;
+  const blocker = !source ? "" : !replacing && !name.trim() ? t("Give your cape a name to publish it.") : quota?.remaining === 0 ? t("You have used today's uploads. Try again after the reset.") : "";
   const canPublish = !locked && ready && !!player && (replacing || !!name.trim()) && quota?.remaining !== 0;
 
   const notifyBusy = useEffectEvent((value: boolean) => onBusyChange?.(value));
@@ -344,63 +345,75 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
       </div>
     </div>
     <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_0.8fr]">
-      <div className="flex min-w-0 flex-col gap-6">
-        {!account.links.length && <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-sm leading-relaxed text-zinc-400">{t("First link your Minecraft account. Then you can upload your cape here.")}</p>
-          <div className="flex items-center gap-2">
-            <MinecraftServerLink account={account} disabled={locked} onLinked={(nextAccount, linkedUuid) => {
-              if (onAccountLinked) onAccountLinked(nextAccount, linkedUuid);
-              else { setAccount(nextAccount); setUuid(linkedUuid); }
-            }} />
-            {account.server_link_enabled && account.server_link_address && <p className="max-w-16 shrink-0 text-center text-xs text-zinc-500">{t("or through MC-ID")}</p>}
-            <MCIDButton className="min-w-0 flex-1 px-3 text-sm" disabled={locked || !account.mcid_enabled} onClick={() => void linkMinecraft()}>{t("Link with MC-ID")}</MCIDButton>
-          </div>
-          {!account.mcid_enabled && <p className="text-xs text-zinc-500">{t("MC-ID is currently not enabled.")}</p>}
-        </div>}
+      <div className="flex min-w-0 flex-col gap-8">
         {account.links.length > 1 && controlledUuid === undefined && <MinecraftAccountSelect links={account.links} value={uuid} onChange={setUuid} disabled={locked} label={t("Minecraft account for the upload")} />}
 
-        {!source ? <div className={cn("relative rounded-2xl border-2 border-dashed p-8 text-center transition-colors focus-within:ring-2 focus-within:ring-orange-400 motion-reduce:transition-none", dragging ? "border-orange-400 bg-orange-500/10" : "border-white/20 bg-white/2")}
-          onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = locked ? "none" : "copy"; setDragging(!locked); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={event => { event.preventDefault(); setDragging(false); if (!locked) void choose(Array.from(event.dataTransfer.files)); }}>
-          {busy ? <Loader2 size={40} className="mx-auto mb-4 animate-spin text-orange-400 motion-reduce:animate-none" aria-hidden="true" /> : <ImagePlus size={40} className="mx-auto mb-4 text-orange-400" aria-hidden="true" />}
-          <p className="text-lg font-bold text-white" aria-live="polite">{busy ? t("Preparing your cape…") : t("Drop your picture here")}</p>
-          <p className="mt-2 text-sm text-zinc-400">{t("or click to choose one. You can also paste an image.")}</p>
-          <input ref={fileInput} id={`${id}-file`} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple disabled={locked} aria-label={t("Choose a picture")} aria-describedby={`${id}-file-help`} className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
-          <p id={`${id}-file-help`} className="mt-4 text-xs leading-relaxed text-zinc-500">{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB. Photos, artwork and animations all work.")}</p>
-          {replacing && initialAnimationManifest && <Button type="button" variant="outline" className="relative z-10 mt-4" disabled={locked} onClick={() => void editCurrentAnimation()}>{t("Edit current animation")}</Button>}
-        </div> : <div className="flex flex-col gap-5">
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-            <p className="min-w-0 truncate text-sm text-zinc-300">{source.files[0]?.name ?? initialName}{source.files.length > 1 ? t(" + {count} frames", { count: source.files.length - 1 }) : animated ? ` · ${t("{count} frames", { count: frames.length })}` : ""}</p>
-            <Button type="button" size="sm" variant="ghost" disabled={locked} onClick={() => fileInput.current?.click()}><ImagePlus aria-hidden="true" />{t("Change picture")}</Button>
-            <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple hidden onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
-          </div>
-          {kind === "artwork" && current ? <CapeFraming image={current.image} width={current.image.width} height={current.image.height} framing={framing} onChange={setFraming} pixelArt={pixelArt} background={background} onBackgroundChange={setBackground} disabled={locked} />
-            : <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed text-zinc-300">{t("This file already uses the cape layout, so it is used exactly as it is.")}</p>}
-          {kind === "artwork" && coverage < 0.1 && <p role="status" className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">{t("Your cape is almost invisible. Choose a picture with more visible pixels or add a background colour.")}</p>}
-          {!replacing && <label className="flex flex-col gap-2 text-sm text-zinc-300">{t("Cape name")}
-            <input id={`${id}-name`} value={name} maxLength={100} required disabled={locked} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); void publish(); } }} placeholder={t("For example: Sunset")} className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none placeholder:text-zinc-600 focus:border-orange-400 disabled:opacity-50" />
-          </label>}
-          {!replacing && <label htmlFor={`${id}-private`} className="flex min-h-12 cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white">
-            <span>{t("Publish privately")}</span>
-            <Switch.Root id={`${id}-private`} checked={privateCape} disabled={locked} onCheckedChange={setPrivate} className="inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-zinc-700 p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 data-[state=checked]:bg-primary disabled:cursor-not-allowed disabled:opacity-50">
-              <Switch.Thumb className="block size-5 rounded-full bg-white transition-transform data-[state=checked]:translate-x-5 motion-reduce:transition-none" />
-            </Switch.Root>
-          </label>}
-        </div>}
+        <CreatorStep number={1} title={t("Picture")} action={source && <Button type="button" size="sm" variant="ghost" className="text-zinc-300" disabled={locked} onClick={() => fileInput.current?.click()}><ImagePlus aria-hidden="true" />{t("Change picture")}</Button>}>
+          {!source ? <div className={cn("relative rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors focus-within:ring-2 focus-within:ring-orange-400 motion-reduce:transition-none", dragging ? "border-orange-400 bg-orange-500/10" : "border-white/15 bg-black/20 hover:border-white/30")}
+            onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = locked ? "none" : "copy"; setDragging(!locked); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={event => { event.preventDefault(); setDragging(false); if (!locked) void choose(Array.from(event.dataTransfer.files)); }}>
+            {busy ? <Loader2 size={36} className="mx-auto mb-3 animate-spin text-orange-400 motion-reduce:animate-none" aria-hidden="true" /> : <ImagePlus size={36} className="mx-auto mb-3 text-orange-400" aria-hidden="true" />}
+            <p className="font-bold text-white" aria-live="polite">{busy ? t("Preparing your cape…") : t("Drop your picture here")}</p>
+            <p className="mt-1 text-sm text-zinc-400">{t("or click to choose one. You can also paste an image.")}</p>
+            <input id={`${id}-file`} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple disabled={locked} aria-label={t("Choose a picture")} aria-describedby={`${id}-file-help`} className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
+            <p id={`${id}-file-help`} className="mt-4 text-xs text-zinc-500">{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB. Photos, artwork and animations all work.")}</p>
+            {replacing && initialAnimationManifest && <Button type="button" variant="outline" className="relative z-10 mt-4" disabled={locked} onClick={() => void editCurrentAnimation()}>{t("Edit current animation")}</Button>}
+          </div> : <div className="flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm">
+            <span className="min-w-0 flex-1 truncate text-zinc-200" title={source.files[0]?.name ?? initialName}>{source.files[0]?.name ?? initialName}</span>
+            {animated && <span className="shrink-0 rounded-full bg-white/10 px-2.5 py-0.5 text-xs tabular-nums text-zinc-300">{t("{count} frames", { count: frames.length })}</span>}
+          </div>}
+          <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple hidden onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
+        </CreatorStep>
 
-        <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-white/10 pt-5">
-          {onCancel && <Button size="lg" type="button" variant="outline" disabled={locked} onClick={onCancel}><X aria-hidden="true" />{t("Cancel")}</Button>}
-          {source && <Button ref={moreTrigger} size="lg" type="button" variant="outline" disabled={locked} onClick={() => setMore(true)}><Settings2 aria-hidden="true" />{t("More options")}</Button>}
-          <Button size="lg" type="button" className="ml-auto" aria-busy={busy || pending} disabled={!canPublish} onClick={() => void publish()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy && source ? t("Uploading") : replacing ? t("Update Cape") : t("Publish cape")}</Button>
-          {player && source && <p className="w-full text-xs text-zinc-500">{t("Publishes for {name}. Website uploads receive a blue badge; it confirms your Minecraft identity, not ownership of the artwork.", { name: player.minecraft_name })}</p>}
-          {error && pending && <Button variant="outline" onClick={() => setJob({ ...job })}>{t("Retry status")}</Button>}
-        </div>
+        {source && <CreatorStep number={2} title={t("Position")}>
+          {kind === "artwork" && current ? <CapeFraming image={current.image} width={current.image.width} height={current.image.height} framing={framing} onChange={setFraming} pixelArt={pixelArt} background={background} onBackgroundChange={setBackground} disabled={locked} />
+            : <p className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm leading-relaxed text-zinc-300">{t("This file already uses the cape layout, so it is used exactly as it is.")}</p>}
+          {kind === "artwork" && coverage < 0.1 && <p role="status" className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-sm text-amber-200">{t("Your cape is almost invisible. Choose a picture with more visible pixels or add a background colour.")}</p>}
+        </CreatorStep>}
+
+        {source && <CreatorStep number={3} title={replacing ? t("Publish") : t("Name and publish")}>
+          {!replacing && <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label htmlFor={`${id}-name`} className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-zinc-300">{t("Cape name")}
+              <input id={`${id}-name`} value={name} maxLength={100} required disabled={locked} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); void publish(); } }} placeholder={t("For example: Sunset")} className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-white outline-none placeholder:text-zinc-600 focus:border-orange-400 disabled:opacity-50" />
+            </label>
+            <label htmlFor={`${id}-private`} className="flex h-11 shrink-0 cursor-pointer items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-zinc-300">
+              <Switch.Root id={`${id}-private`} checked={privateCape} disabled={locked} onCheckedChange={setPrivate} className="inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-zinc-700 p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 data-[state=checked]:bg-primary disabled:cursor-not-allowed disabled:opacity-50">
+                <Switch.Thumb className="block size-4 rounded-full bg-white transition-transform data-[state=checked]:translate-x-4 motion-reduce:transition-none" />
+              </Switch.Root>{t("Private")}
+            </label>
+          </div>}
+          {!account.links.length && <div className="flex flex-col gap-3 rounded-xl border border-orange-400/25 bg-orange-500/5 p-4">
+            <p className="text-sm font-medium text-orange-200">{t("Link your Minecraft account to publish.")}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <MinecraftServerLink account={account} disabled={locked} onLinked={(nextAccount, linkedUuid) => {
+                if (onAccountLinked) onAccountLinked(nextAccount, linkedUuid);
+                else { setAccount(nextAccount); setUuid(linkedUuid); }
+              }} />
+              <MCIDButton className="min-w-0 flex-1 px-3 text-sm" disabled={locked || !account.mcid_enabled} onClick={() => void linkMinecraft()}>{t("Link with MC-ID")}</MCIDButton>
+            </div>
+            {!account.mcid_enabled && <p className="text-xs text-zinc-500">{t("MC-ID is currently not enabled.")}</p>}
+          </div>}
+          {blocker && account.links.length > 0 && <p className="text-sm text-zinc-400">{blocker}</p>}
+          <div className="flex flex-wrap items-center gap-3">
+            {onCancel && <Button size="lg" type="button" variant="ghost" disabled={locked} onClick={onCancel}>{t("Cancel")}</Button>}
+            <Button ref={moreTrigger} size="lg" type="button" variant="ghost" className="text-zinc-300" disabled={locked} onClick={() => setMore(true)}><Settings2 aria-hidden="true" />{t("More options")}</Button>
+            <Button size="lg" type="button" className="ml-auto min-w-40" aria-busy={busy || pending} disabled={!canPublish} onClick={() => void publish()}>{busy || pending ? <Loader2 data-icon="inline-start" className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Upload data-icon="inline-start" aria-hidden="true" />}{pending ? t("Processing") : busy ? t("Uploading") : replacing ? t("Update Cape") : t("Publish cape")}</Button>
+            {error && pending && <Button variant="outline" onClick={() => setJob({ ...job })}>{t("Retry status")}</Button>}
+          </div>
+          {player && <p className="text-xs leading-relaxed text-zinc-500">{t("Publishes for {name}. Website uploads receive a blue badge; it confirms your Minecraft identity, not ownership of the artwork.", { name: player.minecraft_name })}</p>}
+        </CreatorStep>}
+        {!source && onCancel && <Button size="lg" type="button" variant="ghost" className="self-start" disabled={locked} onClick={onCancel}>{t("Cancel")}</Button>}
       </div>
-      <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="cape-upload-preview relative h-96 w-full lg:sticky lg:top-24">
-        <CapeViewer allowElytraSwitch capeUrl={source ? undefined : initialCapeUrl} animationManifest={source ? undefined : initialAnimationManifest} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
-        {frames.length > 1 && <Button size="sm" type="button" variant="outline" className="absolute top-4 right-4 z-30" disabled={locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>}
-        {reduced && frames.length > 1 && <p role="status" className="mt-3 text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
+      <div className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">{t("3D preview")}</h3>
+          {frames.length > 1 && <Button size="sm" type="button" variant="outline" disabled={locked || reduced} onClick={() => setPlaying(value => !value)}>{playing && visible ? t("Pause") : t("Play")}</Button>}
+        </div>
+        <div role="group" aria-label={t("3D preview of {name}", { name: player?.minecraft_name ?? name })} className="cape-upload-preview relative h-96 w-full overflow-hidden rounded-xl border border-white/10 bg-black/30">
+          <CapeViewer allowElytraSwitch capeUrl={source ? undefined : initialCapeUrl} animationManifest={source ? undefined : initialAnimationManifest} capeFrame={preview ?? undefined} minecraftName={player?.minecraft_name} animation="idle" />
+        </div>
+        {reduced && frames.length > 1 && <p role="status" className="text-sm text-zinc-400">{t("Motion is reduced by your system settings. You can scrub through the preview manually.")}</p>}
       </div>
     </div>
 
@@ -483,4 +496,15 @@ function FrameThumbnail({ frame }: { frame: ComposerFrame }) {
     context.drawImage(frame.image, 0, 0, element.width, element.height);
   }, [frame]);
   return <canvas ref={canvas} aria-hidden="true" className="pointer-events-none mx-auto h-10 max-w-full rounded bg-zinc-800 object-contain" />;
+}
+
+function CreatorStep({ number, title, action, children }: { number: number; title: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return <section className="flex flex-col gap-4">
+    <div className="flex min-h-9 items-center gap-3">
+      <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center rounded-full border border-orange-400/40 text-xs font-bold text-orange-300">{number}</span>
+      <h3 className="flex-1 font-bold text-white">{title}</h3>
+      {action}
+    </div>
+    {children}
+  </section>;
 }

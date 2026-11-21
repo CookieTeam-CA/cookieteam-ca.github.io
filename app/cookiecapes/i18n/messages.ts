@@ -576,6 +576,17 @@ export const de = {
   "Paint on the template in your browser, then choose “Use this cape” to publish it.": "Male im Browser auf der Vorlage und wähle dann „Dieses Cape verwenden“, um es zu veröffentlichen.",
   "For an external editor such as": "Für einen externen Editor wie",
   ", download a template and keep its dimensions. Save as PNG.": " lade eine Vorlage herunter und behalte ihre Maße. Speichere als PNG.",
+  "Picture": "Bild",
+  "Position": "Position",
+  "Name and publish": "Benennen und veröffentlichen",
+  "Publish": "Veröffentlichen",
+  "Private": "Privat",
+  "Link your Minecraft account to publish.": "Verknüpfe deinen Minecraft-Account, um zu veröffentlichen.",
+  "Give your cape a name to publish it.": "Gib deinem Cape einen Namen, um es zu veröffentlichen.",
+  "You have used today's uploads. Try again after the reset.": "Du hast die heutigen Uploads verbraucht. Versuche es nach dem Zurücksetzen erneut.",
+  "3D preview": "3D-Vorschau",
+  "Drag the picture to move it. Scroll, pinch or use the slider to zoom.": "Ziehe das Bild, um es zu verschieben. Scrolle, nutze zwei Finger oder den Regler zum Zoomen.",
+  "Whole picture": "Ganzes Bild",
 } as const;
 
 export type MessageKey = keyof typeof de;

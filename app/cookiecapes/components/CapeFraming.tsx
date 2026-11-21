@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Maximize, Minimize, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ interface Props {
 /** Shows the cape's outer face and lets the user move and zoom the picture inside it. */
 export default function CapeFraming({ image, width, height, framing, onChange, pixelArt, background, onBackgroundChange, disabled = false }: Props) {
   const { t } = useTranslations();
+  const zoomId = useId();
   const canvas = useRef<HTMLCanvasElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinch = useRef<{ distance: number; zoom: number } | null>(null);
@@ -68,7 +69,7 @@ export default function CapeFraming({ image, width, height, framing, onChange, p
   const distance = () => { const [a, b] = [...pointers.current.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
   const step = cropRect(width, height, framing).width * 0.04;
 
-  return <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+  return <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
     <canvas ref={canvas} tabIndex={disabled ? -1 : 0} role="img"
       aria-label={t("Cape front. Drag to move the picture, scroll or pinch to zoom. Arrow keys move, plus and minus zoom.")}
       className={cn("mx-auto aspect-5/8 w-45 shrink-0 touch-none rounded-lg border border-white/15 bg-[repeating-conic-gradient(#27272a_0_25%,#18181b_0_50%)] bg-size-[16px_16px] outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:mx-0", disabled ? "opacity-60" : "cursor-grab active:cursor-grabbing", pixelArt && "[image-rendering:pixelated]")}
@@ -94,20 +95,26 @@ export default function CapeFraming({ image, width, height, framing, onChange, p
         else if (event.key === "+" || event.key === "=") { event.preventDefault(); onChange(zoomFraming(width, height, framing, framing.zoom * 1.15)); }
         else if (event.key === "-") { event.preventDefault(); onChange(zoomFraming(width, height, framing, framing.zoom / 1.15)); }
       }} />
-    <div className="flex min-w-0 flex-1 flex-col gap-4">
-      <p className="text-sm leading-relaxed text-zinc-400">{t("This is the back of your cape. Drag the picture to move it and zoom to choose the part you want.")}</p>
-      <div role="group" aria-label={t("Picture size")} className="grid grid-cols-2 gap-2">
-        <Button type="button" variant={framing.fit === "fill" ? "default" : "outline"} aria-pressed={framing.fit === "fill"} disabled={disabled} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: "fill" })}><Maximize aria-hidden="true" />{t("Fill cape")}</Button>
-        <Button type="button" variant={framing.fit === "fit" ? "default" : "outline"} aria-pressed={framing.fit === "fit"} disabled={disabled} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: "fit" })}><Minimize aria-hidden="true" />{t("Show whole picture")}</Button>
+    <div className="flex min-w-0 flex-1 flex-col gap-5">
+      <p className="text-sm leading-relaxed text-zinc-400">{t("Drag the picture to move it. Scroll, pinch or use the slider to zoom.")}</p>
+      <div role="group" aria-label={t("Picture size")} className="grid grid-cols-2 gap-1 rounded-lg border border-white/10 bg-black/30 p-1">
+        {([["fill", Maximize, t("Fill cape")], ["fit", Minimize, t("Whole picture")]] as const).map(([value, Icon, label]) => <button key={value} type="button" aria-pressed={framing.fit === value} disabled={disabled} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: value })}
+          className={cn("flex h-9 min-w-0 items-center justify-center gap-2 rounded-md px-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-50 motion-reduce:transition-none", framing.fit === value ? "bg-primary text-primary-foreground" : "text-zinc-300 hover:bg-white/5")}>
+          <Icon className="size-4 shrink-0" aria-hidden="true" /><span className="truncate">{label}</span>
+        </button>)}
       </div>
-      <label className="flex flex-col gap-2 text-sm text-zinc-300">{t("Zoom")}
-        <input type="range" min={1} max={MAX_ZOOM} step={0.01} value={framing.zoom} disabled={disabled} onChange={event => onChange(zoomFraming(width, height, framing, Number(event.target.value)))} className="accent-orange-500" />
-      </label>
-      {framing.fit === "fit" && <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-300">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between text-sm text-zinc-300">
+          <label htmlFor={zoomId}>{t("Zoom")}</label>
+          <span className="tabular-nums text-zinc-500">{Math.round(framing.zoom * 100)} %</span>
+        </div>
+        <input id={zoomId} type="range" min={1} max={MAX_ZOOM} step={0.01} value={framing.zoom} disabled={disabled} onChange={event => onChange(zoomFraming(width, height, framing, Number(event.target.value)))} className="w-full accent-orange-500" />
+      </div>
+      {framing.fit === "fit" && <div className="flex h-9 items-center justify-between gap-3 text-sm text-zinc-300">
         <label className="flex items-center gap-2"><input type="checkbox" checked={background !== null} disabled={disabled} onChange={event => onBackgroundChange(event.target.checked ? "#1f1f23" : null)} className="size-4 accent-orange-500" />{t("Background colour")}</label>
         {background !== null && <input type="color" aria-label={t("Background colour")} value={background} disabled={disabled} onChange={event => onBackgroundChange(event.target.value)} className="h-9 w-14 cursor-pointer rounded border border-white/15 bg-transparent" />}
       </div>}
-      <Button type="button" variant="ghost" className="self-start text-zinc-400" disabled={disabled || (framing.zoom === 1 && framing.x === 0.5 && framing.y === 0.5)} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: framing.fit })}><RotateCcw aria-hidden="true" />{t("Reset position")}</Button>
+      <Button type="button" variant="outline" size="sm" className="self-start text-zinc-300" disabled={disabled || (framing.zoom === 1 && framing.x === 0.5 && framing.y === 0.5)} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: framing.fit })}><RotateCcw aria-hidden="true" />{t("Reset position")}</Button>
     </div>
   </div>;
 }
