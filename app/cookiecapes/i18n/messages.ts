@@ -88,7 +88,6 @@ export const de = {
   "Import format": "Importformat",
   "This is optional for uploading. Editing animated images requires browser support for ImageDecoder.": "Zum Hochladen ist das nicht nötig. Animierte Frames benötigen zur Bearbeitung einen Browser mit ImageDecoder.",
   "Open frames for editing": "Frames zum Bearbeiten öffnen",
-  "The defaults work for most capes. You can edit animations frame by frame here.": "Optional: Die Standardeinstellungen reichen für die meisten Capes. Animationen kannst du hier Frame für Frame bearbeiten.",
   "PNG, JPG, GIF, APNG or WebP. Multiple PNGs automatically become an animation. Static images: up to 3 MiB and 4096 × 4096 pixels. Animations: up to 32 MiB, 200 frames and 512 × 300 pixels per frame.": "PNG, JPG, GIF, APNG oder WebP. Mehrere PNGs werden automatisch zu einer Animation. Statische Bilder: maximal 3 MiB und 4096 × 4096 Pixel. Animationen: maximal 32 MiB, 200 Frames und 512 × 300 Pixel pro Frame.",
   "Retry status": "Status erneut laden",
   "Your cape is being processed. You can leave this page open.": "Dein Cape wird verarbeitet. Du kannst diese Seite geöffnet lassen.",
@@ -527,9 +526,9 @@ export const de = {
   "The animation is too large in HD. Turn off HD or shorten it.": "Die Animation ist in HD zu groß. Schalte HD aus oder kürze sie.",
   "Turn any picture into a cape": "Mach aus jedem Bild ein Cape",
   "Drop your picture here": "Zieh dein Bild hierher",
-  "or click to choose one. You can also paste an image.": "oder klicke, um eins auszuwählen. Du kannst auch ein Bild einfügen.",
+  "or click to choose one.": "oder klicke, um eins auszuwählen.",
   "Choose a picture": "Bild auswählen",
-  "PNG, JPG, GIF, APNG or WebP up to 32 MiB. Photos, artwork and animations all work.": "PNG, JPG, GIF, APNG oder WebP bis 32 MiB. Fotos, Artwork und Animationen funktionieren.",
+  "PNG, JPG, GIF, APNG or WebP up to 32 MiB.": "PNG, JPG, GIF, APNG oder WebP bis 32 MiB.",
   "Edit current animation": "Aktuelle Animation bearbeiten",
   "Change picture": "Bild ändern",
   "This file already uses the cape layout, so it is used exactly as it is.": "Diese Datei nutzt bereits das Cape-Layout und wird unverändert verwendet.",
@@ -538,7 +537,6 @@ export const de = {
   "Publish cape": "Cape veröffentlichen",
   "Publishes for {name}. Website uploads receive a blue badge; it confirms your Minecraft identity, not ownership of the artwork.": "Wird für {name} veröffentlicht. Website-Uploads erhalten ein blaues Abzeichen; es bestätigt deine Minecraft-Identität, nicht die Rechte am Bild.",
   "Close more options": "Weitere Optionen schließen",
-  "The defaults work for most capes.": "Die Standardwerte passen für die meisten Capes.",
   "Use as finished cape texture": "Als fertige Cape-Textur verwenden",
   "Turn this on if your file was drawn on the cape template. It is then uploaded without changes.": "Aktiviere dies, wenn deine Datei auf der Cape-Vorlage gezeichnet wurde. Sie wird dann unverändert hochgeladen.",
   "Pixel art": "Pixel-Art",
@@ -586,6 +584,7 @@ export const de = {
   "3D preview": "3D-Vorschau",
   "Drag the picture to move it. Scroll, pinch or use the slider to zoom.": "Ziehe das Bild, um es zu verschieben. Scrolle, nutze zwei Finger oder den Regler zum Zoomen.",
   "Whole picture": "Ganzes Bild",
+  "No background": "Kein Hintergrund",
 } as const;
 
 export type MessageKey = keyof typeof de;

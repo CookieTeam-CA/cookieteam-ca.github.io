@@ -78,7 +78,7 @@ export default async function TutorialPage() {
                     <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6 text-orange-200">
                         <h3 className="font-bold flex items-center gap-2 mb-2">{t("Important")}</h3>
                         <ul className="list-disc list-inside space-y-1 text-sm opacity-90">
-                            <li>{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB. Photos, artwork and animations all work.")}</li>
+                            <li>{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB.")}</li>
                             <li>{t("You can use")} <strong>{t("transparency")}</strong> {t("for cool effects, but do not make the cape invisible.")}</li>
                             <li>{t("Follow our")} <Link href="/cookiecapes/rules" className="underline hover:text-white">{t("Rules")}</Link>.</li>
                         </ul>

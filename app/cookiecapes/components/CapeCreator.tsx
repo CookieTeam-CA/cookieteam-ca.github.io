@@ -378,9 +378,9 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
               onDrop={event => { event.preventDefault(); setDragging(false); if (!locked) void choose(Array.from(event.dataTransfer.files)); }}>
               {busy ? <Loader2 size={36} className="mx-auto mb-3 animate-spin text-orange-400 motion-reduce:animate-none" aria-hidden="true" /> : <ImagePlus size={36} className="mx-auto mb-3 text-orange-400" aria-hidden="true" />}
               <p className="font-bold text-white" aria-live="polite">{busy ? t("Preparing your cape…") : t("Drop your picture here")}</p>
-              <p className="mt-1 text-sm text-zinc-400">{t("or click to choose one. You can also paste an image.")}</p>
+              <p className="mt-1 text-sm text-zinc-400">{t("or click to choose one.")}</p>
               <input id={`${id}-file`} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple disabled={locked} aria-label={t("Choose a picture")} aria-describedby={`${id}-file-help`} className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
-              <p id={`${id}-file-help`} className="mt-4 text-xs text-zinc-500">{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB. Photos, artwork and animations all work.")}</p>
+              <p id={`${id}-file-help`} className="mt-4 text-xs text-zinc-500">{t("PNG, JPG, GIF, APNG or WebP up to 32 MiB.")}</p>
               {replacing && initialAnimationManifest && !source && <Button type="button" variant="outline" className="relative z-10 mt-4" disabled={locked} onClick={() => void editCurrentAnimation()}>{t("Edit current animation")}</Button>}
             </div>
             {source && kind === "texture" && <p className="text-sm leading-relaxed text-zinc-400">{t("This file already uses the cape layout, so it is used exactly as it is.")}</p>}
@@ -394,7 +394,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
               <label htmlFor={`${id}-name`} className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-zinc-300">{t("Cape name")}
                 <input id={`${id}-name`} autoFocus value={name} maxLength={100} required disabled={locked} onChange={event => setName(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); void publish(); } }} placeholder={t("For example: Sunset")} className="h-11 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-white outline-none placeholder:text-zinc-600 focus:border-orange-400 disabled:opacity-50" />
               </label>
-              <label htmlFor={`${id}-private`} className="flex h-11 shrink-0 cursor-pointer items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-zinc-300">
+              <label htmlFor={`${id}-private`} className="flex h-11 shrink-0 cursor-pointer items-center gap-3 px-3 text-sm text-zinc-300">
                 <Switch.Root id={`${id}-private`} checked={privateCape} disabled={locked} onCheckedChange={setPrivate} className="inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-zinc-700 p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-orange-400 data-[state=checked]:bg-primary disabled:cursor-not-allowed disabled:opacity-50">
                   <Switch.Thumb className="block size-4 rounded-full bg-white transition-transform data-[state=checked]:translate-x-4 motion-reduce:transition-none" />
                 </Switch.Root>{t("Private")}
@@ -438,8 +438,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
     <Dialog.Root open={more} onOpenChange={setMore}>
       <Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm" />
         <Dialog.Content onCloseAutoFocus={event => { event.preventDefault(); moreTrigger.current?.focus(); }} className="account-dialog account-advanced-dialog fixed top-1/2 left-1/2 z-50 flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 text-white">
-          <header><div className="mb-3 flex items-start justify-between gap-4"><Dialog.Title className="font-nexa text-2xl">{t("More options")}</Dialog.Title><Dialog.Close asChild><Button variant="outline" aria-label={t("Close more options")}>{t("Close")}</Button></Dialog.Close></div>
-            <Dialog.Description className="text-sm leading-relaxed text-zinc-400">{t("The defaults work for most capes.")}</Dialog.Description></header>
+          <header><div className="mb-3 flex items-start justify-between gap-4"><Dialog.Title className="font-nexa text-2xl">{t("More options")}</Dialog.Title><Dialog.Close asChild><Button variant="outline" aria-label={t("Close more options")}>{t("Close")}</Button></Dialog.Close></div></header>
           <div className="flex min-h-0 min-w-0 flex-col gap-5 overflow-y-auto overscroll-contain p-5 sm:p-7">
             <OptionSwitch id={`${id}-texture`} label={t("Use as finished cape texture")} description={t("Turn this on if your file was drawn on the cape template. It is then uploaded without changes.")} checked={kind === "texture"} disabled={locked} onChange={value => setKindOverride(value ? "texture" : "artwork")} />
             {kind === "artwork" && <OptionSwitch id={`${id}-pixel`} label={t("Pixel art")} description={t("Keeps hard pixel edges instead of smoothing the picture.")} checked={pixelArt} disabled={locked} onChange={setPixelOverride} />}

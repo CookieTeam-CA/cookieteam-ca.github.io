@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
-import { Maximize, Minimize, RotateCcw } from "lucide-react";
+import { Ban, Maximize, Minimize, RotateCcw } from "lucide-react";
+import { Slider } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { cropRect, DEFAULT_FRAMING, MAX_ZOOM, panFraming, zoomFraming, type Framing } from "../lib/cape-compose";
 import { useTranslations } from "../i18n/client";
 
+const SWATCHES = ["#18181b", "#ffffff", "#f97316", "#ef4444", "#facc15", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"] as const;
 const DISPLAY_WIDTH = 180, DISPLAY_HEIGHT = 288;
 
 interface Props {
@@ -105,14 +107,24 @@ export default function CapeFraming({ image, width, height, framing, onChange, p
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-sm text-zinc-300">
-          <label htmlFor={zoomId}>{t("Zoom")}</label>
+          <span id={zoomId}>{t("Zoom")}</span>
           <span className="tabular-nums text-zinc-500">{Math.round(framing.zoom * 100)} %</span>
         </div>
-        <input id={zoomId} type="range" min={1} max={MAX_ZOOM} step={0.01} value={framing.zoom} disabled={disabled} onChange={event => onChange(zoomFraming(width, height, framing, Number(event.target.value)))} className="w-full accent-orange-500" />
+        <Slider.Root aria-labelledby={zoomId} min={1} max={MAX_ZOOM} step={0.01} value={[framing.zoom]} disabled={disabled} onValueChange={([value]) => onChange(zoomFraming(width, height, framing, value))} className="relative flex h-6 w-full touch-none items-center select-none data-disabled:opacity-50">
+          <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-white/10"><Slider.Range className="absolute h-full rounded-full bg-orange-500" /></Slider.Track>
+          <Slider.Thumb aria-label={t("Zoom")} className="block size-4 rounded-full border-2 border-orange-500 bg-white shadow outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-orange-400/40 motion-reduce:transition-none" />
+        </Slider.Root>
       </div>
-      {framing.fit === "fit" && <div className="flex h-9 items-center justify-between gap-3 text-sm text-zinc-300">
-        <label className="flex items-center gap-2"><input type="checkbox" checked={background !== null} disabled={disabled} onChange={event => onBackgroundChange(event.target.checked ? "#1f1f23" : null)} className="size-4 accent-orange-500" />{t("Background colour")}</label>
-        {background !== null && <input type="color" aria-label={t("Background colour")} value={background} disabled={disabled} onChange={event => onBackgroundChange(event.target.value)} className="h-9 w-14 cursor-pointer rounded border border-white/15 bg-transparent" />}
+      {framing.fit === "fit" && <div className="flex flex-col gap-2">
+        <span className="text-sm text-zinc-300">{t("Background colour")}</span>
+        <div role="radiogroup" aria-label={t("Background colour")} className="flex flex-wrap gap-2">
+          {([null, ...SWATCHES] as const).map(colour => <button key={colour ?? "none"} type="button" role="radio" aria-checked={background === colour} disabled={disabled}
+            aria-label={colour ?? t("No background")} title={colour ?? t("No background")} onClick={() => onBackgroundChange(colour)}
+            className={cn("flex size-8 items-center justify-center rounded-full border outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-orange-400 disabled:opacity-50 motion-reduce:transition-none", background === colour ? "border-white ring-2 ring-orange-400 ring-offset-2 ring-offset-zinc-950" : "border-white/20")}
+            style={colour ? { backgroundColor: colour } : undefined}>
+            {colour === null && <Ban className="size-4 text-zinc-400" aria-hidden="true" />}
+          </button>)}
+        </div>
       </div>}
       <Button type="button" variant="outline" size="sm" className="self-start text-zinc-300" disabled={disabled || (framing.zoom === 1 && framing.x === 0.5 && framing.y === 0.5)} onClick={() => onChange({ ...DEFAULT_FRAMING, fit: framing.fit })}><RotateCcw aria-hidden="true" />{t("Reset position")}</Button>
     </div>
