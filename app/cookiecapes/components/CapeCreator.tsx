@@ -275,6 +275,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
       }
       let options: Record<string, unknown>;
       if (serverComposes) {
+        if (source.sourceWidth > 2048 || source.sourceHeight > 2048) throw new Error(t("Your browser cannot shrink this animation. Use one up to 2048 × 2048 pixels or try Chrome or Edge."));
         const rect = cropRect(source.width, source.height, framing), scale = source.sourceWidth / source.width;
         source.files.forEach(file => body.append("files", file));
         options = { mode: "image", fit: "face", hd, fps: 12, pixel_art: pixelArt, crop: { x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }, ...(framing.fit === "fit" && background ? { background } : {}) };

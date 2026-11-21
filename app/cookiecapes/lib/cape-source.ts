@@ -47,8 +47,9 @@ async function bitmap(source: ImageBitmapSource, width: number, height: number, 
 
 function finish(images: ImageBitmap[], durations: number[]): { frames: ComposerFrame[]; resampled: boolean } {
   const timeline = resampleTimeline(durations);
-  const used = new Set(timeline.map(item => item.index));
-  images.forEach((image, index) => { if (!used.has(index)) image.close(); });
+  // A long frame can appear at several indices, so keep every bitmap that is still referenced.
+  const used = new Set(timeline.map(item => images[item.index]));
+  new Set(images).forEach(image => { if (!used.has(image)) image.close(); });
   return { frames: timeline.map(item => ({ image: images[item.index], duration: item.duration })), resampled: timeline.length !== durations.length || timeline.some((item, i) => item.duration !== durations[i]) };
 }
 
@@ -68,10 +69,13 @@ async function decodeAnimation(file: File, t: ReturnType<typeof translations>["t
       const { image } = await decoder.decode({ frameIndex: i });
       try {
         if (!i) { width = image.displayWidth; height = image.displayHeight; scale = workingScale(width, height, count); }
-        images.push(await bitmap(image, width, height, scale));
-        const duration = image.duration ? image.duration / 1000 : null;
-        // Browsers play GIF delays of 10 ms or less at 100 ms; CookieAPI does the same.
-        durations.push(duration === null ? DEFAULT_DURATION : file.type === "image/gif" && duration <= 10 ? 100 : Math.min(60000, duration));
+        const frame = await bitmap(image, width, height, scale);
+        const raw = image.duration ? image.duration / 1000 : null;
+        // Browsers play missing GIF delays and those of 10 ms or less at 100 ms; CookieAPI does the same.
+        let duration = file.type === "image/gif" && (raw === null || raw <= 10) ? 100 : raw ?? DEFAULT_DURATION;
+        // Like CookieAPI, split delays over 60 s into 60 s chunks of the same frame.
+        while (duration > 60000) { images.push(frame); durations.push(60000); duration -= 60000; }
+        images.push(frame); durations.push(duration);
       } finally { image.close(); }
     }
     return { images, durations, width, height };

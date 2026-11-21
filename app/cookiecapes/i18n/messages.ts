@@ -591,6 +591,7 @@ export const de = {
   "Hex colour": "Hex-Farbe",
   "Pick a colour from your picture": "Farbe aus deinem Bild aufnehmen",
   "Click your picture to pick a colour. Press Escape to cancel.": "Klicke auf dein Bild, um eine Farbe aufzunehmen. Escape bricht ab.",
+  "Your browser cannot shrink this animation. Use one up to 2048 × 2048 pixels or try Chrome or Edge.": "Dein Browser kann diese Animation nicht verkleinern. Nutze eine mit höchstens 2048 × 2048 Pixeln oder versuche es mit Chrome oder Edge.",
 } as const;
 
 export type MessageKey = keyof typeof de;
