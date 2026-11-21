@@ -24,6 +24,10 @@ interface CapeViewerProps {
     fallbackSrc?: string;
     fallbackAlt?: string;
     terminalErrorMessage?: string;
+    /** Camera distance; smaller shows a bigger player. */
+    cameraDistance?: number;
+    /** Changing this stops the rotation and turns the camera smoothly to face the cape. */
+    focusCapeKey?: string | number;
 }
 
 function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"), animType: string) {
@@ -94,7 +98,9 @@ export default function CapeViewer({
     animateOnHover = false,
     fallbackSrc,
     fallbackAlt = "Minecraft preview",
-    terminalErrorMessage
+    terminalErrorMessage,
+    cameraDistance = 60,
+    focusCapeKey,
 }: CapeViewerProps) {
     const { t } = useTranslations();
     const canvasHostRef = useRef<HTMLDivElement>(null);
@@ -111,7 +117,7 @@ export default function CapeViewer({
     const [hovered, setHovered] = useState(false);
     const [focused, setFocused] = useState(false);
     const motionEnabled = !reducedMotion && !motionPaused && (!animateOnHover || hovered || focused);
-    const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation });
+    const optionsRef = useRef({ capeUrl, skinUrl, minecraftName, width, height, animation, cameraDistance });
     const [viewerError, setViewerError] = useState(false);
     const [failedFallbackSrc, setFailedFallbackSrc] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -121,7 +127,7 @@ export default function CapeViewer({
     const [retry, setRetry] = useState(0);
     const [equipment, setEquipment] = useState({ url: capeUrl, available: false, elytra: false });
 
-    useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation }; }, [capeUrl, skinUrl, minecraftName, width, height, animation]);
+    useEffect(() => { optionsRef.current = { capeUrl, skinUrl, minecraftName, width, height, animation, cameraDistance }; }, [capeUrl, skinUrl, minecraftName, width, height, animation, cameraDistance]);
 
     useEffect(() => {
         if (!active) return;
@@ -185,7 +191,7 @@ export default function CapeViewer({
                 viewerRef.current = viewer;
                 viewer.controls.addEventListener("change", render);
 
-                viewer.camera.position.set(0, 0, 60);
+                viewer.camera.position.set(0, 0, optionsRef.current.cameraDistance);
 
                 if (viewer.controls) {
                     viewer.controls.enableZoom = true;
@@ -333,6 +339,48 @@ export default function CapeViewer({
         }
         return () => { cancelled = true; };
     }, [animation, motionEnabled, rotationPaused, viewerReady, isLoading, viewerError]);
+
+    // Turn smoothly to the cape whenever a new design arrives; dragging still orbits freely afterwards.
+    useEffect(() => {
+        const viewer = viewerRef.current;
+        if (focusCapeKey === undefined || !viewer || !viewerReady || viewer.disposed) return;
+        setRotationPaused(true);
+        viewer.autoRotate = false;
+        const { camera, controls } = viewer;
+        const offset = camera.position.clone().sub(controls.target);
+        const radius = offset.length();
+        const startTheta = Math.atan2(offset.x, offset.z), startPhi = Math.acos(Math.max(-1, Math.min(1, offset.y / radius)));
+        // The player faces the camera at azimuth 0, so the cape is in view at ±π; take the nearer side.
+        const targetTheta = startTheta >= 0 ? Math.PI : -Math.PI;
+        const targetPhi = Math.PI / 2 - 0.12;
+        // skinview3d's auto-rotation spins the player itself, so unwind that spin to the nearest full turn too.
+        const wrapper = viewer.playerWrapper;
+        const startSpin = wrapper.rotation.y, targetSpin = Math.round(startSpin / (2 * Math.PI)) * 2 * Math.PI;
+        const duration = reducedMotion ? 0 : 900, start = performance.now();
+        let request = 0, stopped = false;
+        const stop = () => { stopped = true; cancelAnimationFrame(request); };
+        const step = (now: number) => {
+            if (stopped || viewer.disposed) return;
+            const progress = duration ? Math.min(1, (now - start) / duration) : 1;
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const theta = startTheta + (targetTheta - startTheta) * eased;
+            const phi = startPhi + (targetPhi - startPhi) * eased;
+            wrapper.rotation.y = startSpin + (targetSpin - startSpin) * eased;
+            camera.position.set(
+                controls.target.x + radius * Math.sin(phi) * Math.sin(theta),
+                controls.target.y + radius * Math.cos(phi),
+                controls.target.z + radius * Math.sin(phi) * Math.cos(theta),
+            );
+            camera.lookAt(controls.target);
+            controls.update();
+            renderRef.current?.();
+            if (progress < 1) request = requestAnimationFrame(step);
+        };
+        request = requestAnimationFrame(step);
+        const canvas = viewer.renderer.domElement;
+        canvas.addEventListener("pointerdown", stop);
+        return () => { stop(); canvas.removeEventListener("pointerdown", stop); };
+    }, [focusCapeKey, viewerReady, reducedMotion]);
 
     useEffect(() => {
         const image = fallbackImageRef.current;

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import CapeHero from "./components/CapeHero";
-import SetupWizard from "./components/SetupWizard";
+import CapeCreator from "./components/CapeCreator";
 import RandomCapes from "./components/RandomCapes";
 import { getRandomCapes } from "./lib/api";
 import Footer from "../components/Footer";
@@ -55,7 +55,7 @@ export default async function CookieCapesPage() {
       </Suspense>
 
       <div id="setup-wizard" className="relative scroll-mt-24 px-6 py-8">
-        <div className="relative mx-auto max-w-5xl">{account ? <SetupWizard account={account} /> : <section className="rounded-3xl border border-white/10 bg-[#101010] p-8 text-center sm:p-12">
+        <div className="relative mx-auto max-w-5xl">{account ? <CapeCreator account={account} /> : <section className="rounded-3xl border border-white/10 bg-[#101010] p-8 text-center sm:p-12">
           <h2 className="font-nexa text-3xl">{t("Your skin. Your cape.")}</h2>
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-zinc-400">{accountUnavailable ? t("Open your account to start the upload wizard.") : t("Sign in, link your Minecraft account, and bring your own design into the game.")}</p>
           <Button asChild size="lg" className="mt-6"><Link href="/cookiecapes/account">{accountUnavailable ? t("Go to account") : t("Sign in and upload a cape")}</Link></Button>

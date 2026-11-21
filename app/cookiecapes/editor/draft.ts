@@ -29,6 +29,8 @@ export interface LineData {
 }
 
 export const EDITOR_DRAFT_KEY = "cookiecapes-editor-draft-v1";
+/** A finished editor design waiting to be published by the cape creator. */
+export const CREATOR_IMPORT_KEY = "cookiecapes-creator-import-v1";
 export interface EditorDraft {
     activeTemplate: "standard" | "elytra";
     activeLayerId: string | null;

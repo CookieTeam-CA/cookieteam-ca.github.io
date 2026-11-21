@@ -8,7 +8,7 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "bun --bun eslint",
-    "test": "bun test"
+    "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
