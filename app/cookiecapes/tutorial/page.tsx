@@ -16,7 +16,6 @@ export default async function TutorialPage() {
     const steps = [
         [ImagePlus, t("Bring a picture"), t("Drop, paste or choose any picture: a photo, artwork, a logo you are allowed to use, or an animated GIF, APNG or WebP.")],
         [Move, t("Choose the part you like"), t("The picture appears on the back of your cape right away. Drag it, zoom in, or show the whole picture. The 3D preview updates as you go.")],
-        [Upload, t("Name it and publish"), t("Give your cape a name and publish it. Animations are processed for a moment; you can leave the page open while that happens.")],
     ] as const;
     return (
         <main className="min-h-screen bg-[#050505] text-white overflow-hidden relative">

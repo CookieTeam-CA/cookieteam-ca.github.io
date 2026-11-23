@@ -535,7 +535,7 @@ export const de = {
   "Your cape is almost invisible. Choose a picture with more visible pixels or add a background colour.": "Dein Cape ist fast unsichtbar. Wähle ein Bild mit mehr sichtbaren Pixeln oder füge eine Hintergrundfarbe hinzu.",
   "More options": "Weitere Optionen",
   "Publish cape": "Cape veröffentlichen",
-  "Publishes for {name}. Website uploads receive a blue badge; it confirms your Minecraft identity, not ownership of the artwork.": "Wird für {name} veröffentlicht. Website-Uploads erhalten ein blaues Abzeichen; es bestätigt deine Minecraft-Identität, nicht die Rechte am Bild.",
+  "Publishes for {name}.": "Wird unter {name} veröffentlicht.",
   "Close more options": "Weitere Optionen schließen",
   "Use as finished cape texture": "Als fertige Cape-Textur verwenden",
   "Turn this on if your file was drawn on the cape template. It is then uploaded without changes.": "Aktiviere dies, wenn deine Datei auf der Cape-Vorlage gezeichnet wurde. Sie wird dann unverändert hochgeladen.",

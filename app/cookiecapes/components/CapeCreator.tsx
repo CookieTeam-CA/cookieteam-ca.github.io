@@ -414,7 +414,7 @@ export default function CapeCreator({ account: initialAccount, onAccountLinked, 
               {!account.mcid_enabled && <p className="text-xs text-zinc-500">{t("MC-ID is currently not enabled.")}</p>}
             </div>}
             {blocker && account.links.length > 0 && <p className="text-sm text-zinc-400">{blocker}</p>}
-            {player && <p className="text-xs leading-relaxed text-zinc-500">{t("Publishes for {name}. Website uploads receive a blue badge; it confirms your Minecraft identity, not ownership of the artwork.", { name: player.minecraft_name })}</p>}
+            {player && <p className="text-xs leading-relaxed text-zinc-500">{t("Publishes for {name}.", { name: player.minecraft_name })}</p>}
           </>}
           <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/apng" multiple hidden onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ""; void choose(files); }} />
         </div>
