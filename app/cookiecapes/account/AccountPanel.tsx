@@ -18,6 +18,7 @@ import { useDuplicateToast } from "../lib/duplicate-toast";
 import { toast } from "@/components/ui/toast";
 import VerificationBadge from "../components/VerificationBadge";
 import PreviousUploadsReview from "./PreviousUploadsReview";
+import CosmeticsPanel from "./CosmeticsPanel";
 
 
 export default function AccountPanel({ account: initialAccount }: { account: AccountInfo }) {
@@ -201,5 +202,6 @@ export default function AccountPanel({ account: initialAccount }: { account: Acc
         </article>)}</div>
       </>}
     </section>}
+    {uuid && <CosmeticsPanel key={uuid} uuid={uuid} minecraftName={selectedAccount?.minecraft_name} disabled={controlsDisabled} />}
   </div>;
 }

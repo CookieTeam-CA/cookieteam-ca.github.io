@@ -9,6 +9,8 @@ import { disposeSkinViewer } from "../../lib/dispose-skin-viewer";
 import { useElementActive, useReducedMotion } from "../../lib/visibility";
 import { loadTextureImage } from "../lib/texture-cache";
 import { applyCapeCanvas, playCapeManifest, type CapeManifestPlayer } from "../lib/animation-viewer";
+import { attachCosmetics, type CosmeticPlayer } from "../lib/cosmetic-viewer";
+import type { CosmeticSummary } from "../lib/cosmetic-types";
 
 interface CapeViewerProps {
     capeFrame?: { canvas: HTMLCanvasElement; revision: number };
@@ -24,6 +26,7 @@ interface CapeViewerProps {
     fallbackSrc?: string;
     fallbackAlt?: string;
     terminalErrorMessage?: string;
+    cosmetics?: CosmeticSummary[];
 }
 
 function setAnimation(viewer: SkinViewer, skinview3d: typeof import("skinview3d"), animType: string) {
@@ -94,7 +97,8 @@ export default function CapeViewer({
     animateOnHover = false,
     fallbackSrc,
     fallbackAlt = "Minecraft preview",
-    terminalErrorMessage
+    terminalErrorMessage,
+    cosmetics,
 }: CapeViewerProps) {
     const { t } = useTranslations();
     const canvasHostRef = useRef<HTMLDivElement>(null);
@@ -104,6 +108,9 @@ export default function CapeViewer({
     const viewerRef = useRef<SkinViewer | null>(null);
     const manifestPlayer = useRef<CapeManifestPlayer | null>(null);
     const manifestPlaying = useRef(false);
+    const cosmeticPlayer = useRef<CosmeticPlayer | null>(null);
+    const [cosmeticError, setCosmeticError] = useState(false);
+    const cosmeticKey = cosmetics?.map(cosmetic => `${cosmetic.cosmetic_id}:${cosmetic.revision}`).join(",") ?? "";
     const active = useElementActive(containerRef);
     const reducedMotion = useReducedMotion();
     const [motionPaused, setMotionPaused] = useState(false);
@@ -313,8 +320,21 @@ export default function CapeViewer({
     }, [animationManifest, viewerReady, isLoading, active]);
 
     useEffect(() => {
+        const viewer = viewerRef.current;
+        if (!cosmetics?.length || !viewer || !viewerReady || isLoading || !active) return;
+        setCosmeticError(false);
+        const player = attachCosmetics(viewer, cosmetics, () => renderRef.current?.(), () => setCosmeticError(true));
+        cosmeticPlayer.current = player;
+        player.setPlaying(manifestPlaying.current);
+        return () => { player.dispose(); cosmeticPlayer.current = null; renderRef.current?.(); };
+        // The key captures the cosmetic list; the array identity may change on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cosmeticKey, viewerReady, isLoading, active]);
+
+    useEffect(() => {
         manifestPlaying.current = motionEnabled;
         manifestPlayer.current?.setPlaying(motionEnabled);
+        cosmeticPlayer.current?.setPlaying(motionEnabled);
     }, [motionEnabled]);
 
     useEffect(() => {
@@ -350,6 +370,7 @@ export default function CapeViewer({
             onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}
             onFocus={() => setFocused(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
             <div ref={canvasHostRef} className={`absolute inset-0 ${!active || isLoading || textureError || viewerError ? "invisible" : ""}`} />
+            {cosmeticError && active && <p role="status" className="absolute bottom-4 left-4 z-30 rounded bg-zinc-950/90 px-2 py-1 text-xs text-zinc-300">{t("Some cosmetics couldn't load")}</p>}
             {animationManifest && loadedManifest === animationManifest && active && <Button size="sm" variant="outline" className="absolute top-4 right-4 z-30" onClick={() => setMotionPaused(value => !value)}>{motionPaused ? t("Play") : t("Pause")}</Button>}
             {(textureError || viewerError) && fallbackSrc && (failedFallbackSrc === fallbackSrc
                 ? <p role="status" className="p-4 text-center text-sm text-zinc-400">{t("Cape couldn't load")}</p>

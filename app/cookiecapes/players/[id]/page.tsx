@@ -1,6 +1,6 @@
 import { getTranslations } from "@/app/cookiecapes/i18n/server";
 import { Button } from "@/components/ui/button";
-import { API_BASE_URL, getCape, getPlayer, getCapesByPlayer, getPlayerHistory } from "../../lib/api";
+import { API_BASE_URL, getCape, getPlayer, getCapesByPlayer, getPlayerCosmetics, getPlayerHistory } from "../../lib/api";
 import { CapeApiError } from "../../lib/api-error";
 import ProfileSkinDisplay from "../../components/ProfileSkinDisplay";
 import Link from "next/link";
@@ -75,7 +75,9 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     }
 
     const displayName = player?.minecraft_name ?? history?.current_username ?? id;
-    const createdCapes = player ? await getCapesByPlayer(player.minecraft_uuid) : [];
+    const [createdCapes, cosmetics] = player
+        ? await Promise.all([getCapesByPlayer(player.minecraft_uuid), getPlayerCosmetics(player.minecraft_uuid)])
+        : [[], []];
     const currentCape = player?.current_cape_id != null
         ? createdCapes.find(cape => cape.cape_id === player.current_cape_id) ?? await getCape(player.current_cape_id).catch(error => {
             if (error instanceof CapeApiError && [401, 403].includes(error.status)) return null;
@@ -107,6 +109,7 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                             player={player}
                             isCookieCapesUser={isCookieCapesUser}
                             skinHistory={history?.skin_history}
+                            cosmetics={cosmetics}
                         />
                     </div>
 

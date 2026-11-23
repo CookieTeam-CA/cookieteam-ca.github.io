@@ -4,6 +4,7 @@ import { useTranslations } from "@/app/cookiecapes/i18n/client";
 import { Button } from "@/components/ui/button";
 import { useState, useRef, useLayoutEffect } from "react";
 import CapeViewer from "./CapeViewer";
+import type { CosmeticSummary } from "../lib/cosmetic-types";
 import { ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import GalleryLink from "./GalleryLink";
@@ -25,6 +26,7 @@ interface ProfileSkinDisplayProps {
     player: Player | null;
     isCookieCapesUser: boolean;
     skinHistory?: SkinHistoryEntry[];
+    cosmetics?: CosmeticSummary[];
 }
 
 export default function ProfileSkinDisplay({
@@ -34,7 +36,8 @@ export default function ProfileSkinDisplay({
     uuid,
     player,
     isCookieCapesUser,
-    skinHistory = []
+    skinHistory = [],
+    cosmetics,
 }: ProfileSkinDisplayProps) {
     const { t, number } = useTranslations();
     const [activeSkin, setActiveSkin] = useState<SkinHistoryEntry | undefined>(undefined);
@@ -76,6 +79,7 @@ export default function ProfileSkinDisplay({
                         fallbackSrc={playerPreviewUrl(uuid, player?.last_edited, activeSkin)}
                         fallbackAlt={`${displayName}, ${activeSkin ? "selected historical skin" : "current Minecraft skin"}`}
                         animation="walk"
+                        cosmetics={cosmetics}
                     />
                 </div>
 

@@ -1,5 +1,6 @@
 import { translations } from "../i18n/messages";
 import { CapeApiError, capeApiError } from "./api-error";
+import type { CosmeticSlot, CosmeticSummary } from "./cosmetic-types";
 
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_COOKIECAPES_API_URL || "https://api.cookieattack.de").replace(/\/+$/, "");
 
@@ -195,5 +196,35 @@ export async function getPlayerHistory(username: string): Promise<PlayerHistory 
   } catch (error) {
     if (error instanceof CapeApiError && error.status === 404) return null;
     throw error;
+  }
+}
+
+export type CosmeticSort = "newest" | "name" | "popular";
+
+export async function listCosmetics(options: { page?: number; limit?: number; slot?: CosmeticSlot; query?: string; sortBy?: CosmeticSort; maxRating?: number } = {}) {
+  const { page = 1, limit = 24, slot, query, sortBy = "newest", maxRating = 5 } = options;
+  return request<{ cosmetics: CosmeticSummary[]; total_count: number; limit: number; offset: number }>(`${API_BASE_URL}/list_cosmetics_sorted`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ limit, offset: (page - 1) * limit, slot, query: query || undefined, sort_by: sortBy, order: sortBy === "name" ? "asc" : "desc", max_rating: maxRating }),
+    next: { revalidate: 0 },
+  });
+}
+
+export async function getCosmetic(id: number): Promise<CosmeticSummary | null> {
+  if (!Number.isSafeInteger(id) || id < 1) return null;
+  try {
+    return await request<CosmeticSummary>(`${API_BASE_URL}/cosmetics/${id}`, { next: { revalidate: 0 } });
+  } catch (error) {
+    if (error instanceof CapeApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+export async function getPlayerCosmetics(identifier: string): Promise<CosmeticSummary[]> {
+  try {
+    return (await request<{ cosmetics: CosmeticSummary[] }>(`${API_BASE_URL}/players/${encodeURIComponent(identifier)}/cosmetics`, { next: { revalidate: 0 } })).cosmetics;
+  } catch {
+    // Cosmetics are optional decoration on player pages.
+    return [];
   }
 }

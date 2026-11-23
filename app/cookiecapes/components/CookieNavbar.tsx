@@ -25,7 +25,7 @@ export default function CookieNavbar({ identity = null }: { identity?: NavbarIde
   const [loaded, setLoaded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const links = [["/cookiecapes", t("CookieCapes Startpage")], ["/cookiecapes/players", t("Players")], ["/cookiecapes/capes", "Capes"], ["/cookiecapes/rules", t("Rules")], ["/cookiecapes/tutorial", "Tutorial"]];
+  const links = [["/cookiecapes", t("CookieCapes Startpage")], ["/cookiecapes/players", t("Players")], ["/cookiecapes/capes", "Capes"], ["/cookiecapes/cosmetics", "Cosmetics"], ["/cookiecapes/rules", t("Rules")], ["/cookiecapes/tutorial", "Tutorial"]];
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -77,7 +77,7 @@ export default function CookieNavbar({ identity = null }: { identity?: NavbarIde
         </div>
 
         <div className="hidden lg:flex items-center gap-6">
-          {[["/cookiecapes/players", t("Players")], ["/cookiecapes/capes", "Capes"], ["/cookiecapes/rules", t("Rules")], ["/cookiecapes/tutorial", "Tutorial"]].map(([href, label]) => (
+          {[["/cookiecapes/players", t("Players")], ["/cookiecapes/capes", "Capes"], ["/cookiecapes/cosmetics", "Cosmetics"], ["/cookiecapes/rules", t("Rules")], ["/cookiecapes/tutorial", "Tutorial"]].map(([href, label]) => (
             <Link key={href} href={href} aria-current={pathname?.startsWith(href) ? "page" : undefined} className="text-zinc-400 aria-[current=page]:text-white hover:text-white transition-colors duration-300 font-medium text-sm min-h-11 flex items-center rounded-md focus-visible:outline-2 focus-visible:outline-orange-400">{label}</Link>
           ))}
         </div>
